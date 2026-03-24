@@ -1,0 +1,31 @@
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    curl \
+    libxrender1 \
+    libxext6 \
+    libfontconfig1 \
+    libx11-6 \
+    xfonts-75dpi \
+    xfonts-base \
+    && rm -rf /var/lib/apt/lists/*
+
+# wkhtmltopdf was dropped from Debian trixie; install the official prebuilt .deb
+# (bookworm build runs fine on trixie slim)
+RUN curl -fsSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+        -o /tmp/wkhtmltox.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends /tmp/wkhtmltox.deb \
+    && rm /tmp/wkhtmltox.deb \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

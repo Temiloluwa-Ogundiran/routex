@@ -1,0 +1,1773 @@
+[
+    {
+      "name": " AL-Barakah Microfinance Bank",
+      "slug": "al-barakah-mfb",
+      "code": "090133",
+      "nibss_bank_code": "090133",
+      "country": "NG"
+    },
+    {
+      "name": "9 Payment Service Bank",
+      "slug": "9payment",
+      "code": "000802",
+      "nibss_bank_code": "000802",
+      "country": "NG"
+    },
+    {
+      "name": "AB Microfinance Bank",
+      "slug": "ab-mfb",
+      "code": "090270",
+      "nibss_bank_code": "090270",
+      "country": "NG"
+  },
+  {
+      "name": "United Bank for Africa",
+      "slug": "uba",
+      "code": "033",
+      "nibss_bank_code": "000004",
+      "country": "NG"
+    },
+  {
+    "name": "Abbey Mortgage Bank",
+      "slug": "abbey-mb",
+      "code": "070010",
+      "nibss_bank_code": "070010",
+      "country": "NG"
+    },
+    {
+      "name": "Above Only Microfinance Bank",
+      "slug": "above-only-mfb",
+      "code": "090260",
+      "nibss_bank_code": "090260",
+      "country": "NG"
+    },
+    {
+      "name": "ABU Microfinance Bank",
+      "slug": "abu-mfb",
+      "code": "090197",
+      "nibss_bank_code": "090197",
+      "country": "NG"
+    },
+    {
+      "name": "Access Bank Nigeria",
+      "slug": "access",
+      "code": "044",
+      "nibss_bank_code": "000014",
+      "country": "NG"
+    },
+    {
+      "name": "Access Bank Plc (Diamond)",
+      "slug": "diamond",
+      "code": "063",
+      "nibss_bank_code": "000005",
+      "country": "NG"
+    },
+    {
+      "name": "ACCESS MOBILE",
+      "slug": "access-mobile",
+      "code": "323",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "Access Money",
+      "slug": "access-money",
+      "code": "927",
+      "nibss_bank_code": "100013",
+      "country": "NG"
+    },
+    {
+      "name": "Access Yello &amp; Beta",
+      "slug": "access-yellow",
+      "code": "100052",
+      "nibss_bank_code": "100052",
+      "country": "NG"
+    },
+    {
+      "name": "Accion Microfinance Bank",
+      "slug": "accion-mfb",
+      "code": "090134",
+      "nibss_bank_code": "090134",
+      "country": "NG"
+    },
+    {
+      "name": "Addosser Microfinance Bank",
+      "slug": "addosser-mfb",
+      "code": "090160",
+      "nibss_bank_code": "090160",
+      "country": "NG"
+    },
+    {
+      "name": "Adeyemi College Staff Microfinance Bank",
+      "slug": "adeyemi-mfb",
+      "code": "090268",
+      "nibss_bank_code": "090268",
+      "country": "NG"
+    },
+    {
+      "name": "AG Mortgage Bank",
+      "slug": "ag-mb",
+      "code": "100028",
+      "nibss_bank_code": "100028",
+      "country": "NG"
+    },
+    {
+      "name": "Al-Hayat Microfinance Bank",
+      "slug": "al-hayat-mfb",
+      "code": "090277",
+      "nibss_bank_code": "090277",
+      "country": "NG"
+    },
+    {
+      "name": "Alekun Microfinance Bank",
+      "slug": "alekun-mfb",
+      "code": "090259",
+      "nibss_bank_code": "090259",
+      "country": "NG"
+    },
+    {
+      "name": "Alert MFB",
+      "slug": "alert-mfb",
+      "code": "090297",
+      "nibss_bank_code": "090297",
+      "country": "NG"
+    },
+    {
+      "name": "Allworkers Microfinance Bank",
+      "slug": "allworkers-mfb",
+      "code": "090131",
+      "nibss_bank_code": "090131",
+      "country": "NG"
+    },
+    {
+      "name": "Alpha Kapital Microfinance Bank",
+      "slug": "alpha-kapital-mfb",
+      "code": "090169",
+      "nibss_bank_code": "090169",
+      "country": "NG"
+    },
+    {
+      "name": "AMJU Unique Microfinance Bank",
+      "slug": "amju-unique-mfb",
+      "code": "090180",
+      "nibss_bank_code": "090180",
+      "country": "NG"
+    },
+    {
+      "name": "AMML Micro-finance Bank",
+      "slug": "amml-mfb",
+      "code": "914",
+      "nibss_bank_code": "090116",
+      "country": "NG"
+    },
+    {
+      "name": "Apeks Microfinance Bank",
+      "slug": "apeks-mfb",
+      "code": "090143",
+      "nibss_bank_code": "090143",
+      "country": "NG"
+    },
+    {
+      "name": "Arise MFB",
+      "slug": "arise-mfb",
+      "code": "090282",
+      "nibss_bank_code": "090282",
+      "country": "NG"
+    },
+    {
+      "name": "Aso Savings and Loans",
+      "slug": "aso-savings",
+      "code": "401",
+      "nibss_bank_code": "090001",
+      "country": "NG"
+    },
+    {
+      "name": "Astrapolaris Microfinance Bank",
+      "slug": "astrapolaris-mfb",
+      "code": "090172",
+      "nibss_bank_code": "090172",
+      "country": "NG"
+    },
+    {
+      "name": "Auchi Microfinance Bank",
+      "slug": "auchi-mfb",
+      "code": "090264",
+      "nibss_bank_code": "090264",
+      "country": "NG"
+    },
+    {
+      "name": "Baines Credit Microfinance Bank",
+      "slug": "baines-mfb",
+      "code": "090188",
+      "nibss_bank_code": "090188",
+      "country": "NG"
+    },
+    {
+      "name": "Balogun Gambari MFB",
+      "slug": "balogun-mfb",
+      "code": "090326",
+      "nibss_bank_code": "090326",
+      "country": "NG"
+    },
+    {
+      "name": "Bayero MICROFINANCE BANK",
+      "slug": "bayero-mfb",
+      "code": "090316",
+      "nibss_bank_code": "090316",
+      "country": "NG"
+    },
+    {
+      "name": "BC Kash Microfinance Bank",
+      "slug": "bc-kash-mfb",
+      "code": "090127",
+      "nibss_bank_code": "090127",
+      "country": "NG"
+    },
+    {
+      "name": "BIPC MICROFINANCE BANK",
+      "slug": "bipc-mfb",
+      "code": "090336",
+      "nibss_bank_code": "090336",
+      "country": "NG"
+    },
+    {
+      "name": "BOCTrust Micro-finance Bank",
+      "slug": "boc-trust-mfb",
+      "code": "952",
+      "nibss_bank_code": "090117",
+      "country": "NG"
+    },
+    {
+      "name": "Bosak Microfinance Bank",
+      "slug": "bosak-mfb",
+      "code": "090176",
+      "nibss_bank_code": "090176",
+      "country": "NG"
+    },
+    {
+      "name": "Bowen Microfinance Bank",
+      "slug": "bowen-mfb",
+      "code": "090148",
+      "nibss_bank_code": "090148",
+      "country": "NG"
+    },
+    {
+      "name": "Brent Mortgage Bank",
+      "slug": "brent-mb",
+      "code": "070015",
+      "nibss_bank_code": "070015",
+      "country": "NG"
+    },
+    {
+      "name": "BRETHREN MICROFINANCE BANK",
+      "slug": "brethren-mfb",
+      "code": "090293",
+      "nibss_bank_code": "090293",
+      "country": "NG"
+    },
+    {
+      "name": "BRIDGEWAY MICROFINANCE BANK",
+      "slug": "bridgeway-mfb",
+      "code": "090393",
+      "nibss_bank_code": "090393",
+      "country": "NG"
+    },
+    {
+      "name": "Brightway MFB",
+      "slug": "brightway-mfb",
+      "code": "090308",
+      "nibss_bank_code": "090308",
+      "country": "NG"
+    },
+    {
+      "name": "Cellulant",
+      "slug": "cellulant",
+      "code": "919",
+      "nibss_bank_code": "100005",
+      "country": "NG"
+    },
+    {
+      "name": "CEMCS Microfinance Bank",
+      "slug": "cems-mfb",
+      "code": "090154",
+      "nibss_bank_code": "090154",
+      "country": "NG"
+    },
+    {
+      "name": "Chams Mobile",
+      "slug": "chams-mobile",
+      "code": "929",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "Chikum Microfinance Bank",
+      "slug": "chikum-mfb",
+      "code": "090141",
+      "nibss_bank_code": "090141",
+      "country": "NG"
+    },
+    {
+      "name": "CIT Microfinance Bank",
+      "slug": "cit-mfb",
+      "code": "090144",
+      "nibss_bank_code": "090144",
+      "country": "NG"
+    },
+    {
+      "name": "Citi Bank",
+      "slug": "citibankng",
+      "code": "023",
+      "nibss_bank_code": "000009",
+      "country": "NG"
+    },
+    {
+      "name": "Consumer Microfinance Bank",
+      "slug": "consumer-mfb",
+      "code": "090130",
+      "nibss_bank_code": "090130",
+      "country": "NG"
+    },
+    {
+      "name": "Contec Global Infotech Limited (NowNow)",
+      "slug": "contec-global",
+      "code": "100032",
+      "nibss_bank_code": "100032",
+      "country": "NG"
+    },
+    {
+      "name": "Coronation Merchant Bank",
+      "slug": "cmfb",
+      "code": "559",
+      "nibss_bank_code": "060001",
+      "country": "NG"
+    },
+    {
+      "name": "Covenant Micro-finance Bank",
+      "slug": "covenant-mfb",
+      "code": "949",
+      "nibss_bank_code": "070006",
+      "country": "NG"
+    },
+    {
+      "name": "Credit Afrique Microfinance Bank",
+      "slug": "credit-afrique-mfb",
+      "code": "090159",
+      "nibss_bank_code": "090159",
+      "country": "NG"
+    },
+    {
+      "name": "Daylight Microfinance Bank",
+      "slug": "daylight-mfb",
+      "code": "090167",
+      "nibss_bank_code": "090167",
+      "country": "NG"
+    },
+    {
+      "name": "e-Barcs Microfinance Bank",
+      "slug": "e-barcs-mfb",
+      "code": "090156",
+      "nibss_bank_code": "090156",
+      "country": "NG"
+    },
+    {
+      "name": "Eagle Flight MFB",
+      "slug": "eagle-flight-mfb",
+      "code": "090294",
+      "nibss_bank_code": "090294",
+      "country": "NG"
+    },
+    {
+      "name": "Eartholeum",
+      "slug": "eartholeum",
+      "code": "935",
+      "nibss_bank_code": "100021",
+      "country": "NG"
+    },
+    {
+      "name": "Ecobank",
+      "slug": "eco",
+      "code": "050",
+      "nibss_bank_code": "000010",
+      "country": "NG"
+    },
+    {
+      "name": "Ecobank Express Account",
+      "slug": "ecobank-express-account",
+      "code": "922",
+      "nibss_bank_code": "100008",
+      "country": "NG"
+    },
+    {
+      "name": "Ecobank Mobile",
+      "slug": "ecobank-mobile",
+      "code": "307",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "Edfin MFB",
+      "slug": "edfin-mfb",
+      "code": "090310",
+      "nibss_bank_code": "090310",
+      "country": "NG"
+    },
+    {
+      "name": "Ekondo MFB",
+      "slug": "ekondo-mfb",
+      "code": "090097",
+      "nibss_bank_code": "090097",
+      "country": "NG"
+    },
+    {
+      "name": "Emeralds Microfinance Bank",
+      "slug": "emeral-mfb",
+      "code": "090273",
+      "nibss_bank_code": "090273",
+      "country": "NG"
+    },
+    {
+      "name": "Empire Trust Micro-finance Bank",
+      "slug": "empire-trust-mfb",
+      "code": "913",
+      "nibss_bank_code": "090114",
+      "country": "NG"
+    },
+    {
+      "name": "Enterprise Bank",
+      "slug": "enterprise",
+      "code": "084",
+      "nibss_bank_code": "000019",
+      "country": "NG"
+    },
+    {
+      "name": "Esan Microfinance Bank",
+      "slug": "esan-mfb",
+      "code": "090189",
+      "nibss_bank_code": "090189",
+      "country": "NG"
+    },
+    {
+      "name": "Eso-E Microfinance Bank",
+      "slug": "eso-e-mfb",
+      "code": "090166",
+      "nibss_bank_code": "090166",
+      "country": "NG"
+    },
+    {
+      "name": "eTRANZACT",
+      "slug": "e-tranzact",
+      "code": "920",
+      "nibss_bank_code": "100006",
+      "country": "NG"
+    },
+    {
+      "name": "Evangel MFB",
+      "slug": "evangel-mfb",
+      "code": "090304",
+      "nibss_bank_code": "090304",
+      "country": "NG"
+    },
+    {
+      "name": "Evergreen MICROFINANCE BANK",
+      "slug": "evergreen-mfb",
+      "code": "090332",
+      "nibss_bank_code": "090332",
+      "country": "NG"
+    },
+    {
+      "name": "Eyowo MFB",
+      "slug": "eyowo-mfb",
+      "code": "090328",
+      "nibss_bank_code": "090328",
+      "country": "NG"
+    },
+    {
+      "name": "FAST Microfinance Bank",
+      "slug": "fast-mfb",
+      "code": "090179",
+      "nibss_bank_code": "090179",
+      "country": "NG"
+    },
+    {
+      "name": "FBN MOBILE",
+      "slug": "first-mobile",
+      "code": "309",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "FBN Mortgages Limited",
+      "slug": "fbn-mortgages-ltd",
+      "code": "090107",
+      "nibss_bank_code": "090107",
+      "country": "NG"
+    },
+    {
+      "name": "FBNQuest Merchant Bank",
+      "slug": "fbnquest-meb",
+      "code": "911",
+      "nibss_bank_code": "060002",
+      "country": "NG"
+    },
+    {
+      "name": "FCMB Easy Account",
+      "slug": "fcmb-easy-account",
+      "code": "100031",
+      "nibss_bank_code": "100031",
+      "country": "NG"
+    },
+    {
+      "name": "FCMB Plc",
+      "slug": "fcmb",
+      "code": "214",
+      "nibss_bank_code": "000003",
+      "country": "NG"
+    },
+    {
+      "name": "FCT MFB",
+      "slug": "fct-mfb",
+      "code": "090290",
+      "nibss_bank_code": "090290",
+      "country": "NG"
+    },
+    {
+      "name": "FEDERAL UNIVERSITY DUTSE MICROFINANCE BANK",
+      "slug": "fed-uni-duste-mfb",
+      "code": "090318",
+      "nibss_bank_code": "090318",
+      "country": "NG"
+    },
+    {
+      "name": "FederalPoly NasarawaMFB",
+      "slug": "federalPoly-nasarawa-mfb",
+      "code": "090298",
+      "nibss_bank_code": "090298",
+      "country": "NG"
+    },
+    {
+      "name": "FETS",
+      "slug": "fets",
+      "code": "915",
+      "nibss_bank_code": "100001",
+      "country": "NG"
+    },
+    {
+      "name": "FFS Microfinance Bank",
+      "slug": "ffs-mfb",
+      "code": "090153",
+      "nibss_bank_code": "090153",
+      "country": "NG"
+    },
+    {
+      "name": "Fidelity Bank",
+      "slug": "fidelity",
+      "code": "070",
+      "nibss_bank_code": "000007",
+      "country": "NG"
+    },
+    {
+      "name": "Fidelity Mobile",
+      "slug": "Fidelity-mobile",
+      "code": "933",
+      "nibss_bank_code": "100019",
+      "country": "NG"
+    },
+    {
+      "name": "Fidfund Microfinance Bank",
+      "slug": "fidfund-mfb",
+      "code": "090126",
+      "nibss_bank_code": "090126",
+      "country": "NG"
+    },
+    {
+      "name": "FINATRUST MICROFINANCE BANK",
+      "slug": "finatrust-mfb",
+      "code": "090111",
+      "nibss_bank_code": "090111",
+      "country": "NG"
+    },
+    {
+      "name": "Firmus MFB",
+      "slug": "firmus-mfb",
+      "code": "090366",
+      "nibss_bank_code": "090366",
+      "country": "NG"
+    },
+    {
+      "name": "First Bank of Nigeria",
+      "slug": "firstbank",
+      "code": "011",
+      "nibss_bank_code": "000016",
+      "country": "NG"
+    },
+    {
+      "name": "First Generation Mortgage Bank",
+      "slug": "first-gen-mb",
+      "code": "070014",
+      "nibss_bank_code": "070014",
+      "country": "NG"
+    },
+    {
+      "name": "First Multiple MFB",
+      "slug": "first-multiple-mfb",
+      "code": "090163",
+      "nibss_bank_code": "090163",
+      "country": "NG"
+    },
+    {
+      "name": "First Option MFB",
+      "slug": "first-option-mfb",
+      "code": "090285",
+      "nibss_bank_code": "090285",
+      "country": "NG"
+    },
+    {
+      "name": "First Royal Microfinance Bank",
+      "slug": "first-royal-mfb",
+      "code": "090164",
+      "nibss_bank_code": "090164",
+      "country": "NG"
+    },
+    {
+      "name": "First Trust Mortgage Bank Plc",
+      "slug": "first-trust-mob",
+      "code": "910",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "FirstMonie Wallet",
+      "slug": "firstMonie-wallet",
+      "code": "928",
+      "nibss_bank_code": "100014",
+      "country": "NG"
+    },
+    {
+      "name": "Flutterwave Technology Solutions Limited",
+      "slug": "flutterwave",
+      "code": "110002",
+      "nibss_bank_code": "110002",
+      "country": "NG"
+    },
+    {
+      "name": "Fortis Micro-finance Bank",
+      "slug": "fortis-mfb",
+      "code": "948",
+      "nibss_bank_code": "070002",
+      "country": "NG"
+    },
+    {
+      "name": "Fortis Mobile",
+      "slug": "fortis-mobile",
+      "code": "930",
+      "nibss_bank_code": "100016",
+      "country": "NG"
+    },
+    {
+      "name": "FSDH Merchant Bank",
+      "slug": "fsdh",
+      "code": "601",
+      "nibss_bank_code": "400001",
+      "country": "NG"
+    },
+    {
+      "name": "Fullrange Microfinance Bank",
+      "slug": "fullrange-mfb",
+      "code": "090145",
+      "nibss_bank_code": "090145",
+      "country": "NG"
+    },
+    {
+      "name": "Futo Microfinance Bank",
+      "slug": "futo-mfb",
+      "code": "090158",
+      "nibss_bank_code": "090158",
+      "country": "NG"
+    },
+    {
+      "name": "Gashua Microfinance Bank",
+      "slug": "gashua-mfb",
+      "code": "090168",
+      "nibss_bank_code": "090168",
+      "country": "NG"
+    },
+    {
+      "name": "Gateway Mortgage Bank",
+      "slug": "gateway-mb",
+      "code": "070009",
+      "nibss_bank_code": "070009",
+      "country": "NG"
+    },
+    {
+      "name": "Globus Bank",
+      "slug": "globus-bank",
+      "code": "103",
+      "nibss_bank_code": "000027",
+      "country": "NG"
+    },
+    {
+      "name": "Glory MFB",
+      "slug": "glory-mfb",
+      "code": "090278",
+      "nibss_bank_code": "090278",
+      "country": "NG"
+    },
+    {
+      "name": "GoMoney",
+      "slug": "go-money",
+      "code": "100022",
+      "nibss_bank_code": "100022",
+      "country": "NG"
+    },
+    {
+      "name": "Gowans Microfinance Bank",
+      "slug": "gowans-mfb",
+      "code": "090122",
+      "nibss_bank_code": "090122",
+      "country": "NG"
+    },
+    {
+      "name": "GreenBank Microfinance Bank",
+      "slug": "greenbank-mfb",
+      "code": "090178",
+      "nibss_bank_code": "090178",
+      "country": "NG"
+    },
+    {
+      "name": "Greenville Microfinance Bank",
+      "slug": "greenville-mfb",
+      "code": "090269",
+      "nibss_bank_code": "090269",
+      "country": "NG"
+    },
+    {
+      "name": "Greenwich Merchant Bank",
+      "slug": "greenwich-mb",
+      "code": "060004",
+      "nibss_bank_code": "060004",
+      "country": "NG"
+    },
+    {
+      "name": "Grooming Microfinance Bank",
+      "slug": "grooming-mfb",
+      "code": "090195",
+      "nibss_bank_code": "090195",
+      "country": "NG"
+    },
+    {
+      "name": "GT MOBILE",
+      "slug": "gt-mobile",
+      "code": "923",
+      "nibss_bank_code": "100009",
+      "country": "NG"
+    },
+    {
+      "name": "GTBank Mobile Money",
+      "slug": "gtb-mobile",
+      "code": "315",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "GTBank Plc",
+      "slug": "gtb",
+      "code": "058",
+      "nibss_bank_code": "000013",
+      "country": "NG"
+    },
+    {
+      "name": "Hackman Microfinance Bank",
+      "slug": "hackman-mfb",
+      "code": "090147",
+      "nibss_bank_code": "090147",
+      "country": "NG"
+    },
+    {
+      "name": "Haggai Mortgage Bank Limited",
+      "slug": "haggai-mb",
+      "code": "070017",
+      "nibss_bank_code": "070017",
+      "country": "NG"
+    },
+    {
+      "name": "Hala MFB",
+      "slug": "hala-mfb",
+      "code": "090291",
+      "nibss_bank_code": "090291",
+      "country": "NG"
+    },
+    {
+      "name": "Hasal Micro-finance Bank",
+      "slug": "hasal-mfb",
+      "code": "958",
+      "nibss_bank_code": "090121",
+      "country": "NG"
+    },
+    {
+      "name": "Hedonmark",
+      "slug": "hedonmark",
+      "code": "931",
+      "nibss_bank_code": "100017",
+      "country": "NG"
+    },
+    {
+      "name": "Heritage Bank",
+      "slug": "heritage",
+      "code": "030",
+      "nibss_bank_code": "000020",
+      "country": "NG"
+    },
+    {
+      "name": "IBILE Microfinance Bank",
+      "slug": "ibile-mfb",
+      "code": "090118",
+      "nibss_bank_code": "090118",
+      "country": "NG"
+    },
+    {
+      "name": "IKENNE MFB",
+      "slug": "ikenne-mfb",
+      "code": "090324",
+      "nibss_bank_code": "090324",
+      "country": "NG"
+    },
+    {
+      "name": "Ikire MFB",
+      "slug": "ikire-mfb",
+      "code": "090279",
+      "nibss_bank_code": "090279",
+      "country": "NG"
+    },
+    {
+      "name": "Imo State Microfinance Bank",
+      "slug": "imo-state-mfb",
+      "code": "090258",
+      "nibss_bank_code": "090258",
+      "country": "NG"
+    },
+    {
+      "name": "Imperial Homes Mortgage Bank",
+      "slug": "imperial-homes-mob",
+      "code": "938",
+      "nibss_bank_code": "100024",
+      "country": "NG"
+    },
+    {
+      "name": "Infinity Microfinance Bank",
+      "slug": "infinity-mfb",
+      "code": "090157",
+      "nibss_bank_code": "090157",
+      "country": "NG"
+    },
+    {
+      "name": "Infinity Trust Mortgage Bank",
+      "slug": "infinity-mb",
+      "code": "070016",
+      "nibss_bank_code": "070016",
+      "country": "NG"
+    },
+    {
+      "name": "Innovectives Kesh",
+      "slug": "innovectives-kesh",
+      "code": "100029",
+      "nibss_bank_code": "100029",
+      "country": "NG"
+    },
+    {
+      "name": "Intellfin",
+      "slug": "intellfin",
+      "code": "941",
+      "nibss_bank_code": "100027",
+      "country": "NG"
+    },
+    {
+      "name": "IRL Microfinance Bank",
+      "slug": "irl-mfb",
+      "code": "090149",
+      "nibss_bank_code": "090149",
+      "country": "NG"
+    },
+    {
+      "name": "JAIZ Bank",
+      "slug": "jaiz",
+      "code": "301",
+      "nibss_bank_code": "000006",
+      "country": "NG"
+    },
+    {
+      "name": "Jubliee Life",
+      "slug": "jubliee-life",
+      "code": "906",
+      "nibss_bank_code": "090003",
+      "country": "NG"
+    },
+    {
+      "name": "Kadick Integration Limited",
+      "slug": "kadick-integration",
+      "code": "110008",
+      "nibss_bank_code": "110008",
+      "country": "NG"
+    },
+    {
+      "name": "Kadpoly MICROFINANCE BANK",
+      "slug": "kadpoly-mfb",
+      "code": "090320",
+      "nibss_bank_code": "090320",
+      "country": "NG"
+    },
+    {
+      "name": "KCMB Microfinance Bank",
+      "slug": "kcmb-mfb",
+      "code": "090191",
+      "nibss_bank_code": "090191",
+      "country": "NG"
+    },
+    {
+      "name": "Kegow",
+      "slug": "kegow",
+      "code": "100015",
+      "nibss_bank_code": "100015",
+      "country": "NG"
+    },
+    {
+      "name": "Keystone Bank",
+      "slug": "keystone",
+      "code": "082",
+      "nibss_bank_code": "000002",
+      "country": "NG"
+    },
+    {
+      "name": "Kontagora MFB",
+      "slug": "kontagora-mfb",
+      "code": "090299",
+      "nibss_bank_code": "090299",
+      "country": "NG"
+    },
+    {
+      "name": "Kuda Micro-finance Bank",
+      "slug": "kuda-mfb",
+      "code": "50211",
+      "nibss_bank_code": "090267",
+      "country": "NG"
+    },
+    {
+      "name": "La Fayette Microfinance Bank",
+      "slug": "la-fayette-mfb",
+      "code": "090155",
+      "nibss_bank_code": "090155",
+      "country": "NG"
+    },
+    {
+      "name": "Lagos Building Investment Company",
+      "slug": "lagos-building",
+      "code": "070012",
+      "nibss_bank_code": "070012",
+      "country": "NG"
+    },
+    {
+      "name": "Lapo Microfinance Bank",
+      "slug": "lapo-mfb",
+      "code": "090177",
+      "nibss_bank_code": "090177",
+      "country": "NG"
+    },
+    {
+      "name": "Lavender Microfinance Bank",
+      "slug": "lavender-mfb",
+      "code": "090271",
+      "nibss_bank_code": "090271",
+      "country": "NG"
+    },
+    {
+      "name": "Letshego MFB",
+      "slug": "letshego-mfb",
+      "code": "090420",
+      "nibss_bank_code": "090420",
+      "country": "NG"
+    },
+    {
+      "name": "Lovonus Microfinance Bank",
+      "slug": "lovonus-mfb",
+      "code": "090265",
+      "nibss_bank_code": "090265",
+      "country": "NG"
+    },
+    {
+      "name": "M36",
+      "slug": "m36",
+      "code": "100035",
+      "nibss_bank_code": "100035",
+      "country": "NG"
+    },
+    {
+      "name": "Moniepoint Microfinance Bank",
+      "slug": "moniepoint-mfb",
+      "code": "090405",
+      "nibss_bank_code": "090405",
+      "country": "NG"
+    },
+    {
+      "name": "Mainland MICROFINANCE BANK",
+      "slug": "mainland-mfb",
+      "code": "090323",
+      "nibss_bank_code": "090323",
+      "country": "NG"
+    },
+    {
+      "name": "Mainstreet Micro-finance Bank",
+      "slug": "mainstreet-mfb",
+      "code": "014",
+      "nibss_bank_code": "090171",
+      "country": "NG"
+    },
+    {
+      "name": "Malachy Microfinance Bank",
+      "slug": "malachy-mfb",
+      "code": "090174",
+      "nibss_bank_code": "090174",
+      "country": "NG"
+    },
+    {
+      "name": "Manny Microfinance bank",
+      "slug": "manny-mfb",
+      "code": "090383",
+      "nibss_bank_code": "090383",
+      "country": "NG"
+    },
+    {
+      "name": "MAUTECH Microfinance Bank",
+      "slug": "mautech-mfb",
+      "code": "090423",
+      "nibss_bank_code": "090423",
+      "country": "NG"
+    },
+    {
+      "name": "Mayfair MFB",
+      "slug": "mayfair-mfb",
+      "code": "090321",
+      "nibss_bank_code": "090321",
+      "country": "NG"
+    },
+    {
+      "name": "MayFresh Mortgage Bank",
+      "slug": "mayFresh-mortgage",
+      "code": "070019",
+      "nibss_bank_code": "070019",
+      "country": "NG"
+    },
+    {
+      "name": "Megapraise Microfinance Bank",
+      "slug": "megapraise-mfb",
+      "code": "090280",
+      "nibss_bank_code": "090280",
+      "country": "NG"
+    },
+    {
+      "name": "Meridian MFB",
+      "slug": "meridian-mfb",
+      "code": "090275",
+      "nibss_bank_code": "090275",
+      "country": "NG"
+    },
+    {
+      "name": "Microcred Microfinance Bank",
+      "slug": "microcred-mfb",
+      "code": "090136",
+      "nibss_bank_code": "090136",
+      "country": "NG"
+    },
+    {
+      "name": "Midland Microfinance Bank",
+      "slug": "midland-mfb",
+      "code": "090192",
+      "nibss_bank_code": "090192",
+      "country": "NG"
+    },
+    {
+      "name": "Mint-Finex Micro-finance Bank",
+      "slug": "mint-finex-mfb",
+      "code": "50304",
+      "nibss_bank_code": "090281",
+      "country": "NG"
+    },
+    {
+      "name": "Mkudi",
+      "slug": "mkudi",
+      "code": "100011",
+      "nibss_bank_code": "100011",
+      "country": "NG"
+    },
+    {
+      "name": "Money Trust Micro-finance Bank",
+      "slug": "money-trust-mfb",
+      "code": "963",
+      "nibss_bank_code": "090129",
+      "country": "NG"
+    },
+    {
+      "name": "MoneyBox",
+      "slug": "money-box",
+      "code": "934",
+      "nibss_bank_code": "100020",
+      "country": "NG"
+    },
+    {
+      "name": "Mutual Benefits Microfinance Bank",
+      "slug": "mutual-benefits-mfb",
+      "code": "090190",
+      "nibss_bank_code": "090190",
+      "country": "NG"
+    },
+    {
+      "name": "Mutual Trust Microfinance Bank",
+      "slug": "mutual-trust-mfb",
+      "code": "090151",
+      "nibss_bank_code": "090151",
+      "country": "NG"
+    },
+    {
+      "name": "Nagarta Microfinance Bank",
+      "slug": "nagarta-mfb",
+      "code": "090152",
+      "nibss_bank_code": "090152",
+      "country": "NG"
+    },
+    {
+      "name": "Navy Microfinance Bank",
+      "slug": "navy-mfb",
+      "code": "090263",
+      "nibss_bank_code": "090263",
+      "country": "NG"
+    },
+    {
+      "name": "Ndiorah Microfinance Bank",
+      "slug": "ndiorah-mfb",
+      "code": "090128",
+      "nibss_bank_code": "090128",
+      "country": "NG"
+    },
+    {
+      "name": "New Dawn Microfinance Bank",
+      "slug": "new-dawn-mfb",
+      "code": "090205",
+      "nibss_bank_code": "090205",
+      "country": "NG"
+    },
+    {
+      "name": "New Prudential Bank",
+      "slug": "new-prudential",
+      "code": "090108",
+      "nibss_bank_code": "090108",
+      "country": "NG"
+    },
+    {
+      "name": "NIP Virtual Bank",
+      "slug": "nip-vb",
+      "code": "999999",
+      "nibss_bank_code": "999999",
+      "country": "NG"
+    },
+    {
+      "name": "NIRSAL Microfinance Bank",
+      "slug": "nirsal-mfb",
+      "code": "090194",
+      "nibss_bank_code": "090194",
+      "country": "NG"
+    },
+    {
+      "name": "Nnew women MFB",
+      "slug": "nnew-women-mfb",
+      "code": "090283",
+      "nibss_bank_code": "090283",
+      "country": "NG"
+    },
+    {
+      "name": "Nova Merchant Bank",
+      "slug": "nova-meb",
+      "code": "637",
+      "nibss_bank_code": "060003",
+      "country": "NG"
+    },
+    {
+      "name": "NPF Micro-finance Bank",
+      "slug": "npf-mfb",
+      "code": "947",
+      "nibss_bank_code": "070001",
+      "country": "NG"
+    },
+    {
+      "name": "Oche MFB",
+      "slug": "oche-mfb",
+      "code": "090333",
+      "nibss_bank_code": "090333",
+      "country": "NG"
+    },
+    {
+      "name": "Ohafia Microfinance Bank",
+      "slug": "ohafia-mfb",
+      "code": "090119",
+      "nibss_bank_code": "090119",
+      "country": "NG"
+    },
+    {
+      "name": "Okpoga Microfinance Bank",
+      "slug": "okpoga-mfb",
+      "code": "090161",
+      "nibss_bank_code": "090161",
+      "country": "NG"
+    },
+    {
+      "name": "Olabisi Onabanjo University Microfinance Bank",
+      "slug": "olabisi-onabanjo-mfb",
+      "code": "090272",
+      "nibss_bank_code": "090272",
+      "country": "NG"
+    },
+    {
+      "name": "Omiye MFB",
+      "slug": "omiye-mfb",
+      "code": "090295",
+      "nibss_bank_code": "090295",
+      "country": "NG"
+    },
+    {
+      "name": "Omoluabi Mortgage Bank Plc",
+      "slug": "omoluabi-mob",
+      "code": "950",
+      "nibss_bank_code": "070007",
+      "country": "NG"
+    },
+    {
+      "name": "One Finance",
+      "slug": "one-finance",
+      "code": "940",
+      "nibss_bank_code": "100026",
+      "country": "NG"
+    },
+    {
+      "name": "Opay",
+      "slug": "paycom",
+      "code": "305",
+      "nibss_bank_code": "100004",
+      "country": "NG"
+    },
+    {
+      "name": "PAGA",
+      "slug": "paga",
+      "code": "916",
+      "nibss_bank_code": "100002",
+      "country": "NG"
+    },
+    {
+      "name": "Page Micro-finance Bank",
+      "slug": "page-mfb",
+      "code": "951",
+      "nibss_bank_code": "070008",
+      "country": "NG"
+    },
+    {
+      "name": "PALMPAY",
+      "slug": "palmpay",
+      "code": "100033",
+      "nibss_bank_code": "100033",
+      "country": "NG"
+    },
+    {
+      "name": "PARALLEX BANK",
+      "slug": "parallex",
+      "code": "526",
+      "nibss_bank_code": "000030",
+      "country": "NG"
+    },
+    {
+      "name": "Parkway",
+      "slug": "parkway",
+      "code": "311",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "ParkWay-ReadyCash",
+      "slug": "parkway-readycash",
+      "code": "917",
+      "nibss_bank_code": "100003",
+      "country": "NG"
+    },
+    {
+      "name": "Parralex Microfinance bank",
+      "slug": "parralex-mfb",
+      "code": "090004",
+      "nibss_bank_code": "090004",
+      "country": "NG"
+    },
+    {
+      "name": "PatrickGold Microfinance Bank",
+      "slug": "patrick-gold-mfb",
+      "code": "090317",
+      "nibss_bank_code": "090317",
+      "country": "NG"
+    },
+    {
+      "name": "PayAttitude Online",
+      "slug": "pay-attitude-online",
+      "code": "943",
+      "nibss_bank_code": "110001",
+      "country": "NG"
+    },
+    {
+      "name": "PecanTrust Microfinance Bank",
+      "slug": "pecanTrust-mfb",
+      "code": "090137",
+      "nibss_bank_code": "090137",
+      "country": "NG"
+    },
+    {
+      "name": "Pennywise Microfinance Bank",
+      "slug": "pennywise-mfb",
+      "code": "090196",
+      "nibss_bank_code": "090196",
+      "country": "NG"
+    },
+    {
+      "name": "Personal Trust Microfinance Bank",
+      "slug": "personal-trust-mfb",
+      "code": "090135",
+      "nibss_bank_code": "090135",
+      "country": "NG"
+    },
+    {
+      "name": "Petra Microfinance Bank",
+      "slug": "petra-mfb",
+      "code": "090165",
+      "nibss_bank_code": "090165",
+      "country": "NG"
+    },
+    {
+      "name": "Pillar MFB",
+      "slug": "pillar-mfb",
+      "code": "090289",
+      "nibss_bank_code": "090289",
+      "country": "NG"
+    },
+    {
+      "name": "Platinum Mortgage Bank",
+      "slug": "platinum-mb",
+      "code": "070013",
+      "nibss_bank_code": "070013",
+      "country": "NG"
+    },
+    {
+      "name": "Polaris Bank",
+      "slug": "polaris",
+      "code": "076",
+      "nibss_bank_code": "000008",
+      "country": "NG"
+    },
+    {
+      "name": "Polyuwanna MFB",
+      "slug": "polyuwanna-mfb",
+      "code": "090296",
+      "nibss_bank_code": "090296",
+      "country": "NG"
+    },
+    {
+      "name": "Prestige Microfinance bank",
+      "slug": "prestige-mfb",
+      "code": "090274",
+      "nibss_bank_code": "090274",
+      "country": "NG"
+    },
+    {
+      "name": "Providus Bank",
+      "slug": "providus",
+      "code": "101",
+      "nibss_bank_code": "000023",
+      "country": "NG"
+    },
+    {
+      "name": "Purplemoney MFB",
+      "slug": "purplemoney-mfb",
+      "code": "090303",
+      "nibss_bank_code": "090303",
+      "country": "NG"
+    },
+    {
+      "name": "Quickfund Microfinance Bank",
+      "slug": "quickfund-mfb",
+      "code": "090261",
+      "nibss_bank_code": "090261",
+      "country": "NG"
+    },
+    {
+      "name": "Rahama MFB",
+      "slug": "rahama-mfb",
+      "code": "090170",
+      "nibss_bank_code": "090170",
+      "country": "NG"
+    },
+    {
+      "name": "Rand Merchant Bank",
+      "slug": "rand-meb",
+      "code": "502",
+      "nibss_bank_code": "000024",
+      "country": "NG"
+    },
+    {
+      "name": "Refuge Mortgage Bank",
+      "slug": "refuge-mb",
+      "code": "070011",
+      "nibss_bank_code": "070011",
+      "country": "NG"
+    },
+    {
+      "name": "Regent Micro-finance Bank",
+      "slug": "regent-mfb",
+      "code": "955",
+      "nibss_bank_code": "090125",
+      "country": "NG"
+    },
+    {
+      "name": "Reliance Microfinance Bank",
+      "slug": "reliance-mfb",
+      "code": "090173",
+      "nibss_bank_code": "090173",
+      "country": "NG"
+    },
+    {
+      "name": "RenMoney Microfinance Bank",
+      "slug": "renmoney-mfb",
+      "code": "090198",
+      "nibss_bank_code": "090198",
+      "country": "NG"
+    },
+    {
+      "name": "Rephidim MICROFINANCE BANK",
+      "slug": "rephidim-mfb",
+      "code": "090322",
+      "nibss_bank_code": "090322",
+      "country": "NG"
+    },
+    {
+      "name": "Richway Microfinance Bank",
+      "slug": "richway-mfb",
+      "code": "090132",
+      "nibss_bank_code": "090132",
+      "country": "NG"
+    },
+    {
+      "name": "Royal Exchange Microfinance Bank",
+      "slug": "royal-exchange-mfb",
+      "code": "090138",
+      "nibss_bank_code": "090138",
+      "country": "NG"
+    },
+    {
+      "name": "Rubies Micro-finance Bank",
+      "slug": "rubies-mfb",
+      "code": "125",
+      "nibss_bank_code": "090175",
+      "country": "NG"
+    },
+    {
+      "name": "Safe Haven MFB",
+      "slug": "safe-haven-mfb",
+      "code": "090286",
+      "nibss_bank_code": "090286",
+      "country": "NG"
+    },
+    {
+      "name": "SafeTrust",
+      "slug": "safetrust",
+      "code": "909",
+      "nibss_bank_code": "090006",
+      "country": "NG"
+    },
+    {
+      "name": "Sagamu Micro-finance Bank",
+      "slug": "sagamu-mfb",
+      "code": "966",
+      "nibss_bank_code": "090140",
+      "country": "NG"
+    },
+    {
+      "name": "Seed Capital Micro-finance Bank",
+      "slug": "seed-capital-mfb",
+      "code": "609",
+      "nibss_bank_code": "090112",
+      "country": "NG"
+    },
+    {
+      "name": "Sparkle",
+      "slug": "sparkle",
+      "code": "090325",
+      "nibss_bank_code": "090325",
+      "country": "NG"
+    },
+    {
+      "name": "Stanbic IBTC @ease Wallet",
+      "slug": "stanbic-ibtc-ease-wallet",
+      "code": "921",
+      "nibss_bank_code": "100007",
+      "country": "NG"
+    },
+    {
+      "name": "Stanbic IBTC Bank",
+      "slug": "stanbic",
+      "code": "221",
+      "nibss_bank_code": "000012",
+      "country": "NG"
+    },
+    {
+      "name": "Stanbic Mobile",
+      "slug": "stanbic-mobile",
+      "code": "304",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "Standard Chartered Bank",
+      "slug": "standard-chartered",
+      "code": "068",
+      "nibss_bank_code": "000021",
+      "country": "NG"
+    },
+    {
+      "name": "Stanford Microfinance Bak",
+      "slug": "stanford-mfb",
+      "code": "090162",
+      "nibss_bank_code": "090162",
+      "country": "NG"
+    },
+    {
+      "name": "Stellas Microfinance Bank",
+      "slug": "stellas-mfb",
+      "code": "090262",
+      "nibss_bank_code": "090262",
+      "country": "NG"
+    },
+    {
+      "name": "Sterling Bank",
+      "slug": "sterling",
+      "code": "232",
+      "nibss_bank_code": "000001",
+      "country": "NG"
+    },
+    {
+      "name": "Sterling Mobile",
+      "slug": "sterling-mobile",
+      "code": "936",
+      "nibss_bank_code": null,
+      "country": "NG"
+    },
+    {
+      "name": "Sulsap MFB",
+      "slug": "sulsap-mfb",
+      "code": "090305",
+      "nibss_bank_code": "090305",
+      "country": "NG"
+    },
+    {
+      "name": "Suntrust Bank Nigeria Limited",
+      "slug": "suntrust",
+      "code": "100",
+      "nibss_bank_code": "000022",
+      "country": "NG"
+    },
+    {
+      "name": "TAGPAY",
+      "slug": "tagpay",
+      "code": "937",
+      "nibss_bank_code": "100023",
+      "country": "NG"
+    },
+    {
+      "name": "Taj Bank",
+      "slug": "taj",
+      "code": "302",
+      "nibss_bank_code": "000026",
+      "country": "NG"
+    },
+    {
+      "name": "TCF Micro-finance Bank",
+      "slug": "tcf-mfb",
+      "code": "567",
+      "nibss_bank_code": "090115",
+      "country": "NG"
+    },
+    {
+      "name": "Teasy MOBILE",
+      "slug": "teasy-mobile",
+      "code": "924",
+      "nibss_bank_code": "100010",
+      "country": "NG"
+    },
+    {
+      "name": "Titan Trust Bank",
+      "slug": "titan",
+      "code": "102",
+      "nibss_bank_code": "000025",
+      "country": "NG"
+    },
+    {
+      "name": "Trident Microfinance Bank",
+      "slug": "trident-mfb",
+      "code": "090146",
+      "nibss_bank_code": "090146",
+      "country": "NG"
+    },
+    {
+      "name": "Trust MFB",
+      "slug": "trust-mfb",
+      "code": "090327",
+      "nibss_bank_code": "090327",
+      "country": "NG"
+    },
+    {
+      "name": "Trustbond Mortgage Bank",
+      "slug": "trustbond-mb",
+      "code": "090005",
+      "nibss_bank_code": "090005",
+      "country": "NG"
+    },
+    {
+      "name": "Trustfund Microfinance Bank",
+      "slug": "trustfund-mfb",
+      "code": "090276",
+      "nibss_bank_code": "090276",
+      "country": "NG"
+    },
+    {
+      "name": "U AND C MFB",
+      "slug": "u-and-c-mfb",
+      "code": "090315",
+      "nibss_bank_code": "090315",
+      "country": "NG"
+    },
+    {
+      "name": "UNAAB MFB",
+      "slug": "unaab-mfb",
+      "code": "090331",
+      "nibss_bank_code": "090331",
+      "country": "NG"
+    },
+    {
+      "name": "Uniben Microfinance Bank",
+      "slug": "uniben-mfb",
+      "code": "090266",
+      "nibss_bank_code": "090266",
+      "country": "NG"
+    },
+    {
+      "name": "Unical Microfinance Bank",
+      "slug": "unical-mfb",
+      "code": "090193",
+      "nibss_bank_code": "090193",
+      "country": "NG"
+    },
+    {
+      "name": "Union Bank",
+      "slug": "unionbank",
+      "code": "032",
+      "nibss_bank_code": "000018",
+      "country": "NG"
+    },
+    {
+      "name": "Unity Bank",
+      "slug": "unity",
+      "code": "215",
+      "nibss_bank_code": "000011",
+      "country": "NG"
+    },
+    {
+      "name": "UNN MFB",
+      "slug": "unn-mfb",
+      "code": "090251",
+      "nibss_bank_code": "090251",
+      "country": "NG"
+    },
+    {
+      "name": "Verite Microfinance Bank",
+      "slug": "verite-mfb",
+      "code": "090123",
+      "nibss_bank_code": "090123",
+      "country": "NG"
+    },
+    {
+      "name": "VFD Micro-finance Bank",
+      "slug": "vfd-mfb",
+      "code": "566",
+      "nibss_bank_code": "090110",
+      "country": "NG"
+    },
+    {
+      "name": "Virtue Microfinance Bank",
+      "slug": "virtue-mfb",
+      "code": "090150",
+      "nibss_bank_code": "090150",
+      "country": "NG"
+    },
+    {
+      "name": "Visa Microfinance Bank",
+      "slug": "visa-mfb",
+      "code": "090139",
+      "nibss_bank_code": "090139",
+      "country": "NG"
+    },
+    {
+      "name": "VT Networks",
+      "slug": "vt-networks",
+      "code": "926",
+      "nibss_bank_code": "100012",
+      "country": "NG"
+    },
+    {
+      "name": "Wema Bank",
+      "slug": "wema",
+      "code": "035",
+      "nibss_bank_code": "000017",
+      "country": "NG"
+    },
+    {
+      "name": "WetLand Micro-finance Bank",
+      "slug": "wetland-mfb",
+      "code": "954",
+      "nibss_bank_code": "090120",
+      "country": "NG"
+    },
+    {
+      "name": "Xslnce Microfinance Bank",
+      "slug": "xslnce-mfb",
+      "code": "090124",
+      "nibss_bank_code": "090124",
+      "country": "NG"
+    },
+    {
+      "name": "Yes Microfinance Bank",
+      "slug": "yes-mfb",
+      "code": "090142",
+      "nibss_bank_code": "090142",
+      "country": "NG"
+    },
+    {
+      "name": "Zenith Bank Plc",
+      "slug": "zenith",
+      "code": "057",
+      "nibss_bank_code": "000015",
+      "country": "NG"
+    },
+    {
+      "name": "ZENITH Mobile",
+      "slug": "zenith-mobile",
+      "code": "322",
+      "nibss_bank_code": "100018",
+      "country": "NG"
+    },
+    {
+      "name": "ZINTERNET - KONGAPAY",
+      "slug": "zinternet-kongapay",
+      "code": "939",
+      "nibss_bank_code": "100025",
+      "country": "NG"
+    }
+]

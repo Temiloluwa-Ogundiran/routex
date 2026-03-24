@@ -1,0 +1,58 @@
+[
+  {
+    "id": "1",
+    "name": "Bitcoin",
+    "slug": "btc",
+    "blockchain": "bitcoin",
+    "standard": "native",
+    "symbol": "BTC"
+  },
+  {
+    "id": "2",
+    "name": "Ethereum",
+    "slug": "eth",
+    "blockchain": "ethereum",
+    "standard": "native",
+    "symbol": "ETH"
+  },
+  {
+    "id": "3",
+    "name": "Tether (ERC20)",
+    "slug": "usdt-erc20",
+    "blockchain": "ethereum",
+    "standard": "erc20",
+    "symbol": "USDT"
+  },
+  {
+    "id": "4",
+    "name": "Tether (TRC20)",
+    "slug": "usdt-trc20",
+    "blockchain": "tron",
+    "standard": "trc20",
+    "symbol": "USDT"
+  },
+  {
+    "id": "5",
+    "name": "Tether (BEP20)",
+    "slug": "usdt-bep20",
+    "blockchain": "bsc",
+    "standard": "bep20",
+    "symbol": "USDT"
+  },
+  {
+    "id": "6",
+    "name": "Tether (SPL)",
+    "slug": "usdt-spl",
+    "blockchain": "solana",
+    "standard": "spl",
+    "symbol": "USDT"
+  },
+  {
+    "id": "7",
+    "name": "Solana",
+    "slug": "sol",
+    "blockchain": "solana",
+    "standard": "native",
+    "symbol": "SOL"
+  }
+]

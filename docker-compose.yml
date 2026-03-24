@@ -1,0 +1,181 @@
+services:
+
+  # ─────────────────────────────────────────────
+  # Infrastructure
+  # ─────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: xaggregator
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - default
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - default
+
+  # ─────────────────────────────────────────────
+  # FastAPI application
+  # Runs migrations then starts uvicorn
+  # dashboard.xoropay.com → port 8100
+  # ─────────────────────────────────────────────
+  api:
+    build: .
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn main:app --host 0.0.0.0 --port 8100"
+    ports:
+      - "8100:8100"
+    env_file:
+      - .env
+    environment:
+      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/xaggregator
+      REDIS_URL: redis://redis:6379
+      SERVER_URL: https://merchant.xoropay.com
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.xagg-merchant.rule=Host(`merchant.xoropay.com`)"
+      - "traefik.http.routers.xagg-merchant.entrypoints=websecure"
+      - "traefik.http.routers.xagg-merchant.tls=true"
+      - "traefik.http.routers.xagg-merchant.tls.certresolver=letsencrypt"
+      - "traefik.http.services.xagg-merchant.loadbalancer.server.port=8100"
+      - "traefik.docker.network=dokploy-network"
+
+  # ─────────────────────────────────────────────
+  # FastAPI v1 — merchant-facing API (IS_V1=true)
+  # api.xoropay.com → port 8101
+  # ─────────────────────────────────────────────
+  api-v1:
+    build: .
+    command: >
+      sh -c "uvicorn main:app --host 0.0.0.0 --port 8101"
+    ports:
+      - "8101:8101"
+    env_file:
+      - .env
+    environment:
+      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/xaggregator
+      REDIS_URL: redis://redis:6379
+      SERVER_URL: https://api.xoropay.com
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - default
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.xagg-api.rule=Host(`api.xoropay.com`)"
+      - "traefik.http.routers.xagg-api.entrypoints=websecure"
+      - "traefik.http.routers.xagg-api.tls=true"
+      - "traefik.http.routers.xagg-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.xagg-api.loadbalancer.server.port=8101"
+      - "traefik.docker.network=dokploy-network"
+
+  # ─────────────────────────────────────────────
+  # Celery — payout worker
+  # Queues: payout_queue  (bulk payouts)
+  # ─────────────────────────────────────────────
+  worker-payout:
+    build: .
+    command: >
+      celery -A celery_worker.celery_app worker
+      -Q payout_queue
+      --loglevel=info
+      --concurrency=4
+      -n payout@%h
+    env_file:
+      - .env
+    environment:
+      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/xaggregator
+      REDIS_URL: redis://redis:6379
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - default
+
+  # ─────────────────────────────────────────────
+  # Celery — expiry worker
+  # Queues: expiry_queue  (transaction TTL)
+  # ─────────────────────────────────────────────
+  worker-expiry:
+    build: .
+    command: >
+      celery -A celery_worker.celery_app worker
+      -Q expiry_queue
+      --loglevel=info
+      --concurrency=2
+      -n expiry@%h
+    env_file:
+      - .env
+    environment:
+      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/xaggregator
+      REDIS_URL: redis://redis:6379
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - default
+
+  # Webhook delivery moved to asyncio.create_task in webhookService.py — no worker needed
+
+  # ─────────────────────────────────────────────
+  # Flower — Celery monitoring UI
+  # ─────────────────────────────────────────────
+  flower:
+    build: .
+    command: >
+      celery -A celery_worker.celery_app flower
+      --port=8102
+    ports:
+      - "8102:8102"
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - default
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    driver: bridge
+  dokploy-network:
+    external: true
