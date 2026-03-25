@@ -13,3 +13,7 @@ build
 .mypy_cache
 .ruff_cache
 *.log
+frontend/node_modules
+frontend/.next
+frontend/test-results
+frontend/playwright-report
