@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { BrowserMockup } from "../ui/browser-mockup";
-import { PushButton } from "../ui/push-button";
 import { SectionBadge } from "../ui/section-badge";
 
 export function HeroSection() {
@@ -16,8 +16,12 @@ export function HeroSection() {
           and visibility across Nigeria&apos;s leading payment rails.
         </p>
         <div className="hero-actions">
-          <PushButton>Try Sandbox</PushButton>
-          <PushButton variant="secondary">View API Docs</PushButton>
+          <Link className="push-button push-button--primary" href="/#quickstart">
+            Try Sandbox
+          </Link>
+          <Link className="push-button push-button--secondary" href="/docs">
+            View API Docs
+          </Link>
         </div>
         <div className="hero-meta">
           <span>NGN-first</span>

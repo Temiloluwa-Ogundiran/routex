@@ -1,4 +1,4 @@
-import { PushButton } from "../ui/push-button";
+import Link from "next/link";
 
 export function FinalCta() {
   return (
@@ -10,8 +10,12 @@ export function FinalCta() {
           before you wire in production.
         </p>
         <div className="hero-actions">
-          <PushButton>Start in Sandbox</PushButton>
-          <PushButton variant="secondary">View API Docs</PushButton>
+          <Link className="push-button push-button--primary" href="/#quickstart">
+            Start in Sandbox
+          </Link>
+          <Link className="push-button push-button--secondary" href="/docs">
+            View API Docs
+          </Link>
         </div>
       </div>
     </section>

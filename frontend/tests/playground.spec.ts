@@ -1,10 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-test("sandbox playground renders on the landing page", async ({ page }) => {
+test("sandbox playground shows a disabled state when sandbox wiring is missing", async ({
+  page,
+}) => {
   await page.goto("http://127.0.0.1:3000");
 
-  await expect(page.getByText("Sandbox only")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Send Request" })).toBeVisible();
+  await expect(page.getByText("Sandbox unavailable", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(/sandbox requests are disabled until routex_api_base_url/i),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Sandbox Unavailable" }),
+  ).toBeDisabled();
 });
 
 test("verify tab reflects the public api contract", async ({ page }) => {
@@ -17,7 +24,23 @@ test("verify tab reflects the public api contract", async ({ page }) => {
       name: "GET /api/v1/transactions/verify",
     }),
   ).toBeVisible();
+});
 
-  await page.getByRole("button", { name: "Send Request" }).click();
-  await expect(page.getByText('"method": "GET"')).toBeVisible();
+test("playground api returns a clear configuration error when sandbox wiring is missing", async ({
+  request,
+}) => {
+  const response = await request.post("http://127.0.0.1:3000/api/playground", {
+    data: {
+      endpointId: "initiate",
+      payload: {
+        reference: "ORD_1001",
+      },
+    },
+  });
+
+  expect(response.status()).toBe(503);
+  await expect(response.json()).resolves.toMatchObject({
+    live: false,
+    sandbox: true,
+  });
 });

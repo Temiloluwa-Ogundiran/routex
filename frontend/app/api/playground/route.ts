@@ -26,7 +26,11 @@ function buildSearchParams(payload: unknown) {
       continue;
     }
 
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    if (
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
       params.set(key, String(value));
       continue;
     }
@@ -47,42 +51,6 @@ async function parseBackendResponse(response: Response) {
   return {
     status: response.ok,
     message: await response.text(),
-  };
-}
-
-function buildMockResponse(endpointId: PlaygroundEndpointId, payload: unknown) {
-  if (endpointId === "initiate") {
-    return {
-      status: true,
-      message: "Sandbox collection initialized",
-      selected_gateway: "fltw",
-      checkout_url: "https://sandbox.routex.dev/checkout/abc123",
-      gateway_reference: "fltw_demo_abc123",
-      request: payload,
-    };
-  }
-
-  if (endpointId === "verify") {
-    return {
-      status: true,
-      message: "Sandbox verification complete",
-      data: {
-        reference: "ORD_1001",
-        status: "success",
-        selected_gateway: "pstk",
-        amount: 25000,
-        currency: "NGN",
-      },
-      request: payload,
-    };
-  }
-
-  return {
-    status: true,
-    message: "Sandbox payout accepted",
-    selected_gateway: "kora",
-    gateway_reference: "kora_demo_9001",
-    request: payload,
   };
 }
 
@@ -108,49 +76,63 @@ export async function POST(request: Request) {
   const apiBaseUrl = getApiBaseUrl();
   const secretKey = getPlaygroundSecretKey();
 
-  if (apiBaseUrl && secretKey) {
-    const targetUrl = new URL(`${apiBaseUrl}${endpoint.path}`);
-
-    if (endpoint.method === "GET") {
-      targetUrl.search = buildSearchParams(body.payload).toString();
-    }
-
-    try {
-      const response = await fetch(targetUrl.toString(), {
+  if (!apiBaseUrl || !secretKey) {
+    return NextResponse.json(
+      {
+        sandbox: true,
+        live: false,
+        endpoint: endpoint.path,
         method: endpoint.method,
-        headers: {
-          Authorization: `Bearer ${secretKey}`,
-          ...(endpoint.method === "POST"
-            ? { "Content-Type": "application/json" }
-            : {}),
-        },
-        body:
-          endpoint.method === "POST"
-            ? JSON.stringify(body.payload ?? {})
-            : undefined,
-        cache: "no-store",
-      });
-
-      return NextResponse.json(
-        {
-          sandbox: true,
-          live: true,
-          endpoint: endpoint.path,
-          method: endpoint.method,
-          result: await parseBackendResponse(response),
-        },
-        { status: response.status },
-      );
-    } catch {
-      // fall through to demo mode if the backend proxy is unavailable
-    }
+        message:
+          "Sandbox testing is unavailable until ROUTEX_API_BASE_URL and ROUTEX_PLAYGROUND_SECRET_KEY are configured on the frontend server.",
+      },
+      { status: 503 },
+    );
   }
 
-  return NextResponse.json({
-    sandbox: true,
-    live: false,
-    endpoint: endpoint.path,
-    method: endpoint.method,
-    result: buildMockResponse(body.endpointId, body.payload),
-  });
+  const targetUrl = new URL(`${apiBaseUrl}${endpoint.path}`);
+
+  if (endpoint.method === "GET") {
+    targetUrl.search = buildSearchParams(body.payload).toString();
+  }
+
+  try {
+    const response = await fetch(targetUrl.toString(), {
+      method: endpoint.method,
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        ...(endpoint.method === "POST"
+          ? { "Content-Type": "application/json" }
+          : {}),
+      },
+      body:
+        endpoint.method === "POST"
+          ? JSON.stringify(body.payload ?? {})
+          : undefined,
+      cache: "no-store",
+    });
+
+    return NextResponse.json(
+      {
+        sandbox: true,
+        live: true,
+        endpoint: endpoint.path,
+        method: endpoint.method,
+        result: await parseBackendResponse(response),
+      },
+      { status: response.status },
+    );
+  } catch {
+    return NextResponse.json(
+      {
+        sandbox: true,
+        live: false,
+        endpoint: endpoint.path,
+        method: endpoint.method,
+        message:
+          "The frontend could not reach the backend sandbox right now. Confirm the API is deployed and reachable from the frontend container.",
+      },
+      { status: 502 },
+    );
+  }
 }

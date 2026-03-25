@@ -1,9 +1,11 @@
 type ResponsePanelProps = {
+  isAvailable: boolean;
   isPending: boolean;
   responseBody: string;
 };
 
 export function ResponsePanel({
+  isAvailable,
   isPending,
   responseBody,
 }: ResponsePanelProps) {
@@ -19,7 +21,9 @@ export function ResponsePanel({
             Sending
           </span>
         ) : (
-          <span className="playground-status-chip">Ready</span>
+          <span className="playground-status-chip">
+            {isAvailable ? "Ready" : "Unavailable"}
+          </span>
         )}
       </div>
       <pre className="playground-response">{responseBody}</pre>

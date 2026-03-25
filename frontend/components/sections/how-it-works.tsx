@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const STEPS = [
   {
     number: "1",
@@ -25,9 +27,9 @@ export function HowItWorks() {
           <h2>How It Works</h2>
           <p>Simple as 1-2-3.</p>
         </div>
-        <a className="inline-link" href="#docs">
+        <Link className="inline-link" href="/docs">
           See full API docs
-        </a>
+        </Link>
       </div>
 
       <div className="steps-grid">

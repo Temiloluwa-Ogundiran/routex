@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -13,22 +15,22 @@ export function SiteFooter() {
         <div>
           <p className="site-footer__eyebrow">Product</p>
           <a href="#product">Routing</a>
-          <a href="#dashboard">Dashboard</a>
-          <a href="#sandbox">Sandbox</a>
+          <Link href="/dashboard">Dashboard</Link>
+          <Link href="/#quickstart">Sandbox</Link>
         </div>
 
         <div>
           <p className="site-footer__eyebrow">Developers</p>
-          <a href="#docs">API Reference</a>
+          <Link href="/docs">API Reference</Link>
           <a href="#quickstart">Quickstart</a>
-          <a href="#status">Status</a>
+          <Link href="/admin">Status</Link>
         </div>
 
         <div>
           <p className="site-footer__eyebrow">Company</p>
-          <a href="#privacy">Privacy</a>
-          <a href="#terms">Terms</a>
-          <a href="#contact">Contact</a>
+          <Link href="/signup">Create Account</Link>
+          <Link href="/login">Log In</Link>
+          <Link href="/admin/login">Admin Login</Link>
         </div>
       </div>
     </footer>

@@ -1,54 +1,196 @@
-import type { ApiReferenceGroup } from "../../lib/openapi";
+import type {
+  ApiReferenceEndpoint,
+  ApiReferenceField,
+  ApiReferenceGroup,
+  ApiReferenceResponse,
+} from "../../lib/openapi";
 import { SectionBadge } from "../ui/section-badge";
 
 type ReferenceShellProps = {
+  baseUrl: string | null;
   groups: ApiReferenceGroup[];
   sourceLabel: string;
-  sourceMode: "live" | "fallback";
+  sourceMode: "live" | "unavailable";
+  unavailableReason: string | null;
 };
 
+function FieldTable({
+  title,
+  fields,
+}: {
+  title: string;
+  fields: ApiReferenceField[];
+}) {
+  if (fields.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="docs-subsection">
+      <div className="docs-subsection__header">
+        <h4>{title}</h4>
+        <span>{fields.length} fields</span>
+      </div>
+      <div className="docs-table-shell">
+        <div className="docs-table docs-table--header">
+          <span>Field</span>
+          <span>Type</span>
+          <span>Required</span>
+          <span>Description</span>
+          <span>Example</span>
+        </div>
+        {fields.map((field) => (
+          <div className="docs-table" key={`${field.location}-${field.name}`}>
+            <span className="docs-table__field">{field.name}</span>
+            <span>{field.type}</span>
+            <span>{field.required ? "Yes" : "No"}</span>
+            <span>{field.description}</span>
+            <span>{field.example ?? "N/A"}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ResponseCards({ responses }: { responses: ApiReferenceResponse[] }) {
+  return (
+    <section className="docs-subsection">
+      <div className="docs-subsection__header">
+        <h4>Responses</h4>
+        <span>{responses.length} variants</span>
+      </div>
+      <div className="docs-response-grid">
+        {responses.map((response) => (
+          <article className="docs-response-card" key={`${response.statusCode}-${response.title}`}>
+            <div className="docs-response-card__header">
+              <span className="docs-endpoint__method">HTTP {response.statusCode}</span>
+              <strong>{response.title}</strong>
+            </div>
+            <p>{response.description}</p>
+            <pre className="docs-code-block">{response.body}</pre>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function EndpointCard({ endpoint }: { endpoint: ApiReferenceEndpoint }) {
+  return (
+    <article className="docs-endpoint-card" id={endpoint.id}>
+      <div className="docs-endpoint-card__hero">
+        <div className="docs-endpoint-card__headline">
+          <div className="docs-endpoint-card__badges">
+            <span className="docs-endpoint__method">{endpoint.method}</span>
+            <span className="docs-endpoint__auth">{endpoint.auth}</span>
+          </div>
+          <h3>{endpoint.title}</h3>
+          <code>{endpoint.path}</code>
+        </div>
+        <p>{endpoint.description}</p>
+      </div>
+
+      <div className="docs-endpoint-card__grid">
+        <div className="docs-endpoint-card__stack">
+          <FieldTable title="Query parameters" fields={endpoint.queryParameters} />
+          <FieldTable title="Request body" fields={endpoint.requestFields} />
+
+          {endpoint.requestExample ? (
+            <section className="docs-subsection">
+              <div className="docs-subsection__header">
+                <h4>Request payload</h4>
+                <span>JSON</span>
+              </div>
+              <pre className="docs-code-block">{endpoint.requestExample}</pre>
+            </section>
+          ) : null}
+        </div>
+
+        <div className="docs-endpoint-card__stack">
+          <section className="docs-subsection">
+            <div className="docs-subsection__header">
+              <h4>cURL</h4>
+              <span>Ready to copy</span>
+            </div>
+            <pre className="docs-code-block">{endpoint.curlExample}</pre>
+          </section>
+
+          <ResponseCards responses={endpoint.responses} />
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export function ReferenceShell({
+  baseUrl,
   groups,
   sourceLabel,
   sourceMode,
+  unavailableReason,
 }: ReferenceShellProps) {
   return (
     <section className="docs-shell">
       <div className="docs-shell__hero">
         <SectionBadge>API Reference</SectionBadge>
-        <h1>Build once. Route across every supported gateway.</h1>
+        <h1>RouteX API docs built from the live public contract.</h1>
         <p>
-          The docs shell mirrors the RouteX brand and builds from the sanitized
-          public OpenAPI export whenever the backend is available.
+          Integrate once for collections, verification, payouts, hosted checkout
+          continuations, and public operational utilities. Every example below
+          is sourced from the backend&apos;s sanitized OpenAPI export.
         </p>
         <div className="docs-shell__meta">
+          <span>Base URL</span>
+          <code>{baseUrl ?? "Not configured"}</code>
           <span>OpenAPI source</span>
           <code>{sourceLabel}</code>
           <span className="playground-status-chip">
-            {sourceMode === "live" ? "Live spec" : "Fallback catalog"}
+            {sourceMode === "live" ? "Live spec" : "Spec unavailable"}
           </span>
         </div>
       </div>
 
-      <div className="docs-shell__grid">
-        {groups.map((group) => (
-          <section className="docs-card" key={group.title}>
-            <p className="docs-card__eyebrow">{group.title}</p>
-            <p className="docs-card__copy">{group.description}</p>
-            <div className="docs-card__list">
+      <div className="docs-summary-grid">
+        <article className="docs-summary-card">
+          <p className="docs-card__eyebrow">Authentication</p>
+          <h2>Merchant API calls use your secret key.</h2>
+          <p>
+            Send `Authorization: Bearer ROUTEX_TEST_xxx` or
+            `Authorization: Bearer ROUTEX_LIVE_xxx` for collections, payouts,
+            and transaction verification.
+          </p>
+        </article>
+        <article className="docs-summary-card">
+          <p className="docs-card__eyebrow">Webhook note</p>
+          <h2>Public docs stay public. Operational callbacks hit the backend.</h2>
+          <p>
+            Hosted checkout returns and provider webhooks should always point to
+            the backend domain, not the frontend site.
+          </p>
+        </article>
+      </div>
+
+      {sourceMode !== "live" ? (
+        <section className="docs-unavailable">
+          <h2>Public API reference unavailable</h2>
+          <p>{unavailableReason}</p>
+        </section>
+      ) : (
+        groups.map((group) => (
+          <section className="docs-group" key={group.title}>
+            <div className="docs-group__header">
+              <p className="docs-card__eyebrow">{group.title}</p>
+              <h2>{group.description}</h2>
+            </div>
+            <div className="docs-group__stack">
               {group.endpoints.map((endpoint) => (
-                <article className="docs-endpoint" key={endpoint.id}>
-                  <div className="docs-endpoint__method">{endpoint.method}</div>
-                  <div>
-                    <strong>{endpoint.path}</strong>
-                    <p>{endpoint.description}</p>
-                  </div>
-                </article>
+                <EndpointCard endpoint={endpoint} key={endpoint.id} />
               ))}
             </div>
           </section>
-        ))}
-      </div>
+        ))
+      )}
     </section>
   );
 }

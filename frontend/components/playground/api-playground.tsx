@@ -16,8 +16,23 @@ function formatJson(value: unknown) {
 }
 
 type ApiPlaygroundProps = {
-  mode: "live" | "demo";
+  mode: "live" | "disabled";
 };
+
+function buildReadyMessage(mode: ApiPlaygroundProps["mode"]) {
+  if (mode === "live") {
+    return {
+      status: "ready",
+      message: "Choose an endpoint and send a real sandbox request.",
+    };
+  }
+
+  return {
+    status: "unavailable",
+    message:
+      "Sandbox requests are disabled until ROUTEX_API_BASE_URL and ROUTEX_PLAYGROUND_SECRET_KEY are configured on the frontend server.",
+  };
+}
 
 export function ApiPlayground({ mode }: ApiPlaygroundProps) {
   const [selectedId, setSelectedId] = useState<PlaygroundEndpointId>("initiate");
@@ -25,24 +40,30 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
     formatJson(getPlaygroundEndpoint("initiate")?.requestTemplate ?? {}),
   );
   const [responseBody, setResponseBody] = useState(
-    formatJson({
-      status: "ready",
-      message: "Choose an endpoint and send a sandbox request.",
-    }),
+    formatJson(buildReadyMessage(mode)),
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const selectedEndpoint = getPlaygroundEndpoint(selectedId);
+  const isLive = mode === "live";
 
   function handleEndpointChange(nextId: PlaygroundEndpointId) {
     const endpoint = getPlaygroundEndpoint(nextId);
     setSelectedId(nextId);
     setRequestBody(formatJson(endpoint?.requestTemplate ?? {}));
+    setResponseBody(formatJson(buildReadyMessage(mode)));
     setErrorMessage(null);
   }
 
   function handleSubmit() {
+    if (!isLive) {
+      setErrorMessage(
+        "Sandbox testing is disabled until the frontend is connected to a backend sandbox key.",
+      );
+      return;
+    }
+
     let parsedBody: unknown;
 
     try {
@@ -72,6 +93,17 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
 
     const json = await response.json();
     setResponseBody(formatJson(json));
+
+    if (!response.ok) {
+      setErrorMessage(
+        typeof json.message === "string"
+          ? json.message
+          : "Sandbox request failed.",
+      );
+      return;
+    }
+
+    setErrorMessage(null);
   }
 
   if (!selectedEndpoint) {
@@ -85,9 +117,10 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
           <SectionBadge>Sandbox Console</SectionBadge>
           <h2>Test the API without leaving the landing page.</h2>
           <p>
-            Try collections, verification, and payouts with prefilled payloads.
-            When sandbox credentials are configured, requests proxy to the
-            routed backend; otherwise the branded demo stub stays available.
+            Inspect the real request payloads for collections, verification, and
+            payouts. When sandbox credentials are configured, requests proxy to
+            the live backend. Otherwise the console stays read-only and points
+            you to the required setup.
           </p>
         </div>
         <a className="inline-link" href="/docs">
@@ -119,22 +152,33 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
             description={selectedEndpoint.description}
             endpoint={selectedEndpoint.path}
             method={selectedEndpoint.method}
-            statusLabel={mode === "live" ? "Live sandbox" : "Sandbox only"}
+            statusLabel={isLive ? "Live sandbox" : "Sandbox unavailable"}
             onBodyChange={setRequestBody}
           />
-          <ResponsePanel isPending={isPending} responseBody={responseBody} />
+          <ResponsePanel
+            isAvailable={isLive}
+            isPending={isPending}
+            responseBody={responseBody}
+          />
         </div>
 
         <div className="playground-actions">
           <PushButton
             className="playground-send-button"
-            disabled={isPending}
+            disabled={isPending || !isLive}
             onClick={handleSubmit}
             type="button"
           >
-            Send Request
+            {isLive ? "Send Request" : "Sandbox Unavailable"}
           </PushButton>
         </div>
+
+        {!isLive ? (
+          <p className="playground-hint">
+            Configure `ROUTEX_API_BASE_URL` and `ROUTEX_PLAYGROUND_SECRET_KEY`
+            on the frontend server to enable live sandbox calls.
+          </p>
+        ) : null}
 
         {errorMessage ? <p className="playground-error">{errorMessage}</p> : null}
       </div>

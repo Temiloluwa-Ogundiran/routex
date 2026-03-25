@@ -12,7 +12,7 @@ import { UseCases } from "../components/sections/use-cases";
 import { isLivePlaygroundConfigured } from "../lib/runtime-config";
 
 export default function HomePage() {
-  const playgroundMode = isLivePlaygroundConfigured() ? "live" : "demo";
+  const playgroundMode = isLivePlaygroundConfigured() ? "live" : "disabled";
 
   return (
     <div className="site-shell">
