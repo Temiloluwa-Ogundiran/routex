@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Security, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from services import merchantService, tokenService, transactionService, customerService
+from services import merchantService, tokenService, transactionService, customerService, routingService
 from external_services import koraService, paystackService, flutterwaveService
+from external_services.adapters import get_adapter
 from schemas.merchantSchema import MerchantCreateRequest, MerchantResponse, MerchantDetailResponse, MerchantGetRequest
 from tortoise.exceptions import DoesNotExist
 import json
@@ -66,6 +67,7 @@ security = HTTPBearer()  # this enables the "Authorize" button
 )
 async def initiate_checkout(
     payload: InitializeTransactionRequest,
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     session: AsyncSession = Depends(get_async_session)
 ):
@@ -85,37 +87,71 @@ async def initiate_checkout(
     if await transactionService.get_transaction_by_merchant_and_reference(merchant= merchant, reference= payload.reference, session= session):
         raise HTTPException(status_code = 400, detail = "Transaction reference not unique for merchant")
     
-    await customerService.add_get_or_create_customer(email= payload.customer.email, merchant= merchant, session= session)
     try:
-
-        response, status, charge_url = await koraService.initialize(
-            session= session,
-            email=payload.customer.email,
-            amount=payload.amount,
-            merchant=merchant,
+        decision = await routingService.build_routing_decision(
+            session=session,
+            operation="collection",
             currency=str(payload.currency),
-            reference = payload.reference,
-            redirect_url=payload.redirect_url,
-            notification_url=payload.notification_url,
-            metadata=payload.metadata,
-            mode = mode
+            amount=payload.amount,
+            merchant_id=merchant.id,
         )
-            
+        adapter = get_adapter(decision.selected_gateway)
+        adapter_kwargs = {
+            "session": session,
+            "email": payload.customer.email,
+            "amount": payload.amount,
+            "merchant": merchant,
+            "currency": str(payload.currency),
+            "reference": payload.reference,
+            "redirect_url": payload.redirect_url,
+            "notification_url": payload.notification_url,
+            "metadata": payload.metadata,
+            "narration": payload.narration,
+            "mode": mode,
+        }
+        if decision.selected_gateway == "isw":
+            adapter_kwargs["server_base_url"] = str(request.base_url).rstrip("/")
+
+        response, status, charge_url = await adapter.initialize_collection(**adapter_kwargs)
+        transaction = await transactionService.get_transaction_by_merchant_and_reference(
+            merchant=merchant,
+            reference=payload.reference,
+            session=session,
+        )
+        if not transaction:
+            raise HTTPException(status_code=500, detail="Routed transaction was not persisted")
+
+        audit, _ = await routingService.record_routing_result(
+            session=session,
+            transaction=transaction,
+            decision=decision,
+            operation="collection",
+            status="success" if status == 200 else "failed",
+            gateway_reference=transaction.processor_reference,
+            error_message=None if status == 200 else response.get("message"),
+        )
+
         if status == 200:
             data = {
                 'status': True,
                 'message': "Charge created successfully",
                 "reference": payload.reference,
                 "checkout_url": charge_url,
+                "selected_gateway": decision.selected_gateway,
+                "gateway_reference": transaction.processor_reference,
+                "routing": routingService.build_routing_metadata(audit.decision_id, decision),
             }
         else:
             data = {
                 'status': False,
                 'message': response.get("message"),
+                "reference": payload.reference,
+                "selected_gateway": decision.selected_gateway,
+                "gateway_reference": transaction.processor_reference,
+                "routing": routingService.build_routing_metadata(audit.decision_id, decision),
             }
         return JSONResponse(content=data, status_code=status)
     except Exception as e:
-        print(f"Exception occured here!!")
         return JSONResponse(content= {'details': f'{e}'}, status_code= 400)
     
 @initialize_router.post(

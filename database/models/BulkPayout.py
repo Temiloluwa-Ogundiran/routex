@@ -21,7 +21,7 @@ class BulkPayout(Base):
     reference = Column(String(100), unique=True, nullable=False)
     merchant_id = Column(String(50), ForeignKey("merchant.id"), nullable=True)
     status = Column(String(20), default=BulkPayoutStatus.PENDING)
-    transaction_details = Column(JSONB, nullable= True)
+    transaction_details = Column(JSONB().with_variant(JSON(), "sqlite"), nullable=True)
     remarks = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

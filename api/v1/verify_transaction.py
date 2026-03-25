@@ -10,7 +10,11 @@ from fastapi.responses import JSONResponse
 from schemas.v1Schema import *
 from enums import transactionEnums, tokenEnums
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from database.session import get_async_session
+from database.models.RoutingAttempt import RoutingAttempt
+from database.models.RoutingDecisionAudit import RoutingDecisionAudit
+from external_services.adapters import get_adapter
 
 verify_router = APIRouter()
 
@@ -96,10 +100,47 @@ async def verify(
         raise HTTPException(status_code=404, detail="Test domain can only see transactions in test mode")
 
     try:
+        selected_gateway = transaction.selected_gateway or transaction.processor
+        if selected_gateway == transactionEnums.TransactionProcessor.INTERSWITCH.value:
+            adapter = get_adapter(selected_gateway)
+            verify_response, verify_status = await adapter.verify_transaction(
+                session=session,
+                transaction=transaction,
+            )
+            if verify_status == 200:
+                from external_services import interswitchService
+
+                transaction.status = interswitchService.normalize_verify_status(
+                    verify_response,
+                    transaction.status,
+                )
+                transaction.details = {
+                    "gateway": selected_gateway,
+                    "verify_response": verify_response,
+                }
+                session.add(transaction)
+                await session.commit()
+                await session.refresh(transaction)
+
+        attempts_result = await session.execute(
+            select(RoutingAttempt)
+            .where(RoutingAttempt.transaction_id == transaction.id)
+            .order_by(RoutingAttempt.attempt_no.asc())
+        )
+        attempts = attempts_result.scalars().all()
+        decisions_result = await session.execute(
+            select(RoutingDecisionAudit)
+            .where(RoutingDecisionAudit.transaction_id == transaction.id)
+            .order_by(RoutingDecisionAudit.created_at.desc())
+        )
+        latest_decision = decisions_result.scalars().first()
+
         data = {
             "status": True,
             "message": "verification successful",
             "data": {
+                "reference": transaction.reference,
+                "status": transaction.status,
                 "domain": transaction.mode,
                 "type": transaction.type,
                 "amount": transaction.amount,
@@ -109,6 +150,18 @@ async def verify(
                 "metadata": transaction.metadata_payload,
                 "created_at": transaction.created_at,
                 "updated_at": transaction.updated_at,
+                "selected_gateway": selected_gateway or getattr(latest_decision, "selected_gateway", None),
+                "gateway_reference": transaction.processor_reference,
+                "attempts": [
+                    {
+                        "attempt_no": attempt.attempt_no,
+                        "gateway": attempt.gateway_code,
+                        "status": attempt.status,
+                        "gateway_reference": attempt.gateway_reference,
+                        "latency_ms": attempt.latency_ms,
+                    }
+                    for attempt in attempts
+                ],
                 "customer": {"email": transaction.customer.email} 
             }
         }

@@ -3,7 +3,7 @@ from asgiref.sync import async_to_sync
 from settings import REDIS_URL
 import requests
 from external_services import koraService
-from services import merchantService, transactionService, twilioService, receiptService, bulkpayoutService
+from services import merchantService, transactionService, twilioService, receiptService, bulkpayoutService, gatewayHealthService
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.pool import NullPool
 from settings import DB_URL
@@ -37,16 +37,38 @@ celery_app.conf.task_routes = {
     "services.celeryService.expire_transaction": {"queue": "expiry_queue"},
     "services.celeryService.process_bulk_payout_batch": {"queue": "payout_queue"},
     "services.celeryService.schedule_bulk_payouts": {"queue": "payout_queue"},
+    "services.celeryService.refresh_gateway_health_snapshots_task": {"queue": "default"},
     # Webhook delivery moved to asyncio.create_task in webhookService.py
     # "services.celeryService.send_webhook_task": {"queue": "webhook_queue"},
 }
 celery_app.conf.task_default_queue = "default"
+celery_app.conf.beat_schedule = {
+    "refresh-gateway-health-snapshots": {
+        "task": "services.celeryService.refresh_gateway_health_snapshots_task",
+        "schedule": 60.0,
+    },
+}
 
 _PAYOUT_BATCH_SIZE = 10  # process payouts in batches of 10 concurrently
 
 # ==========================
 # Bulk payout tasks
 # ==========================
+
+
+@celery_app.task(bind=True, max_retries=2)
+def refresh_gateway_health_snapshots_task(self):
+    try:
+        asyncio.run(_refresh_gateway_health_snapshots())
+    except Exception as exc:
+        logger.exception("Failed to refresh gateway health snapshots")
+        raise self.retry(exc=exc, countdown=30)
+
+
+async def _refresh_gateway_health_snapshots():
+    async with async_session() as session:
+        snapshots = await gatewayHealthService.refresh_gateway_health_snapshots(session)
+        logger.info("Refreshed %s gateway health snapshot(s)", len(snapshots))
 
 @celery_app.task(bind=True, max_retries=3)
 def schedule_bulk_payouts(self, merchant_id: str, records: list[dict], bulk_id: int = None, mode: str = None):

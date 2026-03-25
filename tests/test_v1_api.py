@@ -13,10 +13,16 @@ class TestV1PayoutEndpoint:
     @patch('services.merchantService.get_by_id_or_email')
     @patch('services.walletService.get_wallet')
     @patch('services.walletService.get_payout_charge')
-    @patch('external_services.koraService.payout')
+    @patch('services.emailService.send_merchant_receipt_email')
+    @patch('services.emailService.send_customer_receipt_email')
+    @patch('external_services.koraService.resolve_account')
+    @patch('external_services.koraService.post_request')
     async def test_payout_success(
         self,
-        mock_kora_payout,
+        mock_post_request,
+        mock_resolve_account,
+        mock_send_customer_receipt,
+        mock_send_merchant_receipt,
         mock_get_payout_charge,
         mock_get_wallet,
         mock_get_merchant,
@@ -31,7 +37,8 @@ class TestV1PayoutEndpoint:
         mock_get_merchant.return_value = test_merchant
         mock_get_wallet.return_value = test_wallet
         mock_get_payout_charge.return_value = 60.0
-        mock_kora_payout.return_value = (True, "Success", 200, 1)
+        mock_resolve_account.return_value = (True, "Test User")
+        mock_post_request.return_value = ({"status": True}, 200)
 
         payout_data = {
             "reference": "TEST_REF_001",
@@ -57,6 +64,7 @@ class TestV1PayoutEndpoint:
         data = response.json()
         assert data["status"] == True
         assert "message" in data
+        assert data["selected_gateway"] == "kora"
 
     @patch('services.tokenService.verify_token')
     @patch('services.merchantService.get_by_id_or_email')
@@ -153,14 +161,10 @@ class TestV1InitializeEndpoint:
 
     @patch('services.tokenService.verify_token')
     @patch('services.merchantService.get_by_id_or_email')
-    @patch('services.transactionService.get_transaction_by_merchant_and_reference')
-    @patch('services.customerService.add_get_or_create_customer')
-    @patch('external_services.koraService.initialize')
+    @patch('external_services.flutterwaveService.post_request')
     async def test_initialize_success(
         self,
-        mock_kora_init,
-        mock_customer,
-        mock_get_txn,
+        mock_post_request,
         mock_get_merchant,
         mock_verify_token,
         client,
@@ -170,12 +174,9 @@ class TestV1InitializeEndpoint:
         """Test successful transaction initialization"""
         mock_verify_token.return_value = True
         mock_get_merchant.return_value = test_merchant
-        mock_get_txn.return_value = None
-        mock_customer.return_value = test_customer
-        mock_kora_init.return_value = (
-            {"status": "success"},
+        mock_post_request.return_value = (
+            {"data": {"link": "https://checkout.example.com/xyz"}},
             200,
-            "https://checkout.example.com/xyz"
         )
 
         init_data = {
@@ -198,6 +199,7 @@ class TestV1InitializeEndpoint:
         data = response.json()
         assert data["status"] == True
         assert "checkout_url" in data
+        assert data["selected_gateway"] == "fltw"
 
     @patch('services.tokenService.verify_token')
     @patch('services.merchantService.get_by_id_or_email')
@@ -256,11 +258,16 @@ class TestV1VerifyEndpoint:
 
         # Mock transaction
         mock_transaction = MagicMock(spec=Transaction)
+        mock_transaction.id = 1
         mock_transaction.mode = "test"
         mock_transaction.type = "credit"
         mock_transaction.amount = 5000.0
         mock_transaction.charge = 115.0
         mock_transaction.currency = "NGN"
+        mock_transaction.reference = "TEST_REF_001"
+        mock_transaction.status = "success"
+        mock_transaction.selected_gateway = "fltw"
+        mock_transaction.processor_reference = "FLTW_PROC_001"
         mock_transaction.narration = "Test payment"
         mock_transaction.metadata_payload = {}
         mock_transaction.created_at = datetime.now()
@@ -280,6 +287,7 @@ class TestV1VerifyEndpoint:
         data = response.json()
         assert data["status"] == True
         assert "data" in data
+        assert data["data"]["selected_gateway"] == "fltw"
 
     @patch('services.tokenService.verify_token')
     @patch('services.merchantService.get_by_id_or_email')

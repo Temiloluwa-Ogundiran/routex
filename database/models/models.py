@@ -146,3 +146,5 @@
 #     is_active = Column(Boolean, default=True)
 
 #     merchants = relationship("Merchant", secondary=user_merchant, back_populates="users")
+
+from .RoutingRule import RoutingRule

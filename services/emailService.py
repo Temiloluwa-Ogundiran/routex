@@ -1,81 +1,97 @@
 import asyncio
 import base64
+import json
 import logging
-import os  # still needed for OTP_TEMPLATE_PATH
+import os
 from functools import partial
 
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import (
-    Mail,
-    Attachment,
-    FileContent,
-    FileName,
-    FileType,
-    Disposition,
-)
+import requests
 
 import settings
-from services.otpService import OTP_EXPIRY_IN_SECONDS
-from services.tokenService import RESET_URL_TTL_IN_SECONDS
-from services import receiptService, transactionService
 from database.session import async_session
+from services import receiptService, transactionService
+from services.tokenService import RESET_URL_TTL_IN_SECONDS
 
 logger = logging.getLogger(__name__)
 
 OTP_TEMPLATE_PATH = os.path.join(os.getcwd(), "templates", "otp.html")
+RESEND_API_URL = "https://api.resend.com/emails"
 
-_sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
 
+def _send_sync(payload: dict) -> None:
+    if not settings.RESEND_API_KEY:
+        raise RuntimeError("Resend API key is not configured")
 
-# ─────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────
+    try:
+        response = requests.post(
+            RESEND_API_URL,
+            headers={
+                "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            data=json.dumps(payload),
+            timeout=15,
+        )
+    except requests.RequestException as exc:
+        raise RuntimeError(f"Resend request failed: {exc}") from exc
 
-def _send_sync(message: Mail) -> None:
-    """Synchronous SendGrid send — run in a thread so we don't block the loop."""
-    response = _sg.send(message)
     if response.status_code not in (200, 202):
-        logger.error("SendGrid error %s: %s", response.status_code, response.body)
-    else:
-        logger.info("Email sent via SendGrid (status %s)", response.status_code)
+        raise RuntimeError(f"Resend error {response.status_code}: {response.text}")
+
+    logger.info("Email sent via Resend (status %s)", response.status_code)
 
 
-async def _send_async(message: Mail) -> None:
-    """Offload the blocking SDK call to a thread pool."""
+async def _send_async(payload: dict) -> None:
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, partial(_send_sync, message))
+    await loop.run_in_executor(None, partial(_send_sync, payload))
 
 
 def _fire(coro) -> None:
-    """Schedule a coroutine as a fire-and-forget asyncio task."""
     asyncio.create_task(coro)
 
 
-def _pdf_attachment(pdf_bytes: bytes, filename: str = "receipt.pdf") -> Attachment:
+def _pdf_attachment(pdf_bytes: bytes, filename: str = "receipt.pdf") -> dict:
     encoded = base64.b64encode(pdf_bytes).decode()
-    attachment = Attachment()
-    attachment.file_content = FileContent(encoded)
-    attachment.file_type = FileType("application/pdf")
-    attachment.file_name = FileName(filename)
-    attachment.disposition = Disposition("attachment")
-    return attachment
+    return {
+        "filename": filename,
+        "content": encoded,
+    }
 
 
-# ─────────────────────────────────────────────
-# Auth emails  (from: AUTH_FROM_EMAIL)
-# ─────────────────────────────────────────────
+def _build_message(
+    *,
+    from_email: str,
+    to_email: str,
+    subject: str,
+    html_content: str | None = None,
+    plain_text_content: str | None = None,
+    attachments: list[dict] | None = None,
+) -> dict:
+    payload: dict[str, object] = {
+        "from": from_email,
+        "to": [to_email],
+        "subject": subject,
+    }
+    if html_content is not None:
+        payload["html"] = html_content
+    if plain_text_content is not None:
+        payload["text"] = plain_text_content
+    if attachments:
+        payload["attachments"] = attachments
+    return payload
+
 
 async def _send_otp_email(email: str, otp: str) -> None:
     with open(OTP_TEMPLATE_PATH, "r", encoding="utf-8") as f:
         html_body = f.read().replace("{{OTP_CODE}}", str(otp))
 
-    message = Mail(
+    payload = _build_message(
         from_email=settings.AUTH_EMAIL,
-        to_emails=email,
+        to_email=email,
         subject="Your OTP Code",
         html_content=html_body,
     )
-    await _send_async(message)
+    await _send_async(payload)
 
 
 async def _send_reset_url(email: str, url: str) -> None:
@@ -83,18 +99,14 @@ async def _send_reset_url(email: str, url: str) -> None:
         f"Your reset url is: {url}. "
         f"Please note that the url is valid for {RESET_URL_TTL_IN_SECONDS // 60} minutes"
     )
-    message = Mail(
+    payload = _build_message(
         from_email=settings.AUTH_EMAIL,
-        to_emails=email,
+        to_email=email,
         subject="Password Reset",
         plain_text_content=body,
     )
-    await _send_async(message)
+    await _send_async(payload)
 
-
-# ─────────────────────────────────────────────
-# Receipt emails  (from: RECEIPT_FROM_EMAIL)
-# ─────────────────────────────────────────────
 
 async def _send_receipt_email(
     email: str,
@@ -103,14 +115,14 @@ async def _send_receipt_email(
     pdf_filename: str = "receipt.pdf",
     subject: str = "Your Transaction Receipt",
 ) -> None:
-    message = Mail(
+    payload = _build_message(
         from_email=settings.RECEIPT_EMAIL,
-        to_emails=email,
+        to_email=email,
         subject=subject,
         html_content=html_content,
+        attachments=[_pdf_attachment(pdf_bytes, pdf_filename)],
     )
-    message.attachment = _pdf_attachment(pdf_bytes, pdf_filename)
-    await _send_async(message)
+    await _send_async(payload)
 
 
 async def _send_customer_receipt_email(txn_id: str) -> None:
@@ -119,7 +131,7 @@ async def _send_customer_receipt_email(txn_id: str) -> None:
             session=session, id=int(txn_id)
         )
         if not txn:
-            logger.warning("Transaction %s not found — skipping customer receipt", txn_id)
+            logger.warning("Transaction %s not found - skipping customer receipt", txn_id)
             return
 
         html_content = receiptService.generate_customer_receipt_html(transaction=txn)
@@ -138,7 +150,7 @@ async def _send_merchant_receipt_email(txn_id: str) -> None:
             session=session, id=int(txn_id)
         )
         if not txn:
-            logger.warning("Transaction %s not found — skipping merchant receipt", txn_id)
+            logger.warning("Transaction %s not found - skipping merchant receipt", txn_id)
             return
 
         html_content = receiptService.generate_receipt_html(transaction=txn)
@@ -151,25 +163,17 @@ async def _send_merchant_receipt_email(txn_id: str) -> None:
         )
 
 
-# ─────────────────────────────────────────────
-# Public API — fire-and-forget (non-blocking)
-# ─────────────────────────────────────────────
-
-def send_otp_email(email: str, otp: str) -> None:
-    """Schedule OTP email; returns immediately."""
-    _fire(_send_otp_email(email, otp))
+async def send_otp_email(email: str, otp: str) -> None:
+    await _send_otp_email(email, otp)
 
 
-def send_reset_url(email: str, url: str) -> None:
-    """Schedule password-reset email; returns immediately."""
-    _fire(_send_reset_url(email, url))
+async def send_reset_url(email: str, url: str) -> None:
+    await _send_reset_url(email, url)
 
 
 def send_customer_receipt_email(txn_id: str) -> None:
-    """Schedule customer receipt email; returns immediately."""
     _fire(_send_customer_receipt_email(txn_id))
 
 
 def send_merchant_receipt_email(txn_id: str) -> None:
-    """Schedule merchant receipt email; returns immediately."""
     _fire(_send_merchant_receipt_email(txn_id))

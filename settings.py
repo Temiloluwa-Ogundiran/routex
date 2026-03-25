@@ -36,6 +36,10 @@ RELAY_TOKEN = os.getenv("RELAY_TOKEN")
 
 FLTW_SECRET_KEY = os.getenv('FLTW_SECRET_KEY')
 FLTW_SECRET_HASH = os.getenv("FLTW_SECRET_HASH")
+INTERSWITCH_MERCHANT_CODE = os.getenv("INTERSWITCH_MERCHANT_CODE")
+INTERSWITCH_PAY_ITEM_ID = os.getenv("INTERSWITCH_PAY_ITEM_ID")
+INTERSWITCH_CLIENT_ID = os.getenv("INTERSWITCH_CLIENT_ID")
+INTERSWITCH_SECRET_KEY = os.getenv("INTERSWITCH_SECRET_KEY")
 
 SERVER_URL = os.getenv("SERVER_URL")
 V1_API_URL = "https://api.xoropay.com"
@@ -50,7 +54,7 @@ ALGORITHM = "HS256"
 AUTH_SECRET= os.getenv("AUTH_SECRET")
 ACCESS_TOKEN_EXPIRE_MINUTES= 60
 
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 AUTH_EMAIL = os.getenv("AUTH_EMAIL")
 RECEIPT_EMAIL = os.getenv("RECEIPT_EMAIL")
 
@@ -60,7 +64,8 @@ redis_client = redis.from_url(
     decode_responses=True,  # auto-decodes to str
 )
 
-FRONTEND_BASE_URL = "https://www.xoropay.com"
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "https://www.xoropay.com")
+PUBLIC_SITE_URL = os.getenv("PUBLIC_SITE_URL", FRONTEND_BASE_URL)
 TEMP_PAYOUT_FEE = 60
-CHECKOUT_URL = "https://checkout.xoropay.com"
+CHECKOUT_URL = os.getenv("CHECKOUT_URL", "https://checkout.xoropay.com")
 MAX_WS_LIFETIME = 1800 #30 MINUTES

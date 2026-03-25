@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, Dict, Any
 from enums import transactionEnums
+from schemas.routerSchema import RoutingAttemptSummary, RoutingMetadata
 
 class Customer(BaseModel):
     email: EmailStr
@@ -30,6 +31,9 @@ class InitializeTransactionResponse(BaseModel):
     message: str = Field(..., example="Charge created successfully", description="Human-readable message")
     reference: Optional[str] = Field(None, example="TXN_123456", description="Transaction reference")
     checkout_url: Optional[str] = Field(None, example="https://checkout.payment.com/tx/123", description="URL for customer to complete payment")
+    selected_gateway: Optional[str] = Field(None, example="fltw", description="Gateway selected by the router")
+    gateway_reference: Optional[str] = Field(None, example="FLTW_PROC_001", description="Gateway-facing reference for the routed transaction")
+    routing: Optional[RoutingMetadata] = Field(None, description="Routing decision details for the transaction")
 
 
 class InitializeErrorResponse(BaseModel):
@@ -52,6 +56,10 @@ class PayoutRequest(BaseModel):
 class PayoutResponse(BaseModel):
     status: bool = Field(..., example=True, description="Indicates if the payout was successful")
     message: str = Field(..., example="Payout processed successfully", description="Human-readable message")
+    reference: Optional[str] = Field(None, example="PAYOUT_123456", description="Merchant-facing payout reference")
+    selected_gateway: Optional[str] = Field(None, example="kora", description="Gateway selected by the router")
+    gateway_reference: Optional[str] = Field(None, example="KORA_PROC_001", description="Gateway-facing reference for the routed payout")
+    routing: Optional[RoutingMetadata] = Field(None, description="Routing decision details for the payout")
     data: Dict[str, Any] = Field(
         ..., 
         example={
@@ -76,6 +84,8 @@ class PayoutErrorResponse(BaseModel):
     email: str = Field(..., example="customer@example.com", description="Customer's email address")
 
 class TransactionData(BaseModel):
+    reference: str = Field(..., example="TXN_123456", description="Merchant-facing transaction reference")
+    status: str = Field(..., example="success", description="Normalized transaction status")
     domain: str = Field(..., example="TEST", description="Transaction domain/mode")
     type: str = Field(..., example="PAYMENT", description="Transaction type")
     amount: float = Field(..., example=5000.0, description="Transaction amount")
@@ -85,6 +95,9 @@ class TransactionData(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(None, example={"order_id": "123"}, description="Custom metadata")
     created_at: str = Field(..., example="2025-09-17T12:00:00Z", description="Timestamp when transaction was created")
     updated_at: str = Field(..., example="2025-09-17T12:05:00Z", description="Timestamp when transaction was last updated")
+    selected_gateway: Optional[str] = Field(None, example="fltw", description="Gateway selected by the router")
+    gateway_reference: Optional[str] = Field(None, example="FLTW_PROC_001", description="Gateway-facing reference for the routed transaction")
+    attempts: list[RoutingAttemptSummary] = Field(default_factory=list, description="Routing attempts recorded for the transaction")
     customer: Customer = Field(..., description="Customer details")
 
 class VerifyTransactionResponse(BaseModel):

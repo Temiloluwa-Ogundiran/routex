@@ -5,7 +5,7 @@ import pytest
 import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import NullPool
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from typing import AsyncGenerator
 
 from database.models import Base
@@ -34,6 +34,7 @@ async def async_engine():
     )
 
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     yield engine
@@ -62,7 +63,8 @@ async def client(async_session):
     """Create test client"""
     app.dependency_overrides[get_async_session] = lambda: async_session
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
     app.dependency_overrides.clear()
@@ -74,6 +76,7 @@ async def test_merchant(async_session):
     from database.models.Merchant import Merchant
 
     merchant = Merchant(
+        id="m_test_merchant",
         name="Test Merchant",
         email="test@merchant.com",
         is_verified=True
@@ -91,12 +94,12 @@ async def test_user(async_session):
     from database.models.User import User
     from services import bcryptService
 
-    hashed_password = await bcryptService.hash_password("testpassword123")
+    hashed_password = await bcryptService.make_password("testpassword123")
 
     user = User(
+        id="u_test001",
         email="test@user.com",
-        first_name="Test",
-        last_name="User",
+        name="Test User",
         password=hashed_password
     )
     async_session.add(user)
@@ -136,8 +139,9 @@ async def test_customer(async_session, test_merchant):
 
     customer = Customer(
         email="customer@test.com",
-        merchant_id=test_merchant.id
+        name="Test Customer",
     )
+    customer.merchants.append(test_merchant)
     async_session.add(customer)
     await async_session.commit()
     await async_session.refresh(customer)

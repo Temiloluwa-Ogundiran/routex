@@ -1,11 +1,13 @@
-from fastapi import FastAPI, Request, HTTPException, status, APIRouter, Depends
+from fastapi import FastAPI, Request, HTTPException, status, APIRouter, Depends, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import json
 import hmac
 import hashlib
-from settings import KORA_SECRET, PAYSTACK_SECRET, FLTW_SECRET_KEY, FLTW_SECRET_HASH, KORA_LIVE_SECRET_KEY, BASQET_LIVE_SECRET, BASQET_SECRET
+import os
+from settings import KORA_SECRET, PAYSTACK_SECRET, FLTW_SECRET_KEY, FLTW_SECRET_HASH, KORA_LIVE_SECRET_KEY, BASQET_LIVE_SECRET, BASQET_SECRET, INTERSWITCH_SECRET_KEY
 from services import transactionService, merchantService, tokenService, bulkpayoutService, walletService, emailService, webhookService
+import services.webhookNormalizationService as webhookNormalizationService
 from enums import transactionEnums, tokenEnums, eventEnums
 from enums.BulkPayoutEnums import BulkPayoutTransactionKeys
 from database.models.Merchant import *
@@ -18,6 +20,64 @@ from websocket.broadcast import broadcast
 
 webhook_router = APIRouter()
 webhook_util_router = APIRouter()
+
+
+def _get_interswitch_secret() -> str | None:
+    return os.getenv("INTERSWITCH_SECRET_KEY") or INTERSWITCH_SECRET_KEY
+
+
+async def _handle_interswitch_webhook(
+    request: Request,
+    session: AsyncSession,
+) -> Response:
+    secret = _get_interswitch_secret()
+    if not secret:
+        raise HTTPException(status_code=500, detail="Interswitch webhook secret is not configured")
+
+    signature = request.headers.get("X-Interswitch-Signature")
+    if not signature:
+        raise HTTPException(status_code=400, detail="Missing signature header")
+
+    raw_body = await request.body()
+    expected_signature = hmac.new(
+        secret.encode("utf-8"),
+        raw_body,
+        hashlib.sha512,
+    ).hexdigest()
+    if not hmac.compare_digest(signature, expected_signature):
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    try:
+        payload = json.loads(raw_body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    normalized_event, transaction = await webhookNormalizationService.handle_event(
+        gateway="isw",
+        payload=payload,
+        session=session,
+    )
+
+    if transaction and transaction.notification_url:
+        token_obj = await tokenService.get_token_obj(
+            session=session,
+            merchant=transaction.merchant,
+            mode=transaction.mode,
+        )
+        if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
+            webhookService.dispatch(
+                transaction=transaction,
+                event=eventEnums.EventType.CHARGE_SUCCESS,
+                token=token_obj,
+            )
+        elif normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
+            webhookService.dispatch(
+                transaction=transaction,
+                event=eventEnums.EventType.CHARGE_FAILED,
+                token=token_obj,
+            )
+
+    return Response(status_code=200)
 
 
 # ── Merchant webhook verification test ───────────────────────────────────────
@@ -124,9 +184,14 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
     print("Event:", event)
     print("Payload:", payload_dict)
 
-    reference = payload_dict.get("data", {}).get("reference")
-    processor_charge =  payload_dict.get("data", {}).get("fee")
-    transaction = await transactionService.get_transaction_by_processor_reference(processor_reference=reference, session=session)
+    normalized_event, transaction = await webhookNormalizationService.handle_event(
+        gateway="kora",
+        payload=payload_dict,
+        session=session,
+    )
+    if not transaction:
+        return {"status": "ignored"}
+
     token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
 
     if transaction.bulk_payout_id:
@@ -134,15 +199,13 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
         transaction_details: list= bulk_payout.transaction_details
         transaction_index = next((i for i, item in enumerate(transaction_details) if item[BulkPayoutTransactionKeys.TXN_ID] == transaction.id), -1)
         
-    # Switch based on event type
-    if event == "charge.success":
-        await payin_success_handler(transaction= transaction, session=session, processor_fee= processor_charge)
+    if normalized_event.operation == "collection" and normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
         webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_SUCCESS, token=token_obj)
 
-    elif event == "charge.failed":
+    elif normalized_event.operation == "collection" and normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
         webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_FAILED, token=token_obj)
 
-    elif event == "transfer.success":
+    elif normalized_event.operation == "payout" and normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
         if transaction.bulk_payout_id:
             txn_detail: dict=  transaction_details[transaction_index]
             txn_detail[BulkPayoutTransactionKeys.TXN_STATUS] = TransactionStatus.SUCCESS
@@ -151,10 +214,9 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
             bulk_payout.transaction_details = transaction_details
             await bulkpayoutService.save_bulk_payout_obj(bulk_payout= bulk_payout, session= session)
 
-        await payout_success_handler(processor_reference=reference, session=session, processor_fee= processor_charge)
         webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.TRANSFER_SUCCESS, token=token_obj)
 
-    elif event == "transfer.failed":
+    elif normalized_event.operation == "payout" and normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
         if transaction.bulk_payout_id:
             txn_detail: dict=  transaction_details[transaction_index]
             txn_detail[BulkPayoutTransactionKeys.TXN_STATUS] = TransactionStatus.FAILED
@@ -204,27 +266,28 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
     print("Event:", event)
     print("Payload:", payload_dict)
 
-    reference = payload_dict.get("data", {}).get("reference")
-    processor_charge =  payload_dict.get("data", {}).get("fee")
+    normalized_event, transaction = await webhookNormalizationService.handle_event(
+        gateway="kora",
+        payload=payload_dict,
+        session=session,
+    )
+    if not transaction:
+        return {"status": "ignored"}
 
-    transaction = await transactionService.get_transaction_by_processor_reference(processor_reference=reference, session=session)
     token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
-    # Switch based on event type
-    #TODO: save transaction  dtatus for failed events
 
     if transaction.bulk_payout_id:
         bulk_payout:BulkPayout = await bulkpayoutService.get_bulk_payout_by_id(transaction.bulk_payout_id, session= session)
         transaction_details: list= bulk_payout.transaction_details
         transaction_index = next((i for i, item in enumerate(transaction_details) if item[BulkPayoutTransactionKeys.TXN_ID] == transaction.id), -1)
 
-    if event == "charge.success":
-        await payin_success_handler(transaction= transaction, session=session, processor_fee= processor_charge)
+    if normalized_event.operation == "collection" and normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
         webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_SUCCESS, token=token_obj)
 
-    elif event == "charge.failed":
+    elif normalized_event.operation == "collection" and normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
         webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_FAILED, token=token_obj)
 
-    elif event == "transfer.success":
+    elif normalized_event.operation == "payout" and normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
         if transaction.bulk_payout_id:
             txn_detail: dict=  transaction_details[transaction_index]
             txn_detail[BulkPayoutTransactionKeys.TXN_STATUS] = TransactionStatus.SUCCESS
@@ -233,10 +296,9 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
             bulk_payout.transaction_details = transaction_details
             await bulkpayoutService.save_bulk_payout_obj(bulk_payout= bulk_payout, session= session)
 
-        await payout_success_handler(processor_reference=reference, session=session, processor_fee= processor_charge)
         webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.TRANSFER_SUCCESS, token=token_obj)
 
-    elif event == "transfer.failed":
+    elif normalized_event.operation == "payout" and normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
         if transaction.bulk_payout_id:
             txn_detail: dict=  transaction_details[transaction_index]
             txn_detail[BulkPayoutTransactionKeys.TXN_STATUS] = TransactionStatus.FAILED
@@ -273,24 +335,17 @@ async def paystack_webhook(request: Request, session: AsyncSession = Depends(get
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     payload = json.loads(body)
-    event = payload.get("event")
-    reference = payload.get("data", {}).get("reference")
-    processor_charge =  payload.get("data", {}).get("fees")
-    processor_charge = float(processor_charge) / 100 #change to local currency
-
-    print(payload)
-    print(f"paystack reference: {reference}")
-
-    print(f"✅ Paystack webhook received! Event: {event} Ref: {reference}")
-    transaction = await transactionService.get_transaction_by_processor_reference(processor_reference=reference, session=session)
-
-    if event == "charge.success":
-        await payin_success_handler(transaction= transaction, session=session, processor_fee= processor_charge)
-
-        if transaction.notification_url:
-            token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
-
+    normalized_event, transaction = await webhookNormalizationService.handle_event(
+        gateway="pstk",
+        payload=payload,
+        session=session,
+    )
+    if transaction and transaction.notification_url:
+        token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
+        if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
             webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_SUCCESS, token=token_obj)
+        elif normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
+            webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_FAILED, token=token_obj)
 
     return {"status": "success"}
 
@@ -303,23 +358,30 @@ async def flutterwave_webhook(request: Request, session: AsyncSession = Depends(
 
     body = await request.body()
     payload = json.loads(body)
-    data = payload.get("data", {})
-    reference = data.get("tx_ref")
-    processor_charge =  payload.get("data", {}).get("app_fee")
+    normalized_event, transaction = await webhookNormalizationService.handle_event(
+        gateway="fltw",
+        payload=payload,
+        session=session,
+    )
 
-    print(f"✅ Flutterwave webhook received! Ref: {reference}")
-
-    if data.get("status", "").lower() == "successful":
-
-        transaction = await transactionService.get_transaction_by_processor_reference(processor_reference= reference, session=session)
-        await payin_success_handler(transaction= transaction, session=session, processor_fee= processor_charge)
-
-        if transaction.notification_url:
-            token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
-
+    if transaction and transaction.notification_url:
+        token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
+        if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
             webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_SUCCESS, token=token_obj)
+        elif normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
+            webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_FAILED, token=token_obj)
 
     return {"status": "success"}
+
+
+@webhook_router.post("/interswitch/webhook/test")
+async def interswitch_webhook_test(request: Request, session: AsyncSession = Depends(get_async_session)):
+    return await _handle_interswitch_webhook(request=request, session=session)
+
+
+@webhook_router.post("/interswitch/webhook/live")
+async def interswitch_webhook_live(request: Request, session: AsyncSession = Depends(get_async_session)):
+    return await _handle_interswitch_webhook(request=request, session=session)
 
 
 @webhook_router.post("/basqet/webhook/test")
@@ -378,92 +440,20 @@ async def basqet_webhook(request: Request, session: AsyncSession = Depends(get_a
 
         
 async def payin_success_handler(session: AsyncSession, transaction:Transaction, processor_fee: float = 0):
-
-    if not transaction.status == transactionEnums.TransactionStatus.PENDING.value: #indempotence
-        return
-    merchant: Merchant = transaction.merchant
-    mode = transaction.mode
-
-    # Get or create wallet for this transaction
-    wallet = await walletService.get_or_create_wallet(
+    return await webhookNormalizationService.handle_collection_success(
         session=session,
-        merchant=merchant,
-        currency=transaction.currency,
-        mode=mode
+        transaction=transaction,
+        processor_fee=processor_fee,
     )
-
-    # Calculate charge using wallet's charge configuration
-    amount_charged = await walletService.get_payin_charge(wallet=wallet, amount=transaction.amount)
-    processed_amount = transaction.amount - amount_charged
-    transaction.charge = amount_charged
-    transaction.wallet_id = wallet.id  # Link transaction to wallet
-
-    # Credit wallet with processed amount
-    await walletService.credit_wallet(
-        session=session,
-        wallet=wallet,
-        amount=processed_amount
-    )
-
-    transaction.status = transactionEnums.TransactionStatus.SUCCESS.value
-    transaction.processor_charge = processor_fee
-    await transactionService.save_transaction(transaction= transaction, session= session)
-
-    try:
-        print("Starting broadcast")
-        # await broadcast.publish(
-        #     channel=f"merchant_{merchant.id}",
-        #     message= await transactionService.get_transaction_socket_data(
-        #         merchant= merchant,
-        #         transaction= transaction
-        #     )
-        # )
-        emailService.send_customer_receipt_email(transaction.id)
-        emailService.send_merchant_receipt_email(transaction.id)
-    except Exception as e:
-        print(f"Error occurred when sending broadcast: {e}")
-
-    return
-    print("Mmerchant and transaction updated")
 
 async def payout_success_handler(session: AsyncSession, processor_reference:str, processor_fee: float, mode:str = tokenEnums.TokenMode.TEST):
     transaction: Transaction = await transactionService.get_transaction_by_processor_reference(processor_reference= processor_reference, session= session)
-    if not transaction.status == transactionEnums.TransactionStatus.PENDING.value: #indempotence
+    if not transaction:
         return
-    merchant: Merchant = transaction.merchant
-
-    # Get wallet for this transaction
-    wallet = await walletService.get_wallet(
+    return await webhookNormalizationService.handle_payout_success(
         session=session,
-        merchant_id=merchant.id,
-        currency=transaction.currency,
-        mode=transaction.mode
+        transaction=transaction,
+        processor_fee=processor_fee,
     )
-
-    if wallet:
-        # Calculate payout charge using wallet's charge configuration
-        amount_charged = await walletService.get_payout_charge(wallet=wallet, amount=transaction.amount)
-        transaction.charge = amount_charged
-
-        # Debit wallet with total amount (transaction amount + charge)
-        total_debit = transaction.amount + amount_charged
-        await walletService.debit_wallet(session=session, wallet=wallet, amount=total_debit)
-
-    transaction.status = transactionEnums.TransactionStatus.SUCCESS.value
-    await transactionService.save_transaction(transaction= transaction, session= session)
-
-    try:
-        # await broadcast.publish(
-        #     channel=f"merchant_{merchant.id}",
-        #     message= await transactionService.get_transaction_socket_data(
-        #         merchant= merchant,
-        #         transaction= transaction
-        #     )
-        # )
-        pass
-    except:
-        pass
-
-    return
 # await handle_
 

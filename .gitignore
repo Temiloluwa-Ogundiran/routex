@@ -50,6 +50,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+test.db
+pytest_app.db
 
 # Translations
 *.mo
@@ -166,4 +168,13 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 /script.py
+
+# Frontend dependencies and build artifacts
+frontend/node_modules/
+frontend/.next/
+frontend/.next_stale_*/
+frontend/test-results/
+frontend/playwright-report/
+docs/
+AGENTS.md
 

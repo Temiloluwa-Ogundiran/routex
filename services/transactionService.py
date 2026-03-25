@@ -13,8 +13,8 @@ import uuid
 from schemas.transactionSchema import TransactionResponse
 import json
 
-PROCESSOR_CHOICES = ['fltw', 'pstk', 'kora']
-PROCESSOR_CHARGE_PRIORITY = ['kora', 'pstk', 'fltw']
+PROCESSOR_CHOICES = ['fltw', 'pstk', 'kora', 'isw']
+PROCESSOR_CHARGE_PRIORITY = ['kora', 'pstk', 'fltw', 'isw']
 
 async def save_transaction(session:AsyncSession, transaction: Transaction)->Transaction:
     session.add(transaction)

@@ -33,6 +33,7 @@ class TransactionProcessor(StrEnum):
     FLUTTERWAVE = 'fltw'
     KORA = 'kora'
     PAYSTACK = 'pstk'
+    INTERSWITCH = 'isw'
 
     @classmethod
     def is_valid(cls, value: str) -> bool:

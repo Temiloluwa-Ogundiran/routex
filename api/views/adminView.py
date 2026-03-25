@@ -9,6 +9,16 @@ from typing import List, Optional
 
 admin_router = APIRouter()
 
+
+def _admin_identity_payload(admin):
+    return {
+        "id": admin.id,
+        "email": admin.email,
+        "name": admin.name,
+        "is_active": admin.is_active,
+        "role": "admin",
+    }
+
 @admin_router.post("/admin/login", response_model=adminSchema.LoginResponse)
 async def admin_login(
     data: adminSchema.AdminLoginRequest,
@@ -27,6 +37,14 @@ async def admin_login(
         "data": adminSchema.AdminResponse.model_validate(admin),
         "access_token": token,
         "token_type": "bearer"
+    }
+
+
+@admin_router.get("/admin/me")
+async def admin_me(admin: Admin = Depends(adminService.get_current_admin)):
+    return {
+        "status": True,
+        "data": _admin_identity_payload(admin),
     }
 
 

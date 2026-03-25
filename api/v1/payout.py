@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Security, Request, Response, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from services import merchantService, tokenService, transactionService, customerService, walletService
+from services import merchantService, tokenService, transactionService, customerService, walletService, routingService
 from external_services import koraService, paystackService, flutterwaveService
+from external_services.adapters import get_adapter
 from schemas.merchantSchema import MerchantCreateRequest, MerchantResponse, MerchantDetailResponse, MerchantGetRequest
 from tortoise.exceptions import DoesNotExist
 import json
@@ -154,37 +155,41 @@ async def payout(
 
     if wallet.balance < amount_charged + payload.amount:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient balance")    
-        
-    _, message, status_code, txn_id = await koraService.payout(
+    decision = await routingService.build_routing_decision(
+        session=session,
+        operation="payout",
+        currency=str(payload.currency),
+        amount=payload.amount,
+        merchant_id=merchant.id,
+    )
+    adapter = get_adapter(decision.selected_gateway)
+    payout_status, message, status_code, txn_id = await adapter.initiate_payout(
         session= session, merchant= merchant, acc_number= payload.destination.account_number, 
         bank_code= payload.destination.bank_code, amount = payload.amount, email= payload.customer.email,
         reference = payload.reference, currency = payload.currency, 
         metadata= payload.metadata, narration= payload.narration, mode= mode
     )
 
-    transaction: Transaction = await transactionService.get_transaction_by_merchant_and_reference(session= session, merchant= merchant, reference= payload.reference)
-
-    if _ == True and status_code == 200:
-        total_amount = amount_charged + payload.amount
-
-        # if mode == tokenEnums.TokenMode.TEST.value:
-        #     merchant.test_balance -= total_amount
-
-        # if mode == tokenEnums.TokenMode.LIVE.value:
-        #     merchant.live_balance -= total_amount
-
-        transaction.status = transactionEnums.TransactionStatus.SUCCESS.value 
-
-    else:
-        transaction.status = transactionEnums.TransactionStatus.FAILED.value
-    await merchantService.save_merchant(session= session, merchant= merchant)
-    await transactionService.save_transaction(session= session, transaction= transaction)
+    transaction: Transaction = await transactionService.get_transaction_by_id(session=session, id=txn_id)
+    audit, _ = await routingService.record_routing_result(
+        session=session,
+        transaction=transaction,
+        decision=decision,
+        operation="payout",
+        status="success" if payout_status and status_code == 200 else "failed",
+        gateway_reference=transaction.processor_reference,
+        error_message=None if payout_status and status_code == 200 else message,
+    )
     
     is_valid, customer_name = await koraService.resolve_account(acc_number=payload.destination.account_number, bank= bank_obj, currency= payload.currency)
 
     return JSONResponse(content= {
-        'status' : _,
+        'status' : payout_status,
         'message': message,
+        'reference': payload.reference,
+        'selected_gateway': decision.selected_gateway,
+        'gateway_reference': transaction.processor_reference,
+        'routing': routingService.build_routing_metadata(audit.decision_id, decision),
         'data': {
             'amount': payload.amount,
             'fee': amount_charged,

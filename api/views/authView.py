@@ -12,6 +12,19 @@ import settings
 
 auth_router = APIRouter()
 
+
+def _user_identity_payload(user):
+    payload = {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "is_verified": user.is_verified,
+    }
+    role = getattr(user, "role", None)
+    if role is not None:
+        payload["role"] = role
+    return payload
+
 @auth_router.post("/auth/login")
 async def login(data: LoginRequest, session = Depends(get_async_session)):
     otp = str(random.randint(100000, 999999))
@@ -24,15 +37,15 @@ async def login(data: LoginRequest, session = Depends(get_async_session)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     try:
         await otpService.store_otp(email= data.email, otp=otp)
-        emailService.send_otp_email(data.email, otp)
+        await emailService.send_otp_email(data.email, otp)
 
     except Exception as e:
         return JSONResponse(content={"status": False, "message": f"Error occurred while sending otp: {e}"}, status_code= 400)
 
-    return {"status": True, "message": "Otp sent succesfully", "otp": otp}
+    return {"status": True, "message": "Otp sent succesfully"}
 
 @auth_router.post("/auth/signup")
-async def signup(data: LoginRequest, session = Depends(get_async_session)):
+async def signup(data: SignUpRequest, session = Depends(get_async_session)):
     otp = str(random.randint(100000, 999999))
 
     if await userService.get_user_by_email(session= session, email= data.email):
@@ -40,12 +53,12 @@ async def signup(data: LoginRequest, session = Depends(get_async_session)):
 
     try:
         await otpService.store_otp(email= data.email, otp=otp)
-        emailService.send_otp_email(data.email, otp)
+        await emailService.send_otp_email(data.email, otp)
 
     except Exception as e:
         return JSONResponse(content={"status": False, "message": f"Error occurred while sending otp: {e}"}, status_code= 400)
     
-    return {"status": True, "message": "Otp sent succesfully", "otp": otp}
+    return {"status": True, "message": "Otp sent succesfully"}
 
 @auth_router.post("/auth/login/verify-otp")
 async def login_otp(data: VerifyLoginOtpRequest, session = Depends(get_async_session)):
@@ -64,7 +77,8 @@ async def login_otp(data: VerifyLoginOtpRequest, session = Depends(get_async_ses
     except Exception as e:
         if await otpService.get_otp(email=data.email):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= "Otp deletion error")
-    if adminService.get_admin_by_email(session= session, email= data.email):
+    admin = await adminService.get_admin_by_email(session=session, email=data.email)
+    if admin:
         token = create_access_token({"sub": user.id}, is_admin= True)
     else:
         token = create_access_token({"sub": user.id})
@@ -75,6 +89,14 @@ async def login_otp(data: VerifyLoginOtpRequest, session = Depends(get_async_ses
         "token_type": "bearer",
         "data": userSchema.UserResponse.model_validate(user)
 
+    }
+
+
+@auth_router.get("/auth/me")
+async def auth_me(current_user=Depends(userService.get_current_user)):
+    return {
+        "status": True,
+        "data": _user_identity_payload(current_user),
     }
 
 @auth_router.post("/auth/signup/verify-otp")
@@ -140,7 +162,7 @@ async def forgot_password(
     url = f"{settings.FRONTEND_BASE_URL}/reset-password?email={data.email}&code={reset_token}"
         # https://merchant.korapay.com/auth/reset-password?email=chowdome.cu@gmail.com&code=5iiTenNRpMs919svQGs2tZZV6gFKFzabBZtc8VmL9MoT5atP1T&action=password_reset
     try:
-        emailService.send_reset_url(data.email, url)
+        await emailService.send_reset_url(data.email, url)
     except Exception as e:
         return JSONResponse(content={"status": False, "message": f"Error occurred while sending otp: {e}"}, status_code= 400)
     return {"status": True, "message": "Password reset email sent succesfully", "url": url}
