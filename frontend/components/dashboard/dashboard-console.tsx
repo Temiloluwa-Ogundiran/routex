@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useEffectEvent, useState } from "react";
+import posthog from "posthog-js";
 
 import type {
   RouterDashboardData,
@@ -13,6 +14,7 @@ import { GatewayHealthGrid } from "./gateway-health-grid";
 import { RecentTransactions } from "./recent-transactions";
 import { RoutingRulesPanel } from "./routing-rules-panel";
 import { ScoreBreakdownCard } from "./score-breakdown-card";
+import { PushButton } from "../ui/push-button";
 
 function StatCard({
   label,
@@ -64,6 +66,14 @@ function formatLastRefreshed(lastRefreshedAt: string | null) {
     minute: "2-digit",
     second: "2-digit",
   })}`;
+}
+
+async function signOutAdmin() {
+  posthog.reset();
+  await fetch("/api/admin/logout", {
+    method: "POST",
+  }).catch(() => null);
+  window.location.href = "/admin/login";
 }
 
 type DashboardConsoleProps = {
@@ -171,6 +181,9 @@ export function DashboardConsole({
           >
             Refresh Health Now
           </button>
+          <PushButton onClick={() => void signOutAdmin()} variant="secondary">
+            Sign out
+          </PushButton>
           <div className="dashboard-hero__refresh-meta">
             <p>{formatLastRefreshed(lastRefreshedAt)}</p>
             <span className="dashboard-status-pill dashboard-status-pill--accent">

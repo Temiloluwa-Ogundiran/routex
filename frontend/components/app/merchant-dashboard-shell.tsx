@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import { startTransition, useEffect, useMemo, useState } from "react";
 
 import {
@@ -109,6 +110,7 @@ async function readDashboardData(
 }
 
 async function signOutUser() {
+  posthog.reset();
   await fetch("/api/auth/logout", {
     method: "POST",
   }).catch(() => null);

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
+import { PostHogIdentityBridge } from "../components/analytics/posthog-identity-bridge";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +23,10 @@ export default function RootLayout({
         } as CSSProperties
       }
     >
-      <body>{children}</body>
+      <body>
+        <PostHogIdentityBridge />
+        {children}
+      </body>
     </html>
   );
 }
