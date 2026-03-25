@@ -36,7 +36,7 @@ test("payment status page auto-forwards successful payments", async ({ page }) =
   await page.waitForURL("http://127.0.0.1:3000/docs");
   await expect(
     page.getByRole("heading", {
-      name: /build once\. route across every supported gateway\./i,
+      name: /routex api docs built from the live public contract\./i,
     }),
   ).toBeVisible();
 });

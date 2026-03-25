@@ -7,6 +7,6 @@ test("header and CTA use the branded visual system", async ({ page }) => {
 
   await expect(header.getByText("RouteX", { exact: true })).toBeVisible();
   await expect(
-    header.getByRole("button", { name: "Start Testing" }),
+    header.getByRole("link", { name: "Start Testing" }),
   ).toBeVisible();
 });

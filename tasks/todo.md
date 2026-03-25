@@ -277,9 +277,9 @@ Harden RouteX into a fully live, deployable product by removing demo-only fronte
 - [x] Split the admin control room into `/admin` with real admin login.
 - [x] Rebuild `/dashboard` as the live user dashboard backed by existing APIs.
 - [x] Remove dummy data and env-token shortcuts from frontend product surfaces.
-- [ ] Upgrade `/docs` into standard reference docs with payloads and examples.
-- [ ] Clean tracked junk, tighten `.env.example`, and add Dokploy-ready Dockerfiles and deployment docs.
-- [ ] Run full backend and frontend verification and record the result here.
+- [x] Upgrade `/docs` into standard reference docs with payloads and examples.
+- [x] Clean tracked junk, tighten `.env.example`, and add Dokploy-ready Dockerfiles and deployment docs.
+- [x] Run full backend and frontend verification and record the result here.
 
 ## Review
 
@@ -289,4 +289,14 @@ Harden RouteX into a fully live, deployable product by removing demo-only fronte
 - Live user dashboard wiring passed with `npm run build` and `npx playwright test tests/dashboard.spec.ts` -> `2 passed`.
 - Frontend live-surface cleanup passed with `npm run build` and `npx playwright test tests/admin.spec.ts tests/dashboard.spec.ts` -> `5 passed`.
 - Outcome: the admin control room now runs only through authenticated `/api/admin/*` proxies, legacy `/api/dashboard/*` routes are removed, demo data is no longer used for product surfaces, and the user/admin apps are cleanly separated.
-- The remaining work is docs hardening, deployment cleanup, and the final full-stack verification sweep.
+- Docs hardening passed with:
+  - `npm run build`
+  - `npx playwright test tests/docs.spec.ts tests/playground.spec.ts tests/navigation.spec.ts` -> `6 passed`
+- Deployment and config cleanup passed with:
+  - `docker compose config` (valid)
+  - new per-container Dockerfiles for API, worker, beat, and frontend
+  - `.env.example` reduced to required MVP variables (core, Resend, gateways, frontend bridge)
+- Full-stack closeout verification passed with:
+  - `pytest tests/test_auth_flow.py tests/test_routing_api.py tests/test_router_dashboard_api.py tests/test_interswitch_service.py tests/test_interswitch_webhooks.py -v` -> `27 passed`
+  - `npx playwright test` -> `23 passed`
+- Outcome: TODO is complete. Frontend uses live backend integrations only (no mock playground fallback), docs are payload-first and OpenAPI-driven, links/buttons route correctly, and the repo is deployment-ready for Dokploy.
