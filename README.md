@@ -1,164 +1,114 @@
-# RouteX - Hackathon Submission
+# RouteX
 
-RouteX is a multi-payment router for Nigeria that gives merchants one integration for collections and payouts while routing across multiple gateways for higher success rates.
+RouteX is a Nigeria-first multi-payment router for collections and payouts. The MVP gives merchants one integration, routes transactions across multiple gateways, and exposes both a merchant app and an admin control room.
+
+## Why this project matters
+
+Payment teams lose revenue when one gateway slows down or fails. RouteX reduces that risk by selecting the healthiest eligible gateway, recording routing decisions, and giving operators visibility into failover, health, and transaction flow from one place.
+
+## What we built
+
+- Unified collections API, payout API, and verification API
+- Intelligent routing across `Paystack`, `Flutterwave`, `Korapay`, and `Interswitch`
+- Gateway health tracking, failover visibility, and admin routing rules
+- Public API docs and landing-page API tester
+- OTP-based user auth, merchant dashboard, and separate admin dashboard
+- Interswitch hosted checkout bridge, return flow, and signed webhook handling
+
+## MVP Scope
+
+This submission is **test mode only**. All deployment and provider setup below assume sandbox/test credentials and test webhook endpoints.
+
+## Product Surfaces
+
+- `/` landing page and API tester
+- `/docs` public API docs
+- `/login`, `/signup`, `/verify-otp`, `/forgot-password`, `/reset-password`
+- `/dashboard` merchant app
+- `/admin/login`, `/admin` admin control room
+- `/pay/status` payment return status page
 
 ## Team Contributions
 
-GitHub README documents every team member's contribution - technical and non-technical. This includes code, design, research, documentation, or any other form of involvement.
+Judges should use this section to verify team participation.
 
-- **Temiloluwa Ogundiran (Backend)**
-  - Routing core and adapter architecture
-  - FastAPI APIs for collections, payouts, verify, admin analytics, and routing rules
-  - Interswitch collections + verify + webhook + return orchestration
-  - Gateway health snapshots and Celery refresh pipeline
-  - Data models, migrations, and backend tests
-  - Deployment architecture and gateway webhook mapping
+- **Temiloluwa Ogundiran**
+  - Backend architecture and API implementation
+  - Routing engine, gateway adapters, webhook normalization, and persistence
+  - Interswitch integration, return flow, and backend verification
+  - Database models, migrations, worker scheduling, and deployment configuration
+  - Backend testing and provider integration research
 
-- **Kwaghuter Raphael (Frontend)**
-  - Landing page, product UX, and visual system
-  - User auth flows (login/signup/OTP/recovery) and app route guards
-  - Merchant dashboard UX and admin control room UX
-  - Public API docs UI and landing-page API tester UX
-  - Frontend API proxy routes and end-to-end testing
-  - Hackathon submission polish and demonstration flow
+- **Kwaghuter Raphael**
+  - Frontend design system and landing page experience
+  - Public docs UI and API testing UX
+  - Merchant auth flows and dashboard UX
+  - Admin dashboard UX and observability screens
+  - Frontend routing, API proxy integration, and end-to-end testing
+  - Submission polish, README presentation, and demo flow preparation
 
-## Core Features
+## Architecture
 
-- One API for collections, verification, and payouts
-- Smart routing across Paystack, Flutterwave, Korapay, and Interswitch
-- Admin controls for gateway toggles, health, and routing rules
-- Signed webhook normalization and transaction observability
-- Public docs + API testing surface on the landing app
+- **Backend:** FastAPI, PostgreSQL, Redis, Celery
+- **Frontend:** Next.js
+- **Routing storage:** transaction attempts, routing decisions, health snapshots, routing rules
+- **Deployment shape:** Docker Compose stack for Dokploy
 
-## Runtime URLs
+## Important Environment Variables
 
-- Frontend app: `https://app.yourdomain.com`
-- Backend API: `https://api.yourdomain.com`
-- Interswitch checkout return endpoint: `https://api.yourdomain.com/api/v1/checkout/interswitch/return`
+Only the compact set below is needed:
 
-## Environment Variables (compacted)
+- `DB_URL`: PostgreSQL connection string for backend, worker, and beat
+- `REDIS_URL`: Redis connection string for backend, worker, and beat
+- `AGG_SECRET`: encryption secret for merchant token storage
+- `AUTH_SECRET`: JWT signing secret
+- `SERVER_URL`: public backend API base URL, for example `https://routexapi.xoroai.cloud`
+- `FRONTEND_BASE_URL`: public frontend app URL, for example `https://routex.xoroai.cloud`
+- `CHECKOUT_URL`: public checkout host used in hosted checkout flows
+- `RESEND_API_KEY`: Resend API key for OTP and receipt emails
+- `AUTH_EMAIL`: sender email for auth emails
+- `RECEIPT_EMAIL`: sender email for receipts
+- `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_LIVE_SECRET_KEY`
+- `FLTW_SECRET_KEY`
+- `FLTW_SECRET_HASH`
+- `KORA_SECRET_KEY`
+- `KORA_LIVE_SECRET_KEY`
+- `INTERSWITCH_MERCHANT_CODE`
+- `INTERSWITCH_PAY_ITEM_ID`
+- `INTERSWITCH_CLIENT_ID`
+- `INTERSWITCH_SECRET_KEY`
+- `ROUTEX_API_BASE_URL`: backend API base URL used by the frontend server
+- `ROUTEX_PLAYGROUND_SECRET_KEY`: sandbox merchant secret key used by the landing-page tester
 
-Only keep these keys:
+## Deployment
 
-- Backend core:
-  - `DB_URL`
-  - `REDIS_URL`
-  - `AGG_SECRET`
-  - `AUTH_SECRET`
-  - `SERVER_URL`
-  - `FRONTEND_BASE_URL`
-  - `CHECKOUT_URL`
-- Email:
-  - `RESEND_API_KEY`
-  - `AUTH_EMAIL`
-  - `RECEIPT_EMAIL`
-- Gateways:
-  - `PAYSTACK_SECRET_KEY`
-  - `PAYSTACK_LIVE_SECRET_KEY`
-  - `FLTW_SECRET_KEY`
-  - `FLTW_SECRET_HASH`
-  - `KORA_SECRET_KEY`
-  - `KORA_LIVE_SECRET_KEY`
-  - `INTERSWITCH_MERCHANT_CODE`
-  - `INTERSWITCH_PAY_ITEM_ID`
-  - `INTERSWITCH_CLIENT_ID`
-  - `INTERSWITCH_SECRET_KEY`
-- Frontend server integration:
-  - `ROUTEX_API_BASE_URL`
-  - `ROUTEX_PLAYGROUND_SECRET_KEY`
+Dokploy deployment now uses the repository's [docker-compose.yml](/C:/Users/USER/Documents/routex/docker-compose.yml).
 
-## Dokploy Deployment Guide (Step by Step)
+The full deployment guide lives in [DOKPLOY_DEPLOYMENT.md](/C:/Users/USER/Documents/routex/DOKPLOY_DEPLOYMENT.md). It includes:
 
-### 1) Create infrastructure services
-
-1. Create a `PostgreSQL` service in Dokploy.
-2. Create a `Redis` service in Dokploy.
-3. Copy internal connection values for both (host, port, user, password, db).
-
-### 2) Deploy API container
-
-1. New app service: `routex-api`.
-2. Build context: repo root.
-3. Dockerfile path: `Dockerfile.api`.
-4. Exposed port: `8000`.
-5. Set env vars:
-   - all backend core/email/gateway vars listed above
-   - `DB_URL` should use Dokploy postgres internal host
-   - `REDIS_URL` should use Dokploy redis internal host
-6. Add domain: `api.yourdomain.com`.
-7. Enable TLS in Dokploy.
-
-### 3) Deploy frontend container
-
-1. New app service: `routex-frontend`.
-2. Build context: `frontend`.
-3. Dockerfile path: `frontend/Dockerfile`.
-4. Exposed port: `3000`.
-5. Set env vars:
-   - `ROUTEX_API_BASE_URL=https://api.yourdomain.com`
-   - `ROUTEX_PLAYGROUND_SECRET_KEY=<sandbox merchant secret key>`
-6. Add domain: `app.yourdomain.com`.
-7. Enable TLS in Dokploy.
-
-### 4) Deploy worker container
-
-1. New app service: `routex-worker`.
-2. Build context: repo root.
-3. Dockerfile path: `Dockerfile.worker`.
-4. No public domain required.
-5. Use same backend env vars as API.
-
-### 5) Deploy beat container
-
-1. New app service: `routex-beat`.
-2. Build context: repo root.
-3. Dockerfile path: `Dockerfile.beat`.
-4. No public domain required.
-5. Use same backend env vars as API.
-
-## Domain setup in Dokploy
-
-For each public service:
-
-1. Open service -> `Domains`.
-2. Add domain (`api.yourdomain.com` or `app.yourdomain.com`).
-3. Point DNS `A`/`CNAME` to your Dokploy host.
-4. Enable HTTPS/Let's Encrypt.
-5. Redeploy service.
-
-## Gateway Webhook URLs to Configure
-
-Use API domain only (`https://api.yourdomain.com`).
-
-- **Paystack** (dashboard-configured)
-  - `https://api.yourdomain.com/paystack/webhook/test`
-
-- **Flutterwave** (dashboard-configured)
-  - `https://api.yourdomain.com/flutterwave/webhook/test`
-
-- **Korapay** (dashboard-configured)
-  - `https://api.yourdomain.com/kora/webhook/test`
-  - `https://api.yourdomain.com/kora/webhook/live`
-
-- **Interswitch**
-  - Dashboard webhook:
-    - `https://api.yourdomain.com/interswitch/webhook/test`
-    - `https://api.yourdomain.com/interswitch/webhook/live`
-  - Checkout return URL:
-    - Payload-driven by RouteX (not manual dashboard config):
-    - `https://api.yourdomain.com/api/v1/checkout/interswitch/return`
+- step-by-step Dokploy setup with Docker Compose
+- domain attachment for frontend and backend
+- exact env vars to fill
+- test-mode webhook URLs
+- which providers need dashboard webhook configuration
+- which providers need redirect/return URLs passed in payloads
 
 ## Local Verification
 
+Backend:
+
 ```powershell
-# backend
 $env:DB_URL='sqlite+aiosqlite:///./pytest_app.db'
 $env:REDIS_URL='redis://localhost:6379/0'
 $env:AUTH_SECRET='test-secret'
 $env:AGG_SECRET='nCNO7CutF7uhjRvkHxUlB1zJVEz-PvWQ_KFraeckYMs='
 pytest tests/test_auth_flow.py tests/test_routing_api.py tests/test_router_dashboard_api.py tests/test_interswitch_service.py tests/test_interswitch_webhooks.py -v
+```
 
-# frontend
+Frontend:
+
+```powershell
 Set-Location C:\Users\USER\Documents\routex\frontend
 npm run build
 npx playwright test
