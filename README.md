@@ -2,6 +2,8 @@
 
 RouteX is a smart multi-payment router built for merchants and payment teams that need higher payment success rates without managing separate gateway integrations. One integration gives access to collections, payouts, verification, routing intelligence, failover visibility, and an admin control room that explains every routing decision.
 
+Live frontend: [routex.xoroai.cloud](https://routex.xoroai.cloud)
+
 ## The Problem
 
 Businesses in Nigeria regularly lose revenue when a single payment gateway slows down, times out, or goes offline. Most teams respond by hard-coding one provider, manually switching during incidents, or maintaining multiple brittle integrations. That creates failed payments, operational overhead, and poor visibility when something goes wrong.
@@ -84,4 +86,4 @@ Judges should use this section to verify participation.
 - **Gateways:** Paystack, Flutterwave, Korapay, Interswitch
 - **Email:** Resend
 - **Analytics:** PostHog
-- **Deployment:** Docker Compose on Dokploy
+- **Deployment:** Docker Compose
