@@ -176,5 +176,6 @@ frontend/.next_stale_*/
 frontend/test-results/
 frontend/playwright-report/
 /docs/
+/tasks/
 AGENTS.md
 

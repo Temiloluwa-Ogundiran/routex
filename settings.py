@@ -65,7 +65,6 @@ redis_client = redis.from_url(
 )
 
 FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "https://www.xoropay.com")
-PUBLIC_SITE_URL = os.getenv("PUBLIC_SITE_URL", FRONTEND_BASE_URL)
 TEMP_PAYOUT_FEE = 60
 CHECKOUT_URL = os.getenv("CHECKOUT_URL", "https://checkout.xoropay.com")
 MAX_WS_LIFETIME = 1800 #30 MINUTES

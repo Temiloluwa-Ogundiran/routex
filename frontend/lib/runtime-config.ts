@@ -1,9 +1,5 @@
 export function getApiBaseUrl() {
-  return (
-    process.env.ROUTEX_API_BASE_URL ??
-    process.env.NEXT_PUBLIC_ROUTEX_API_BASE_URL ??
-    null
-  );
+  return process.env.ROUTEX_API_BASE_URL ?? null;
 }
 
 export function getPlaygroundSecretKey() {
