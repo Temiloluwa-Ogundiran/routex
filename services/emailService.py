@@ -81,14 +81,22 @@ def _build_message(
     return payload
 
 
+def _load_template(path: str) -> str:
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def _render_otp_html(otp: str) -> str:
+    return _load_template(OTP_TEMPLATE_PATH).replace("{{OTP_CODE}}", str(otp))
+
+
 async def _send_otp_email(email: str, otp: str) -> None:
-    with open(OTP_TEMPLATE_PATH, "r", encoding="utf-8") as f:
-        html_body = f.read().replace("{{OTP_CODE}}", str(otp))
+    html_body = _render_otp_html(otp)
 
     payload = _build_message(
         from_email=settings.AUTH_EMAIL,
         to_email=email,
-        subject="Your RouteX verification code",
+        subject="Your RouteX security code",
         html_content=html_body,
     )
     await _send_async(payload)
@@ -102,7 +110,7 @@ async def _send_reset_url(email: str, url: str) -> None:
     payload = _build_message(
         from_email=settings.AUTH_EMAIL,
         to_email=email,
-        subject="Password Reset",
+        subject="Reset your RouteX password",
         plain_text_content=body,
     )
     await _send_async(payload)
@@ -113,7 +121,7 @@ async def _send_receipt_email(
     html_content: str,
     pdf_bytes: bytes,
     pdf_filename: str = "receipt.pdf",
-    subject: str = "Your Transaction Receipt",
+    subject: str = "Your RouteX receipt",
 ) -> None:
     payload = _build_message(
         from_email=settings.RECEIPT_EMAIL,
