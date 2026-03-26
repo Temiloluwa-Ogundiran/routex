@@ -1,7 +1,7 @@
 ---
 title: Collections
 description: Initialize hosted collections with automatic routing or a manual gateway override.
-api: POST /api/v1/initiate
+openapi: POST /api/v1/initiate
 playground: interactive
 ---
 
@@ -22,7 +22,6 @@ Initialize a payment session and get back a single RouteX checkout URL. If you s
 | `redirect_url` | No | Optional customer return URL after payment. |
 | `notification_url` | No | Optional merchant webhook URL for normalized RouteX events. |
 | `narration` | No | Optional checkout narration. |
-| `mode` | No | Optional checkout channel hint. |
 | `metadata` | No | Optional metadata object. |
 
 ## Example request
@@ -40,7 +39,6 @@ Initialize a payment session and get back a single RouteX checkout URL. If you s
   "redirect_url": "https://merchant.example.com/return",
   "notification_url": "https://merchant.example.com/webhook",
   "narration": "Invoice payment",
-  "mode": "card",
   "metadata": {
     "order_id": "ORD_1001"
   }

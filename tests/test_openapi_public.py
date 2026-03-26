@@ -17,3 +17,13 @@ class TestPublicOpenApi:
         assert "/webhook/test-signature" not in paths
         assert "/admin/login" not in paths
         assert "/analytics/router/dashboard" not in paths
+
+    async def test_public_openapi_does_not_expose_checkout_channel_hint(self, client):
+        response = await client.get("/public/openapi.json")
+
+        assert response.status_code == 200
+
+        schema = response.json()["components"]["schemas"]["InitializeTransactionRequest"]
+        properties = schema["properties"]
+
+        assert "mode" not in properties

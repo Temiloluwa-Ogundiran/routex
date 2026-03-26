@@ -27,7 +27,6 @@ class InitializeTransactionRequest(BaseModel):
     redirect_url: Optional[str] = None
     notification_url: Optional[str] = None
     narration: Optional[str] = None
-    mode: Optional[transactionEnums.TransactionChannel] = None
     metadata: Optional[dict] = None
 
 

@@ -96,7 +96,6 @@ async def initiate_checkout(
                 amount=payload.amount,
                 merchant_id=merchant.id,
                 gateway_code=payload.gateway_code,
-                channel=payload.mode.value if payload.mode else None,
             )
         else:
             decision = await routingService.build_routing_decision(
@@ -105,7 +104,6 @@ async def initiate_checkout(
                 currency=str(payload.currency),
                 amount=payload.amount,
                 merchant_id=merchant.id,
-                channel=payload.mode.value if payload.mode else None,
             )
         adapter = get_adapter(decision.selected_gateway)
         adapter_kwargs = {
