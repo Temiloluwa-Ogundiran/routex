@@ -1,5 +1,5 @@
 from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, JSON, String, Text
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, validates
 import uuid
 from datetime import datetime,timezone
 import enum
@@ -45,5 +45,44 @@ class Transaction(Base):
     bulk_payout_id = Column(Integer, ForeignKey("bulk_payout.id"), nullable=True)
     payment_link_id = Column(String, ForeignKey("payment_links.id"), nullable=True)
     payment_link = relationship("PaymentLink", back_populates="transactions")
+
+    @validates("type")
+    def _validate_type(self, key, value):
+        if value in (None, ""):
+            return None
+        if isinstance(value, TransactionType):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip()
+            if normalized in TransactionType.__members__:
+                return TransactionType[normalized]
+            return TransactionType(normalized)
+        return value
+
+    @validates("processor")
+    def _validate_processor(self, key, value):
+        if value in (None, ""):
+            return None
+        if isinstance(value, TransactionProcessor):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip()
+            if normalized in TransactionProcessor.__members__:
+                return TransactionProcessor[normalized]
+            return TransactionProcessor(normalized)
+        return value
+
+    @validates("status")
+    def _validate_status(self, key, value):
+        if value in (None, ""):
+            return None
+        if isinstance(value, TransactionStatus):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip()
+            if normalized in TransactionStatus.__members__:
+                return TransactionStatus[normalized]
+            return TransactionStatus(normalized)
+        return value
 
 

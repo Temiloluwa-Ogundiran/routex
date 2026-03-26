@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import AliasChoices, BaseModel, EmailStr, Field
 from typing import Optional, Dict, Any
 from enums import transactionEnums
 from schemas.routerSchema import RoutingAttemptSummary, RoutingMetadata
@@ -20,6 +20,7 @@ class InitializeTransactionRequest(BaseModel):
     reference: str
     gateway_code: Optional[str] = Field(
         default=None,
+        validation_alias=AliasChoices("gateway_code", "gateway"),
         description="Optional gateway override. Use pstk, fltw, kora, or isw. If omitted, RouteX routes automatically.",
         examples=["pstk"],
     )
