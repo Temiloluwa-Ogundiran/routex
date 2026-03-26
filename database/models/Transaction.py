@@ -1,6 +1,4 @@
-from sqlalchemy import (
-    Column, String, Boolean, DateTime, Float, Integer, Table, ForeignKey, Text, JSON
-)
+from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import relationship, declarative_base
 import uuid
 from datetime import datetime,timezone
@@ -14,9 +12,9 @@ class Transaction(Base):
     __tablename__ = "transaction"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    type = Column(String(20), nullable=True)
+    type = Column(Enum(TransactionType, name="transactiontype"), nullable=True)
     mode = Column(String(10), nullable=True)
-    processor = Column(String(20), nullable=False)
+    processor = Column(Enum(TransactionProcessor, name="transactionprocessor"), nullable=False)
     merchant_id = Column(String(50), ForeignKey("merchant.id"))
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     wallet_id = Column(Integer, ForeignKey("wallets.id"), nullable=True)
@@ -27,7 +25,10 @@ class Transaction(Base):
     processor_charge = Column(Float, default=0.0)
     details = Column(JSON, nullable=True)
     currency = Column(String(10), default="NGN")
-    status = Column(String(20), default=TransactionStatus.PENDING.value)
+    status = Column(
+        Enum(TransactionStatus, name="transactionstatus", native_enum=False),
+        default=TransactionStatus.PENDING,
+    )
     selected_gateway = Column(String(20), nullable=True)
     redirect_url = Column(Text, nullable=True)
     notification_url = Column(Text, nullable=True)

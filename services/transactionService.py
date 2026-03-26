@@ -16,7 +16,63 @@ import json
 PROCESSOR_CHOICES = ['fltw', 'pstk', 'kora', 'isw']
 PROCESSOR_CHARGE_PRIORITY = ['kora', 'pstk', 'fltw', 'isw']
 
+
+def _coerce_transaction_type(value: TransactionType | str | None) -> TransactionType | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, TransactionType):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip()
+        if normalized in TransactionType.__members__:
+            return TransactionType[normalized]
+        if TransactionType.is_valid(normalized):
+            return TransactionType(normalized)
+    raise ValueError("Invalid transaction type")
+
+
+def _coerce_transaction_processor(
+    value: TransactionProcessor | str | None,
+) -> TransactionProcessor | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, TransactionProcessor):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip()
+        if normalized in TransactionProcessor.__members__:
+            return TransactionProcessor[normalized]
+        if TransactionProcessor.is_valid(normalized):
+            return TransactionProcessor(normalized)
+    raise ValueError("Invalid transaction processor")
+
+
+def _coerce_transaction_status(
+    value: TransactionStatus | str | None,
+) -> TransactionStatus | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, TransactionStatus):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip()
+        if normalized in TransactionStatus.__members__:
+            return TransactionStatus[normalized]
+        if TransactionStatus.is_valid(normalized):
+            return TransactionStatus(normalized)
+    raise ValueError("Invalid transaction status")
+
+
+def normalize_transaction_enums(transaction: Transaction) -> Transaction:
+    transaction.type = _coerce_transaction_type(transaction.type)
+    transaction.processor = _coerce_transaction_processor(transaction.processor)
+    transaction.status = _coerce_transaction_status(
+        transaction.status or TransactionStatus.PENDING
+    )
+    return transaction
+
 async def save_transaction(session:AsyncSession, transaction: Transaction)->Transaction:
+    transaction = normalize_transaction_enums(transaction)
     session.add(transaction)
     await session.commit()
     await session.refresh(transaction)
@@ -56,16 +112,16 @@ async def generate_processor_reference(session:AsyncSession):
         
 async def create_transaction(session: AsyncSession, merchant: Merchant, processor: str, amount: float, customer: Customer, reference: str, type: Optional[str] = None, currency: str = TransactionCurrency.NIGERIA, mode: Optional[str] = None, link: PaymentLink = None, narration: str = None, metadata_payload: Union[List, Dict] = None, redirect_url: str = None, notification_url: str = None) -> Transaction:
 
-    if not TransactionProcessor.is_valid(value=processor) and processor is not None:
-        raise Exception("Invalid transaction processor")
+    processor_value = _coerce_transaction_processor(processor)
+    type_value = _coerce_transaction_type(type)
     if not TransactionCurrency.is_valid(value=currency) and currency is not None:
         raise Exception("Invalid transaction currency")
     if not TokenMode.is_valid(value=mode) and mode is not None:
         raise Exception("Invalid transaction mode")
 
     transaction = Transaction(
-        type=type,
-        processor=processor,
+        type=type_value,
+        processor=processor_value,
         merchant_id=merchant.id,
         customer_id=customer.id,
         currency=currency,
@@ -78,13 +134,10 @@ async def create_transaction(session: AsyncSession, merchant: Merchant, processo
         metadata_payload = metadata_payload,
         redirect_url= redirect_url,
         notification_url= notification_url,
-        status=TransactionStatus.PENDING.value,
+        status=TransactionStatus.PENDING,
     )
-    
-    session.add(transaction)
-    await session.commit()
-    await session.refresh(transaction)
-    return transaction
+
+    return await save_transaction(session=session, transaction=transaction)
 
 async def get_transaction_by_id(session: AsyncSession, id: int) -> Transaction:
     stmt = select(Transaction).where(Transaction.id == id)
