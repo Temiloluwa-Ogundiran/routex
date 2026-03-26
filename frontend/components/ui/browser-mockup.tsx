@@ -1,53 +1,46 @@
 export function BrowserMockup() {
   return (
-    <section aria-label="RouteX dashboard preview" className="browser-mockup">
-      <header className="browser-mockup__bar">
-        <div className="browser-mockup__traffic">
-          <span className="browser-mockup__dot browser-mockup__dot--red" />
-          <span className="browser-mockup__dot browser-mockup__dot--yellow" />
-          <span className="browser-mockup__dot browser-mockup__dot--green" />
-        </div>
-        <div className="browser-mockup__search" />
-      </header>
+    <section aria-label="RouteX dashboard preview" className="browser-mockup liquid-device-stage">
+      <article className="liquid-device-stage__floating liquid-device-stage__floating--gain">
+        <span>Webhook success</span>
+        <strong>+99.4%</strong>
+      </article>
 
-      <div className="browser-mockup__body">
-        <div className="browser-mockup__headline">
-          <p>Active gateway score</p>
-          <strong>92.4% route health</strong>
-        </div>
+      <article className="liquid-device">
+        <div className="liquid-device__spark">R</div>
+        <div className="liquid-device__badge">PRO</div>
 
-        <div className="browser-mockup__top-grid">
-          <article className="metric-card metric-card--light">
-            <span>Top gateway</span>
-            <strong>Flutterwave</strong>
-            <small>Latency 1.1s</small>
-          </article>
-          <article className="metric-card metric-card--dark">
-            <span>Recovered today</span>
-            <strong>18 failovers</strong>
-            <small>Saved transactions</small>
-          </article>
-        </div>
+        <div className="liquid-device__body">
+          <p className="liquid-device__label">Total volume</p>
+          <strong className="liquid-device__amount">NGN 124,500</strong>
 
-        <div className="browser-mockup__chart-card">
-          <div className="browser-mockup__chips">
-            <span className="gateway-chip gateway-chip--active">PSTK</span>
-            <span className="gateway-chip">FLTW</span>
-            <span className="gateway-chip">KORA</span>
-            <span className="gateway-chip gateway-chip--muted">ISW</span>
-          </div>
-          <div className="browser-mockup__chart">
-            <span className="browser-mockup__chart-bar browser-mockup__chart-bar--1" />
-            <span className="browser-mockup__chart-bar browser-mockup__chart-bar--2" />
-            <span className="browser-mockup__chart-bar browser-mockup__chart-bar--3" />
-            <span className="browser-mockup__chart-bar browser-mockup__chart-bar--4" />
-          </div>
-          <div className="browser-mockup__event">
-            <strong>Failover event</strong>
-            <span>Paystack timeout rerouted to Korapay in 1.8s</span>
+          <div className="liquid-device__meter">
+            <span />
+            <small>Monthly limit</small>
+            <strong>75%</strong>
           </div>
         </div>
-      </div>
+
+        <div className="liquid-device__actions">
+          <button className="liquid-device__action liquid-device__action--accent" type="button">
+            Collect
+          </button>
+          <button className="liquid-device__action" type="button">
+            Verify
+          </button>
+          <button className="liquid-device__action" type="button">
+            Payout
+          </button>
+        </div>
+      </article>
+
+      <article className="liquid-device-stage__floating liquid-device-stage__floating--secure">
+        <div className="liquid-device-stage__shield">O</div>
+        <div>
+          <span>Secure</span>
+          <strong>Protected</strong>
+        </div>
+      </article>
     </section>
   );
 }

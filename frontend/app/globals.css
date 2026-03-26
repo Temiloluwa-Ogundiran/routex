@@ -3358,3 +3358,696 @@ body.routex-root {
     padding: 1.5rem;
   }
 }
+
+/* RouteX fluid system v3 */
+
+.site-shell {
+  background:
+    radial-gradient(circle at top left, rgba(253, 224, 71, 0.08), transparent 24rem),
+    radial-gradient(circle at bottom right, rgba(253, 224, 71, 0.06), transparent 22rem),
+    var(--routex-void);
+}
+
+.site-header {
+  top: 0.75rem;
+  width: min(100% - 1.5rem, 94rem);
+  padding: 0.85rem 1.15rem;
+  border-radius: 999px;
+  background: rgba(7, 7, 7, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.site-header__brand {
+  gap: 0.65rem;
+}
+
+.site-header__mark {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--routex-yellow);
+  box-shadow: none;
+  color: transparent;
+  font-size: 0;
+}
+
+.site-header__wordmark {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.site-header__nav {
+  gap: 0.5rem;
+}
+
+.site-header__link,
+.site-header__login {
+  min-height: 2.4rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.82rem;
+}
+
+.site-header .push-button--primary {
+  min-height: 2.6rem;
+  padding-inline: 1rem;
+  background: var(--routex-white);
+  color: var(--routex-ink);
+  box-shadow: none;
+}
+
+.landing-shell {
+  padding-top: 0.5rem;
+}
+
+.liquid-hero {
+  grid-template-columns: minmax(0, 0.95fr) minmax(21rem, 0.8fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+  min-height: calc(100svh - 7.5rem);
+  margin-top: 0.75rem;
+  padding: clamp(2rem, 5vw, 4.25rem);
+  border: 0;
+  border-radius: 2rem 2rem 5rem 2rem;
+  background: #fde047;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.24);
+}
+
+.liquid-hero::before {
+  content: "";
+  position: absolute;
+  right: -10rem;
+  bottom: -8rem;
+  width: 22rem;
+  height: 18rem;
+  border-radius: 55% 45% 0 0;
+  background: rgba(10, 10, 10, 0.06);
+  transform: rotate(-20deg);
+}
+
+.liquid-hero__kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.08);
+  color: rgba(10, 10, 10, 0.72);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.liquid-hero__kicker::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.58);
+}
+
+.hero-title {
+  max-width: 7ch;
+  font-size: clamp(4.5rem, 10vw, 8rem);
+  line-height: 0.9;
+  letter-spacing: -0.1em;
+}
+
+.hero-title__outline {
+  display: block;
+  color: rgba(10, 10, 10, 0.94);
+}
+
+.hero-copy {
+  max-width: 27rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: rgba(10, 10, 10, 0.8);
+}
+
+.liquid-hero .hero-actions {
+  align-items: center;
+  gap: 1rem;
+}
+
+.liquid-hero .push-button--primary {
+  background: var(--routex-ink);
+  color: var(--routex-white);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+}
+
+.liquid-hero .push-button--secondary {
+  background: transparent;
+  color: rgba(10, 10, 10, 0.88);
+  border-color: rgba(10, 10, 10, 0.14);
+  box-shadow: none;
+}
+
+.liquid-hero__social-proof {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.liquid-hero__avatars {
+  display: flex;
+  margin-right: 0.25rem;
+}
+
+.liquid-hero__avatars span {
+  width: 2rem;
+  height: 2rem;
+  margin-left: -0.35rem;
+  border: 2px solid #fde047;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 30%, #fff7d1, #f2b0b8 58%, #5b3a34 100%);
+}
+
+.liquid-hero__avatars span:nth-child(2) {
+  background:
+    radial-gradient(circle at 35% 30%, #fff7d1, #c2d8ff 58%, #324663 100%);
+}
+
+.liquid-hero__avatars span:nth-child(3) {
+  background:
+    radial-gradient(circle at 35% 30%, #fff7d1, #d4f1b5 58%, #47633a 100%);
+}
+
+.liquid-hero__avatars span:nth-child(4) {
+  background:
+    radial-gradient(circle at 35% 30%, #fff7d1, #ffd8b0 58%, #7b4e30 100%);
+}
+
+.liquid-hero__social-proof strong,
+.liquid-hero__social-proof span {
+  display: block;
+  color: rgba(10, 10, 10, 0.9);
+}
+
+.liquid-hero__social-proof span {
+  font-size: 0.85rem;
+  color: rgba(10, 10, 10, 0.62);
+}
+
+.liquid-device-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 34rem;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.liquid-device {
+  position: relative;
+  width: min(100%, 22rem);
+  min-height: 26rem;
+  padding: 1.4rem;
+  border-radius: 2rem;
+  background: #090909;
+  color: var(--routex-white);
+  box-shadow: 0 28px 80px rgba(10, 10, 10, 0.38);
+  transform: rotate(11deg);
+}
+
+.liquid-device__spark,
+.liquid-device__badge {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.liquid-device__spark {
+  top: 1rem;
+  left: 1rem;
+  background: rgba(253, 224, 71, 0.12);
+  color: var(--routex-yellow);
+}
+
+.liquid-device__badge {
+  top: 1rem;
+  right: 1rem;
+  padding-inline: 0.75rem;
+  background: var(--routex-yellow);
+  color: var(--routex-ink);
+}
+
+.liquid-device__body {
+  display: grid;
+  align-content: end;
+  min-height: 17rem;
+  padding-top: 8rem;
+}
+
+.liquid-device__label {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 0.78rem;
+}
+
+.liquid-device__amount {
+  margin-top: 0.35rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.06em;
+}
+
+.liquid-device__meter {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+.liquid-device__meter span {
+  grid-column: 1 / -1;
+  display: block;
+  height: 0.24rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--routex-yellow) 75%, rgba(255, 255, 255, 0.12) 75%);
+}
+
+.liquid-device__meter small,
+.liquid-device__meter strong {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.72rem;
+}
+
+.liquid-device__actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 2rem;
+}
+
+.liquid-device__action {
+  min-height: 2.9rem;
+  border: 0;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--routex-white);
+  font: inherit;
+  font-weight: 700;
+}
+
+.liquid-device__action--accent {
+  background: var(--routex-white);
+  color: var(--routex-ink);
+}
+
+.liquid-device-stage__floating {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 0.15rem;
+  padding: 1rem 1.15rem;
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 18px 38px rgba(10, 10, 10, 0.18);
+  backdrop-filter: blur(16px);
+  color: var(--routex-ink);
+}
+
+.liquid-device-stage__floating span {
+  font-size: 0.74rem;
+  color: rgba(10, 10, 10, 0.55);
+}
+
+.liquid-device-stage__floating strong {
+  font-size: 1.2rem;
+}
+
+.liquid-device-stage__floating--gain {
+  top: 2rem;
+  right: 1rem;
+}
+
+.liquid-device-stage__floating--secure {
+  bottom: 2rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgba(10, 10, 10, 0.94);
+  color: var(--routex-white);
+}
+
+.liquid-device-stage__shield {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  background: var(--routex-yellow);
+  color: var(--routex-ink);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.liquid-feature-section {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.liquid-feature-heading {
+  gap: 0.75rem;
+  padding-top: 6rem;
+  padding-bottom: 2rem;
+}
+
+.liquid-feature-heading h2 {
+  max-width: 13ch;
+  font-size: clamp(3.5rem, 8vw, 5.6rem);
+}
+
+.liquid-feature-heading h2 span {
+  display: block;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.liquid-feature-heading p:last-child {
+  max-width: 34rem;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.liquid-feature-grid {
+  grid-template-columns: 1.25fr 0.95fr;
+  align-items: stretch;
+}
+
+.liquid-feature-card {
+  position: relative;
+  min-height: 18rem;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 2rem;
+  background: #171717;
+  color: var(--routex-white);
+  box-shadow: none;
+}
+
+.liquid-feature-card--wide,
+.liquid-feature-card--wide-dark {
+  min-height: 16rem;
+}
+
+.liquid-feature-card--wide-dark {
+  background:
+    radial-gradient(circle at top right, rgba(253, 224, 71, 0.12), transparent 14rem),
+    #171717;
+}
+
+.liquid-feature-card--compact {
+  min-height: 15rem;
+}
+
+.liquid-feature-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--routex-yellow);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.liquid-feature-card__eyebrow {
+  margin: 1.2rem 0 0;
+  color: rgba(253, 224, 71, 0.92);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.liquid-feature-card h3 {
+  margin-top: 1rem;
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.liquid-feature-card p:last-of-type {
+  max-width: 26rem;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.liquid-feature-card__arrow {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.25rem;
+}
+
+.liquid-cta-section {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.liquid-cta {
+  justify-items: center;
+  text-align: center;
+  margin: 2rem clamp(1.5rem, 4vw, 3rem) 0;
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at top right, rgba(253, 224, 71, 0.14), transparent 14rem),
+    #171717;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.liquid-cta h2 {
+  max-width: 10ch;
+}
+
+.liquid-cta h2 span {
+  color: var(--routex-yellow);
+}
+
+.liquid-cta p {
+  max-width: 36rem;
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.liquid-footer {
+  grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.7fr));
+  align-items: start;
+  gap: 2.5rem;
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.liquid-footer__brand,
+.liquid-footer__column {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.liquid-footer__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--routex-white);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.liquid-footer__logo-dot {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 999px;
+  background: var(--routex-yellow);
+}
+
+.site-footer__copy,
+.liquid-footer__column a {
+  max-width: 20rem;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.liquid-auth-shell {
+  min-height: calc(100svh - 7rem);
+  gap: 1.35rem;
+}
+
+.liquid-auth-shell .auth-shell__intro {
+  border-radius: 2rem 2rem 5rem 2rem;
+  background: #fde047;
+  color: var(--routex-ink);
+}
+
+.liquid-auth-shell .auth-shell__eyebrow {
+  align-self: start;
+  padding: 0.45rem 0.85rem;
+  background: rgba(10, 10, 10, 0.92);
+  color: var(--routex-white);
+  font-size: 0.74rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.liquid-auth-shell .auth-shell__intro h1 {
+  max-width: 8ch;
+  font-size: clamp(3.8rem, 9vw, 7rem);
+  letter-spacing: -0.1em;
+}
+
+.liquid-auth-shell .auth-shell__copy {
+  max-width: 29rem;
+  color: rgba(10, 10, 10, 0.76);
+}
+
+.liquid-auth-shell .auth-shell__card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2rem;
+}
+
+.liquid-auth-shell .auth-shell__card-header h2 {
+  font-size: 1.6rem;
+}
+
+.liquid-auth-shell .playground-status-chip {
+  background: rgba(253, 224, 71, 0.14);
+  color: var(--routex-yellow);
+}
+
+.dashboard-shell {
+  width: min(100% - 1.5rem, 94rem);
+  margin: 1rem auto 0;
+  padding: 0 0 4rem;
+}
+
+.dashboard-hero,
+.dashboard-card,
+.dashboard-panel,
+.dashboard-table-shell {
+  border-radius: 2rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dashboard-hero {
+  padding: 2.2rem;
+}
+
+.dashboard-hero__copy h1 {
+  max-width: 10ch;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+}
+
+.dashboard-hero__actions--stretch {
+  display: grid;
+  grid-template-columns: minmax(14rem, auto) auto auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.dashboard-app-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-select-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dashboard-control-input {
+  min-height: 3.2rem;
+  padding-inline: 1rem;
+}
+
+.dashboard-mode-toggle__buttons {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.dashboard-key-grid {
+  gap: 1rem;
+}
+
+.dashboard-key-card strong {
+  font-size: 1rem;
+}
+
+.dashboard-copy-feedback,
+.dashboard-warning,
+.dashboard-feed__item p {
+  font-size: 0.92rem;
+}
+
+@media (max-width: 1100px) {
+  .liquid-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .liquid-feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero__actions--stretch {
+    grid-template-columns: 1fr;
+  }
+
+  .liquid-footer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    border-radius: 1.5rem;
+  }
+
+  .liquid-hero,
+  .liquid-auth-shell .auth-shell__intro,
+  .dashboard-hero,
+  .dashboard-card,
+  .dashboard-panel,
+  .dashboard-table-shell,
+  .liquid-cta {
+    border-radius: 1.75rem;
+  }
+
+  .liquid-device {
+    width: min(100%, 18rem);
+    min-height: 22rem;
+  }
+
+  .liquid-device-stage__floating--gain {
+    right: 0;
+  }
+
+  .liquid-device-stage__floating--secure {
+    left: 0;
+  }
+}

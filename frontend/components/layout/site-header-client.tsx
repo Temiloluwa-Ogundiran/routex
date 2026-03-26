@@ -4,6 +4,7 @@ import Link from "next/link";
 import posthog from "posthog-js";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { docsHref, isExternalHref } from "../../lib/docs-url";
 
 type SiteHeaderClientProps = {
   initialAuthHint: "guest" | "user" | "admin";
@@ -19,7 +20,7 @@ type AuthState = {
 const BASE_NAV_ITEMS = [
   { label: "Product", href: "/#product" },
   { label: "Platform", href: "/#platform" },
-  { label: "Docs", href: "/docs" },
+  { label: "Docs", href: docsHref() },
 ];
 
 async function readJson(response: Response) {
@@ -87,6 +88,22 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
     return BASE_NAV_ITEMS;
   }, [authState.kind]);
 
+  function renderNavItem(item: { label: string; href: string }) {
+    if (isExternalHref(item.href)) {
+      return (
+        <a className="site-header__link" href={item.href} key={`${item.label}-${item.href}`}>
+          {item.label}
+        </a>
+      );
+    }
+
+    return (
+      <Link className="site-header__link" href={item.href} key={`${item.label}-${item.href}`}>
+        {item.label}
+      </Link>
+    );
+  }
+
   async function handleSignOut() {
     if (authState.kind === "admin") {
       posthog.reset();
@@ -137,7 +154,7 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
           Log in
         </Link>
         <Link className="push-button push-button--primary" href="/signup">
-          Get started
+          Get Started
         </Link>
       </div>
     );
@@ -153,11 +170,7 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
       </Link>
 
       <nav aria-label="Primary" className="site-header__nav">
-        {navItems.map((item) => (
-          <Link className="site-header__link" href={item.href} key={`${item.label}-${item.href}`}>
-            {item.label}
-          </Link>
-        ))}
+        {navItems.map(renderNavItem)}
       </nav>
 
       {renderActions()}

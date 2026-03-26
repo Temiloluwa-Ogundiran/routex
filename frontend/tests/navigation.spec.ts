@@ -4,7 +4,7 @@ test("public header routes guests into docs and signup", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000");
 
   await page.locator(".site-header__nav").getByRole("link", { name: "Docs" }).click();
-  await expect(page).toHaveURL(/\/docs$/);
+  await expect(page).toHaveURL("http://127.0.0.1:3001/");
 
   await page.goto("http://127.0.0.1:3000");
   await page.locator(".site-header").getByRole("link", { name: /get started/i }).click();
@@ -18,12 +18,12 @@ test("public header routes guests into docs and signup", async ({ page }) => {
 test("landing call-to-actions route into docs and signup", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000");
 
-  await page.getByRole("link", { name: /get started/i }).first().click();
+  await page.getByRole("link", { name: "Open Account" }).click();
   await expect(page).toHaveURL(/\/signup$/);
 
   await page.goto("http://127.0.0.1:3000");
-  await page.getByRole("link", { name: /open docs/i }).first().click();
-  await expect(page).toHaveURL(/\/docs$/);
+  await page.getByRole("link", { name: "View Docs" }).click();
+  await expect(page).toHaveURL("http://127.0.0.1:3001/");
 });
 
 test("signed-in users see product actions instead of guest auth ctas", async ({
@@ -88,5 +88,5 @@ test("footer routes to docs instead of a standalone sandbox app", async ({ page 
   await page.goto("http://127.0.0.1:3000");
 
   await page.getByRole("link", { name: "Docs" }).last().click();
-  await expect(page).toHaveURL(/\/docs$/);
+  await expect(page).toHaveURL("http://127.0.0.1:3001/");
 });

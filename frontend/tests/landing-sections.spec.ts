@@ -5,17 +5,17 @@ test("landing page includes the new fluid product sections", async ({ page }) =>
 
   await expect(
     page.getByRole("heading", {
-      name: /one control plane for collections, payouts, and failover/i,
+      name: /fluid payments/i,
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: /built for operators who cannot afford blind spots/i,
+      name: /everything you need\./i,
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: /launch faster with one routex integration/i,
+      name: /ready to flow\?/i,
     }),
   ).toBeVisible();
 });

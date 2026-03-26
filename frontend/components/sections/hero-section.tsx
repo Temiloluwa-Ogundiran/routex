@@ -1,32 +1,40 @@
 import Link from "next/link";
 import { BrowserMockup } from "../ui/browser-mockup";
-import { SectionBadge } from "../ui/section-badge";
+import { docsHref } from "../../lib/docs-url";
 
 export function HeroSection() {
   return (
-    <section className="hero-panel hero-panel--dotted" id="product">
+    <section className="hero-panel liquid-hero" id="product">
       <div className="hero-copy-block">
-        <SectionBadge>Hyper-fast routing for test mode</SectionBadge>
+        <span className="liquid-hero__kicker">Next-gen payment routing</span>
         <h1 className="hero-title">
-          Route every payment
-          <span className="hero-title__outline"> with control.</span>
+          FLUID
+          <span className="hero-title__outline"> PAYMENTS</span>
         </h1>
         <p className="hero-copy">
-          Collections, payouts, and failover across Paystack, Flutterwave,
-          Korapay, and Interswitch with one RouteX control layer.
+          RouteX gives merchants one premium surface for collections, payouts,
+          merchant webhooks, and gateway control across Flutterwave, Paystack,
+          Korapay, and Interswitch.
         </p>
         <div className="hero-actions">
           <Link className="push-button push-button--primary" href="/signup">
-            Get started
+            Open Account
           </Link>
-          <Link className="push-button push-button--secondary" href="/docs">
-            Read the docs
-          </Link>
+          <a className="push-button push-button--secondary" href={docsHref()}>
+            View Docs
+          </a>
         </div>
-        <div className="hero-meta">
-          <span>Collections, payouts, and failover</span>
-          <span>Test mode across four gateways</span>
-          <span>Optional gateway override</span>
+        <div className="liquid-hero__social-proof">
+          <div className="liquid-hero__avatars" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <div>
+            <strong>4 gateways</strong>
+            <span>One clean merchant API</span>
+          </div>
         </div>
       </div>
       <BrowserMockup />

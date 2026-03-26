@@ -1,20 +1,24 @@
 import Link from "next/link";
+import { docsHref } from "../../lib/docs-url";
 
 export function FinalCta() {
   return (
-    <section className="story-section story-section--cta" id="docs">
-      <div className="final-cta">
-        <h2>Ready to move money without guesswork?</h2>
+    <section className="story-section story-section--cta liquid-cta-section" id="docs">
+      <div className="final-cta liquid-cta">
+        <h2>
+          Ready to <span>Flow?</span>
+        </h2>
         <p>
-          Start in test mode, force a gateway when you need to, and keep the webhook story clean from day one.
+          Give your team one sharp surface for collections, payouts, merchant
+          webhooks, and live payment visibility.
         </p>
         <div className="hero-actions">
           <Link className="push-button push-button--primary" href="/signup">
-            Open your workspace
+            Get Started Now
           </Link>
-          <Link className="push-button push-button--secondary" href="/docs">
-            Open docs
-          </Link>
+          <a className="push-button push-button--secondary" href={docsHref()}>
+            Explore Docs
+          </a>
         </div>
       </div>
     </section>

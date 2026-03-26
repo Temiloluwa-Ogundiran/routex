@@ -6,7 +6,7 @@ test("landing shell uses the hyper-saturated routex visual system", async ({ pag
   const header = page.getByRole("banner");
 
   await expect(header.getByText("RouteX", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /route every payment with control/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /fluid payments/i })).toBeVisible();
   await expect(header.getByRole("link", { name: /get started/i })).toBeVisible();
-  await expect(page.locator("body")).toContainText("Collections, payouts, and failover");
+  await expect(page.locator("body")).toContainText("merchant webhooks");
 });

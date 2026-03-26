@@ -106,15 +106,15 @@ function SignupPageContent() {
   return (
     <AuthFormShell
       badge="Create account"
-      description="Set up your details and confirm your email to open your RouteX workspace."
+      description="Set up your details, verify your email, and open your RouteX merchant workspace."
       title="Create your RouteX account"
     >
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Get started</p>
-          <h2>Set up your account details</h2>
+          <h2>Set up your details</h2>
         </div>
-        <span className="playground-status-chip">Email confirmation</span>
+        <span className="playground-status-chip">OTP</span>
       </div>
 
       <form className="auth-form" onSubmit={handleSubmit}>

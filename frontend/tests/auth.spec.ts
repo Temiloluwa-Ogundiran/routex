@@ -13,17 +13,17 @@ test("login page renders the auth form", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/login");
 
   await expect(page.getByRole("heading", { name: /sign in to routex/i })).toBeVisible();
-  await expect(page.getByText(/enter your email and password/i)).toBeVisible();
+  await expect(page.getByText(/sign in with your email and password/i)).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Password")).toBeVisible();
-  await expect(page.getByRole("button", { name: /send otp/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /continue/i })).toBeVisible();
 });
 
 test("signup page renders the registration form", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/signup");
 
   await expect(page.getByRole("heading", { name: /create your routex account/i })).toBeVisible();
-  await expect(page.getByText(/open your routex workspace/i)).toBeVisible();
+  await expect(page.getByText(/verify your email/i)).toBeVisible();
   await expect(page.getByLabel("Full name")).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Password")).toBeVisible();

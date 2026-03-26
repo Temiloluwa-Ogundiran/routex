@@ -13,6 +13,7 @@ import {
   type MerchantDashboardResponse,
   type MerchantWorkspaceMerchant,
 } from "../../lib/app-dashboard";
+import { docsHref } from "../../lib/docs-url";
 import { PushButton } from "../ui/push-button";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
@@ -318,9 +319,9 @@ export function MerchantDashboardShell() {
             <PushButton onClick={() => setRefreshKey((currentValue) => currentValue + 1)}>
               Retry
             </PushButton>
-            <Link className="push-button push-button--secondary" href="/docs">
+            <a className="push-button push-button--secondary" href={docsHref()}>
               Review docs
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -385,9 +386,9 @@ export function MerchantDashboardShell() {
                 ? "Creating workspace..."
                 : "Create merchant workspace"}
             </PushButton>
-            <Link className="push-button push-button--secondary" href="/docs">
+            <a className="push-button push-button--secondary" href={docsHref()}>
               Review API docs
-            </Link>
+            </a>
           </div>
         </form>
       </section>
@@ -408,12 +409,9 @@ export function MerchantDashboardShell() {
 
         <div className="dashboard-hero__actions dashboard-hero__actions--stretch">
           <div className="dashboard-app-actions">
-            <Link className="push-button push-button--secondary" href="/docs">
+            <a className="push-button push-button--secondary" href={docsHref()}>
               API docs
-            </Link>
-            <Link className="push-button push-button--secondary" href="/docs/collections">
-              Sandbox
-            </Link>
+            </a>
             <PushButton onClick={() => void signOutUser()} variant="primary">
               Sign out
             </PushButton>
@@ -606,7 +604,7 @@ export function MerchantDashboardShell() {
             </div>
           </div>
           <p className="dashboard-copy-feedback">
-            {copiedLabel ?? "Use your keys here or jump into the docs and sandbox when you're ready."}
+            {copiedLabel ?? "Copy your keys here, then move into the docs when you are ready to build."}
           </p>
         </article>
       </section>
@@ -668,9 +666,9 @@ export function MerchantDashboardShell() {
               <p className="dashboard-panel__eyebrow">Payment links</p>
               <h3>Payment links</h3>
             </div>
-            <Link className="inline-link" href="/docs/collections">
+            <a className="inline-link" href={docsHref("/collections")}>
               Endpoint guide
-            </Link>
+            </a>
           </div>
           <div className="dashboard-feed">
             {dashboard.payment_links.length > 0 ? (

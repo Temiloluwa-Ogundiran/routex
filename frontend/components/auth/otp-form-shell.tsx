@@ -14,7 +14,7 @@ export function OtpFormShell({
   title,
 }: OtpFormShellProps) {
   return (
-    <main className="auth-shell auth-shell--otp">
+    <main className="auth-shell auth-shell--otp liquid-auth-shell">
       <section className="auth-shell__intro">
         <span className="auth-shell__eyebrow">{badge}</span>
         <h1>{title}</h1>

@@ -16,7 +16,7 @@ test("payment status page keeps manual continue visible for pending payments", a
   page,
 }) => {
   await page.goto(
-    "http://127.0.0.1:3000/pay/status?reference=TXN_2&status=pending&selected_gateway=isw&gateway_reference=ISW_PROC_002&next=http%3A%2F%2F127.0.0.1%3A3000%2Fdocs",
+    "http://127.0.0.1:3000/pay/status?reference=TXN_2&status=pending&selected_gateway=isw&gateway_reference=ISW_PROC_002&next=http%3A%2F%2F127.0.0.1%3A3001",
   );
 
   await expect(
@@ -24,19 +24,15 @@ test("payment status page keeps manual continue visible for pending payments", a
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /continue to merchant/i }),
-  ).toHaveAttribute("href", "http://127.0.0.1:3000/docs");
+  ).toHaveAttribute("href", "http://127.0.0.1:3001");
 });
 
 test("payment status page auto-forwards successful payments", async ({ page }) => {
   await page.goto(
-    "http://127.0.0.1:3000/pay/status?reference=TXN_3&status=success&selected_gateway=isw&gateway_reference=ISW_PROC_003&next=http%3A%2F%2F127.0.0.1%3A3000%2Fdocs",
+    "http://127.0.0.1:3000/pay/status?reference=TXN_3&status=success&selected_gateway=isw&gateway_reference=ISW_PROC_003&next=http%3A%2F%2F127.0.0.1%3A3001",
   );
 
   await expect(page.getByText(/redirecting you in/i)).toBeVisible();
-  await page.waitForURL("http://127.0.0.1:3000/docs");
-  await expect(
-    page.getByRole("heading", {
-      name: /routex api reference/i,
-    }),
-  ).toBeVisible();
+  await page.waitForURL("http://127.0.0.1:3001/");
+  await expect(page.getByText("RouteX API Docs")).toBeVisible();
 });

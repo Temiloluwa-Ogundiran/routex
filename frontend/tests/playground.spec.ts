@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("sandbox route redirects into the mintlify collections docs", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/sandbox");
 
-  await expect(page).toHaveURL(/\/docs\/collections$/);
+  await expect(page).toHaveURL("http://127.0.0.1:3001/collections");
   await expect(page.getByRole("heading", { name: "Collections" })).toBeVisible();
 });
 

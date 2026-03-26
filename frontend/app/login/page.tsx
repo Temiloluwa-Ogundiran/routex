@@ -103,16 +103,16 @@ function LoginPageContent() {
 
   return (
     <AuthFormShell
-      badge="Merchant access"
-      description="Enter your email and password. We will send a one-time code to finish sign in."
+      badge="Merchant login"
+      description="Sign in with your email and password. We’ll send a one-time code to complete access."
       title="Sign in to RouteX"
     >
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Welcome back</p>
-          <h2>Enter your account details</h2>
+          <h2>Enter your details</h2>
         </div>
-        <span className="playground-status-chip">Email code</span>
+        <span className="playground-status-chip">OTP</span>
       </div>
 
       <form className="auth-form" onSubmit={handleSubmit}>
@@ -157,7 +157,7 @@ function LoginPageContent() {
         ) : null}
 
         <PushButton disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Sending code..." : "Send OTP"}
+          {isSubmitting ? "Sending code..." : "Continue"}
         </PushButton>
       </form>
 

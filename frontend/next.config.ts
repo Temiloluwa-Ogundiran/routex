@@ -2,22 +2,55 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const mintlifyDocsOrigin =
-  process.env.MINTLIFY_DOCS_ORIGIN ?? "http://127.0.0.1:3001";
+  process.env.MINTLIFY_DOCS_ORIGIN ??
+  process.env.NEXT_PUBLIC_DOCS_URL ??
+  "https://docs.routex.xoroai.cloud";
+const publicDocsUrl =
+  process.env.NEXT_PUBLIC_DOCS_URL ?? mintlifyDocsOrigin;
+const isLocalDocsOrigin = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(
+  mintlifyDocsOrigin,
+);
 
 const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  env: {
+    NEXT_PUBLIC_DOCS_URL: publicDocsUrl,
+  },
   async redirects() {
-    return [
+    const redirects = [
       {
         source: "/sandbox",
-        destination: "/docs/collections",
+        destination: `${publicDocsUrl}/collections`,
         permanent: false,
       },
     ];
+
+    if (!isLocalDocsOrigin) {
+      redirects.push(
+        {
+          source: "/docs",
+          destination: publicDocsUrl,
+          permanent: false,
+        },
+        {
+          source: "/docs/:path*",
+          destination: `${publicDocsUrl}/:path*`,
+          permanent: false,
+        },
+      );
+    }
+
+    return redirects;
   },
   async rewrites() {
+    if (!isLocalDocsOrigin) {
+      return {
+        beforeFiles: [],
+      };
+    }
+
     return {
       beforeFiles: [
         {

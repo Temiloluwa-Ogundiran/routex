@@ -16,7 +16,7 @@ export function AuthFormShell({
   title,
 }: AuthFormShellProps) {
   return (
-    <main className="auth-shell">
+    <main className="auth-shell liquid-auth-shell">
       <section className="auth-shell__intro">
         <span className="auth-shell__eyebrow">{badge}</span>
         <h1>{title}</h1>

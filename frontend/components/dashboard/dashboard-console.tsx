@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useEffectEvent, useState } from "react";
 import posthog from "posthog-js";
 
@@ -9,6 +8,7 @@ import type {
   RouterGatewayHealth,
   RouterRule,
 } from "../../lib/dashboard-api";
+import { docsHref } from "../../lib/docs-url";
 import { FailoverFeed } from "./failover-feed";
 import { GatewayControlPanel } from "./gateway-control-panel";
 import { GatewayHealthGrid } from "./gateway-health-grid";
@@ -174,9 +174,9 @@ export function DashboardConsole({
         </div>
 
         <div className="dashboard-hero__actions">
-          <Link className="push-button push-button--secondary" href="/docs">
+          <a className="push-button push-button--secondary" href={docsHref()}>
             Open docs
-          </Link>
+          </a>
           <button
             className="push-button push-button--primary"
             disabled={isRefreshing}

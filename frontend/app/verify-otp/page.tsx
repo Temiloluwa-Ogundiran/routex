@@ -91,7 +91,7 @@ function VerifyOtpPageContent() {
   return (
     <OtpFormShell
       badge="Step 2 of 2"
-      description="Enter the six-digit code we emailed to you to finish signing in."
+      description="Enter the six-digit code we emailed to finish your RouteX sign in."
       title="Enter your email code"
     >
       <div className="auth-shell__card-header">

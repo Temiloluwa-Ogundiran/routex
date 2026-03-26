@@ -1,13 +1,8 @@
 import { FeatureGrid } from "../components/sections/feature-grid";
 import { FinalCta } from "../components/sections/final-cta";
 import { HeroSection } from "../components/sections/hero-section";
-import { HowItWorks } from "../components/sections/how-it-works";
 import { SiteFooter } from "../components/layout/site-footer";
 import { SiteHeader } from "../components/layout/site-header";
-import { ProblemSolution } from "../components/sections/problem-solution";
-import { ProofSection } from "../components/sections/proof-section";
-import { TrustMarquee } from "../components/sections/trust-marquee";
-import { UseCases } from "../components/sections/use-cases";
 
 export default function HomePage() {
   return (
@@ -15,12 +10,7 @@ export default function HomePage() {
       <SiteHeader />
       <main className="landing-shell">
         <HeroSection />
-        <TrustMarquee />
-        <ProblemSolution />
         <FeatureGrid />
-        <HowItWorks />
-        <UseCases />
-        <ProofSection />
         <FinalCta />
       </main>
       <SiteFooter />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { docsHref } from "../../lib/docs-url";
 
 type PaymentStatus = "success" | "pending" | "failed";
 
@@ -133,7 +134,7 @@ export function PaymentStatusShell({
               Continue to merchant
             </a>
           ) : null}
-          <a className="push-button push-button--secondary" href="/docs">
+          <a className="push-button push-button--secondary" href={docsHref()}>
             View API reference
           </a>
         </div>
