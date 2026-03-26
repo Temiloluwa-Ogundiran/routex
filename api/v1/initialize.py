@@ -168,6 +168,7 @@ async def initiate_checkout(
     except HTTPException:
         raise
     except Exception as e:
+        print(f"RouteX initiate error for {payload.reference}: {e!r}")
         raise HTTPException(status_code=502, detail="Unable to initialize routed checkout") from e
     
 @initialize_router.post(

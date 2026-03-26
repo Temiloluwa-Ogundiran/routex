@@ -20,7 +20,7 @@ const BASE_NAV_ITEMS = [
   { label: "Product", href: "/#product" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Docs", href: "/docs" },
-  { label: "Sandbox", href: "/#quickstart" },
+  { label: "Sandbox", href: "/sandbox" },
 ];
 
 async function readJson(response: Response) {
@@ -121,10 +121,10 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
     if (authState.kind === "user") {
       return (
         <div className="site-header__actions">
-          <Link className="site-header__login" href="/dashboard">
-            Dashboard
+          <Link className="site-header__login" href="/docs">
+            API Docs
           </Link>
-          <Link className="push-button push-button--secondary" href="/#quickstart">
+          <Link className="push-button push-button--secondary" href="/sandbox">
             Sandbox
           </Link>
           <button className="push-button push-button--primary" onClick={() => void handleSignOut()} type="button">
@@ -152,7 +152,7 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
         <Link className="site-header__login" href="/login">
           Log In
         </Link>
-        <Link className="push-button push-button--primary" href="/signup">
+        <Link className="push-button push-button--primary" href="/sandbox">
           Start Testing
         </Link>
       </div>

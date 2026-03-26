@@ -88,13 +88,13 @@ function AdminLoginPageContent() {
 
   return (
     <AuthFormShell
-      badge="Admin access"
+      badge="Admin login"
       description="Sign in to manage RouteX admin tools."
       title="Sign in to RouteX Admin"
     >
       <div className="auth-shell__card-header">
         <div>
-          <p className="playground-panel__eyebrow">Control room</p>
+          <p className="playground-panel__eyebrow">Admin</p>
           <h2>Enter your admin credentials</h2>
         </div>
         <span className="playground-status-chip">Admin only</span>

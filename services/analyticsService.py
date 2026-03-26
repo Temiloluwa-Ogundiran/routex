@@ -3,7 +3,7 @@ Analytics service for merchant business insights
 Provides comprehensive analytics on transactions, revenue, customers, and performance
 """
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, case, extract, desc
+from sqlalchemy import select, func, and_, case, extract, desc, cast, String
 from database.models.Transaction import Transaction
 from database.models.Wallet import Wallet
 from database.models.Customer import Customer
@@ -11,6 +11,11 @@ from database.models.Merchant import Merchant
 from enums.transactionEnums import TransactionStatus, TransactionType
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Tuple
+
+
+TX_STATUS = cast(Transaction.status, String)
+TX_TYPE = cast(Transaction.type, String)
+TX_MODE = cast(Transaction.mode, String)
 
 
 async def get_date_range(period: str) -> Tuple[Optional[datetime], Optional[datetime]]:
@@ -60,18 +65,18 @@ async def get_revenue_metrics(
     query = select(
         func.count(Transaction.id).label('total_transactions'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('total_revenue'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.charge), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.charge), else_=0)
         ), 0).label('total_charges'),
         func.count(
-            case((Transaction.status == TransactionStatus.SUCCESS, 1))
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, 1))
         ).label('successful_count')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode,
-        Transaction.type == TransactionType.CREDIT
+        TX_MODE == str(mode),
+        TX_TYPE == TransactionType.CREDIT.value
     )
 
     if start_date:
@@ -114,13 +119,13 @@ async def get_transaction_breakdown(
     """Get transaction breakdown by status"""
 
     query = select(
-        func.count(case((Transaction.status == TransactionStatus.SUCCESS, 1))).label('successful'),
-        func.count(case((Transaction.status == TransactionStatus.PENDING, 1))).label('pending'),
-        func.count(case((Transaction.status == TransactionStatus.FAILED, 1))).label('failed'),
+        func.count(case((TX_STATUS == TransactionStatus.SUCCESS.value, 1))).label('successful'),
+        func.count(case((TX_STATUS == TransactionStatus.PENDING.value, 1))).label('pending'),
+        func.count(case((TX_STATUS == TransactionStatus.FAILED.value, 1))).label('failed'),
         func.count(Transaction.id).label('total')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode
+        TX_MODE == str(mode)
     )
 
     if start_date:
@@ -154,15 +159,15 @@ async def get_currency_breakdown(
         Transaction.currency,
         func.count(Transaction.id).label('transaction_count'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('total_revenue'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.charge), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.charge), else_=0)
         ), 0).label('total_charges')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode,
-        Transaction.type == TransactionType.CREDIT
+        TX_MODE == str(mode),
+        TX_TYPE == TransactionType.CREDIT.value
     ).group_by(Transaction.currency)
 
     if start_date:
@@ -204,13 +209,13 @@ async def get_channel_breakdown(
         Transaction.channel,
         func.count(Transaction.id).label('transaction_count'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('total_revenue'),
-        func.count(case((Transaction.status == TransactionStatus.SUCCESS, 1))).label('successful_count')
+        func.count(case((TX_STATUS == TransactionStatus.SUCCESS.value, 1))).label('successful_count')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode,
-        Transaction.type == TransactionType.CREDIT
+        TX_MODE == str(mode),
+        TX_TYPE == TransactionType.CREDIT.value
     ).group_by(Transaction.channel)
 
     if start_date:
@@ -261,13 +266,13 @@ async def get_time_series_data(
     query = select(
         date_trunc.label('date'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('value'),
         func.count(Transaction.id).label('count')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode,
-        Transaction.type == TransactionType.CREDIT
+        TX_MODE == str(mode),
+        TX_TYPE == TransactionType.CREDIT.value
     ).group_by('date').order_by('date')
 
     if start_date:
@@ -314,8 +319,8 @@ async def get_wallet_analytics(
             func.count(Transaction.id).label('credit_count')
         ).where(
             Transaction.wallet_id == wallet.id,
-            Transaction.type == TransactionType.CREDIT,
-            Transaction.status == TransactionStatus.SUCCESS
+            TX_TYPE == TransactionType.CREDIT.value,
+            TX_STATUS == TransactionStatus.SUCCESS.value
         )
         credit_result = await session.execute(credit_query)
         credit_row = credit_result.first()
@@ -326,8 +331,8 @@ async def get_wallet_analytics(
             func.count(Transaction.id).label('debit_count')
         ).where(
             Transaction.wallet_id == wallet.id,
-            Transaction.type == TransactionType.DEBIT,
-            Transaction.status == TransactionStatus.SUCCESS
+            TX_TYPE == TransactionType.DEBIT.value,
+            TX_STATUS == TransactionStatus.SUCCESS.value
         )
         debit_result = await session.execute(debit_query)
         debit_row = debit_result.first()
@@ -337,7 +342,7 @@ async def get_wallet_analytics(
             func.coalesce(func.sum(Transaction.charge), 0).label('total_charges')
         ).where(
             Transaction.wallet_id == wallet.id,
-            Transaction.status == TransactionStatus.SUCCESS
+            TX_STATUS == TransactionStatus.SUCCESS.value
         )
         charge_result = await session.execute(charge_query)
         charge_row = charge_result.first()
@@ -373,7 +378,7 @@ async def get_top_customers(
     query = select(
         Customer.email,
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('total_spent'),
         func.count(Transaction.id).label('transaction_count'),
         func.max(Transaction.created_at).label('last_transaction_date')
@@ -381,8 +386,8 @@ async def get_top_customers(
         Transaction, Transaction.customer_id == Customer.id
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode,
-        Transaction.type == TransactionType.CREDIT
+        TX_MODE == str(mode),
+        TX_TYPE == TransactionType.CREDIT.value
     ).group_by(Customer.email).order_by(desc('total_spent')).limit(limit)
 
     if start_date:
@@ -416,7 +421,7 @@ async def get_customer_analytics(
     # Total customers
     total_customers_query = select(func.count(func.distinct(Transaction.customer_id))).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode
+        TX_MODE == str(mode)
     )
     total_result = await session.execute(total_customers_query)
     total_customers = total_result.scalar() or 0
@@ -424,7 +429,7 @@ async def get_customer_analytics(
     # Active customers in period
     active_query = select(func.count(func.distinct(Transaction.customer_id))).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode
+        TX_MODE == str(mode)
     )
     if start_date:
         active_query = active_query.where(Transaction.created_at >= start_date)
@@ -443,8 +448,8 @@ async def get_customer_analytics(
             func.count(Transaction.id).label('txn_count')
         ).where(
             Transaction.merchant_id == merchant_id,
-            Transaction.mode == mode,
-            Transaction.status == TransactionStatus.SUCCESS
+            TX_MODE == str(mode),
+            TX_STATUS == TransactionStatus.SUCCESS.value
         ).group_by(Transaction.customer_id).having(func.count(Transaction.id) > 1).subquery()
     )
 
@@ -473,19 +478,19 @@ async def get_payout_analytics(
 
     query = select(
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('total_payouts'),
         func.count(Transaction.id).label('payout_count'),
-        func.count(case((Transaction.status == TransactionStatus.SUCCESS, 1))).label('successful'),
-        func.count(case((Transaction.status == TransactionStatus.FAILED, 1))).label('failed'),
-        func.count(case((Transaction.status == TransactionStatus.PENDING, 1))).label('pending'),
+        func.count(case((TX_STATUS == TransactionStatus.SUCCESS.value, 1))).label('successful'),
+        func.count(case((TX_STATUS == TransactionStatus.FAILED.value, 1))).label('failed'),
+        func.count(case((TX_STATUS == TransactionStatus.PENDING.value, 1))).label('pending'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.charge), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.charge), else_=0)
         ), 0).label('total_charges')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode,
-        Transaction.type == TransactionType.DEBIT
+        TX_MODE == str(mode),
+        TX_TYPE == TransactionType.DEBIT.value
     )
 
     if start_date:
@@ -527,11 +532,11 @@ async def get_transaction_patterns(
         extract('hour', Transaction.created_at).label('hour'),
         func.count(Transaction.id).label('transaction_count'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('total_revenue')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode
+        TX_MODE == str(mode)
     ).group_by('hour').order_by('hour')
 
     if start_date:
@@ -554,11 +559,11 @@ async def get_transaction_patterns(
         extract('dow', Transaction.created_at).label('dow'),
         func.count(Transaction.id).label('transaction_count'),
         func.coalesce(func.sum(
-            case((Transaction.status == TransactionStatus.SUCCESS, Transaction.amount), else_=0)
+            case((TX_STATUS == TransactionStatus.SUCCESS.value, Transaction.amount), else_=0)
         ), 0).label('total_revenue')
     ).where(
         Transaction.merchant_id == merchant_id,
-        Transaction.mode == mode
+        TX_MODE == str(mode)
     ).group_by('dow').order_by('dow')
 
     if start_date:

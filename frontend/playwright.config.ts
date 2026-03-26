@@ -5,7 +5,7 @@ export default defineConfig({
   workers: 1,
   webServer: {
     command:
-      "cmd /c \"npm run build && npx next start --hostname 127.0.0.1 --port 3000\"",
+      "cmd /c \"set NEXT_PUBLIC_POSTHOG_KEY=ph_test_key&& set NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com&& npm run build && npx next start --hostname 127.0.0.1 --port 3000\"",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: false,
     timeout: 240000,

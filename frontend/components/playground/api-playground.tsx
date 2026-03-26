@@ -32,7 +32,7 @@ function buildReadyMessage(isLive: boolean) {
   return {
     status: "unavailable",
     message:
-      "Sandbox access will appear here as soon as this deployment is fully connected.",
+      "Sign in with a merchant account or add a workspace test key to unlock live sandbox requests.",
   };
 }
 
@@ -73,7 +73,7 @@ export function ApiPlayground() {
           setAvailability({
             available: false,
             message: "We could not confirm sandbox access right now.",
-            statusLabel: "Sandbox unavailable",
+            statusLabel: "Connection issue",
           });
           setResponseBody(formatJson(buildReadyMessage(false)));
         }
@@ -143,10 +143,16 @@ export function ApiPlayground() {
     setResponseBody(formatJson(json));
 
     if (!response.ok) {
-      setErrorMessage(
+      const backendMessage =
         typeof json.message === "string"
           ? json.message
-          : "Sandbox request failed.",
+          : typeof json.result?.detail === "string"
+            ? json.result.detail
+            : typeof json.result?.message === "string"
+              ? json.result.message
+              : "Sandbox request failed.";
+      setErrorMessage(
+        backendMessage,
       );
       return;
     }
@@ -163,11 +169,10 @@ export function ApiPlayground() {
       <div className="section-heading section-heading--split">
         <div>
           <SectionBadge>Sandbox Console</SectionBadge>
-          <h2>Test the API without leaving the landing page.</h2>
+          <h2>Run real test-mode requests.</h2>
           <p>
-            Inspect the real request payloads for collections, verification, and
-            payouts. Signed-in merchants can run real test-mode requests here
-            with their RouteX workspace keys.
+            Use your merchant test key to initialize collections, verify
+            transactions, and test payouts against the live RouteX sandbox.
           </p>
         </div>
         <a className="inline-link" href="/docs">

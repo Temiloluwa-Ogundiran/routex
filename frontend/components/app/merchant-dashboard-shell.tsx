@@ -411,7 +411,7 @@ export function MerchantDashboardShell() {
             <Link className="push-button push-button--secondary" href="/docs">
               API docs
             </Link>
-            <Link className="push-button push-button--secondary" href="/#quickstart">
+            <Link className="push-button push-button--secondary" href="/sandbox">
               Sandbox
             </Link>
             <PushButton onClick={() => void signOutUser()} variant="primary">

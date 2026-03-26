@@ -10,12 +10,16 @@ type MerchantRecord = {
 
 type UserProfileResponse = {
   merchants?: MerchantRecord[];
+  detail?: string;
+  message?: string;
 };
 
 type MerchantTokenResponse = {
   test?: {
     secret?: string | null;
   };
+  detail?: string;
+  message?: string;
 };
 
 export type PlaygroundAccess = {
@@ -36,9 +40,9 @@ export async function resolvePlaygroundAccess(): Promise<PlaygroundAccess> {
     return {
       apiBaseUrl: null,
       available: false,
-      message: "Sandbox access is not available yet on this deployment.",
+      message: "Sandbox access is not configured on this deployment yet.",
       secretKey: null,
-      statusLabel: "Sandbox unavailable",
+      statusLabel: "Setup required",
     };
   }
 
@@ -79,7 +83,10 @@ export async function resolvePlaygroundAccess(): Promise<PlaygroundAccess> {
     return {
       apiBaseUrl,
       available: false,
-      message: "Create a merchant workspace to unlock the sandbox.",
+      message:
+        userProfile?.detail ??
+        userProfile?.message ??
+        "Create a merchant workspace to unlock the sandbox.",
       secretKey: null,
       statusLabel: "Workspace required",
     };
@@ -102,7 +109,10 @@ export async function resolvePlaygroundAccess(): Promise<PlaygroundAccess> {
     return {
       apiBaseUrl,
       available: false,
-      message: "Your merchant workspace does not have a usable test key yet.",
+      message:
+        tokenPayload?.detail ??
+        tokenPayload?.message ??
+        "Your merchant workspace does not have a usable test key yet.",
       secretKey: null,
       statusLabel: "Key unavailable",
     };

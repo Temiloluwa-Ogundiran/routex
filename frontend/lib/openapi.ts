@@ -395,7 +395,7 @@ function getFieldDescription(fieldName: string, description: string | undefined)
     return description;
   }
 
-  return FIELD_DESCRIPTION_OVERRIDES[fieldName] ?? "Included in the RouteX request payload.";
+  return FIELD_DESCRIPTION_OVERRIDES[fieldName] ?? "";
 }
 
 function extractSchemaFields(

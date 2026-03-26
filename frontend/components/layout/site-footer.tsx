@@ -13,18 +13,18 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <p className="site-footer__eyebrow">Product</p>
-          <Link href="/#product">Routing</Link>
-          <Link href="/#features">Features</Link>
+          <p className="site-footer__eyebrow">Explore</p>
+          <Link href="/#product">Product</Link>
           <Link href="/#how-it-works">How It Works</Link>
-          <Link href="/#quickstart">Sandbox</Link>
+          <Link href="/docs">API Docs</Link>
+          <Link href="/sandbox">Sandbox</Link>
         </div>
 
         <div>
-          <p className="site-footer__eyebrow">Developers</p>
-          <Link href="/docs">API Docs</Link>
-          <Link href="/#quickstart">Sandbox</Link>
-          <Link href="/dashboard">Dashboard</Link>
+          <p className="site-footer__eyebrow">Accounts</p>
+          <Link href="/login">Merchant Login</Link>
+          <Link href="/signup">Create Account</Link>
+          <Link href="/admin/login">Admin Login</Link>
         </div>
       </div>
     </footer>

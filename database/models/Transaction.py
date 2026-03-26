@@ -27,7 +27,7 @@ class Transaction(Base):
     processor_charge = Column(Float, default=0.0)
     details = Column(JSON, nullable=True)
     currency = Column(String(10), default="NGN")
-    status = Column(String(20), default=TransactionStatus.PENDING)
+    status = Column(String(20), default=TransactionStatus.PENDING.value)
     selected_gateway = Column(String(20), nullable=True)
     redirect_url = Column(Text, nullable=True)
     notification_url = Column(Text, nullable=True)

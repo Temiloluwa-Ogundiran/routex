@@ -99,7 +99,7 @@ function VerifyOtpPageContent() {
           <p className="playground-panel__eyebrow">Verification</p>
           <h2>Enter your email code</h2>
         </div>
-        <span className="playground-status-chip">Email OTP</span>
+        <span className="playground-status-chip">6-digit code</span>
       </div>
 
       <form className="auth-form" onSubmit={handleSubmit}>

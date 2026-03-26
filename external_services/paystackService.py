@@ -1,4 +1,4 @@
-from settings import PAYSTACK_SECRET, AGG_EMAIL
+from settings import PAYSTACK_SECRET
 from services.httpRequestService import post_request
 from settings import logging
 import uuid
@@ -41,10 +41,12 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
 
     data = {
         "amount" : amount * 100,
-        "email": AGG_EMAIL,
+        "email": email,
         "currency": currency,
         "reference": transaction.processor_reference,
     }
+    if redirect_url:
+        data["callback_url"] = redirect_url
     if redirect_url:
         transaction.redirect_url = redirect_url
     if notification_url:
@@ -54,7 +56,6 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
         transaction.metadata_payload = json.dumps(metadata)
     # transaction.narration = narration if narration else f"Aggregator Pay in through {TransactionProcessor.PAYSTACK.value}"
     await transactionService.save_transaction(session= session, transaction= transaction)
-    print(data)
     response_data, response_status = await post_request(url= url, headers= local_headers, data= json.dumps(data))
 
     try:
@@ -70,6 +71,6 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
         pass
 
     if response_status != 200:
-        logging.error(f"An error occured while initializing transaction: {response_data}")
+        logging.error(f"An error occured while initializing transaction with Paystack: {response_data}")
     charge_url = response_data.get("data").get("authorization_url") if  response_data.get("data") else None
     return response_data, response_status, charge_url

@@ -77,7 +77,8 @@ async def create_transaction(session: AsyncSession, merchant: Merchant, processo
         narration = narration,
         metadata_payload = metadata_payload,
         redirect_url= redirect_url,
-        notification_url= notification_url
+        notification_url= notification_url,
+        status=TransactionStatus.PENDING.value,
     )
     
     session.add(transaction)

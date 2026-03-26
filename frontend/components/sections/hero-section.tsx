@@ -16,7 +16,7 @@ export function HeroSection() {
           and visibility across Nigeria&apos;s leading payment rails.
         </p>
         <div className="hero-actions">
-          <Link className="push-button push-button--primary" href="/#quickstart">
+          <Link className="push-button push-button--primary" href="/sandbox">
             Try Sandbox
           </Link>
           <Link className="push-button push-button--secondary" href="/docs">

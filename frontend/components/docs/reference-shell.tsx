@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type {
   ApiReferenceEndpoint,
   ApiReferenceField,
@@ -14,12 +16,19 @@ type ReferenceShellProps = {
   unavailableReason: string | null;
 };
 
-function FieldTable({
-  title,
+function splitFields(fields: ApiReferenceField[]) {
+  return {
+    optional: fields.filter((field) => !field.required),
+    required: fields.filter((field) => field.required),
+  };
+}
+
+function FieldList({
   fields,
+  title,
 }: {
-  title: string;
   fields: ApiReferenceField[];
+  title: string;
 }) {
   if (fields.length === 0) {
     return null;
@@ -29,22 +38,20 @@ function FieldTable({
     <section className="docs-subsection">
       <div className="docs-subsection__header">
         <h4>{title}</h4>
-        <span>{fields.length} fields</span>
+        <span>{fields.length} field{fields.length === 1 ? "" : "s"}</span>
       </div>
-      <div className="docs-table-shell">
-        <div className="docs-table docs-table--header">
-          <span>Field</span>
-          <span>Type</span>
-          <span>Required</span>
-          <span>Notes</span>
-        </div>
+      <div className="docs-field-list">
         {fields.map((field) => (
-          <div className="docs-table" key={`${field.location}-${field.name}`}>
-            <span className="docs-table__field">{field.name}</span>
-            <span>{field.type}</span>
-            <span>{field.required ? "Yes" : "No"}</span>
-            <span>{field.description}</span>
-          </div>
+          <article className="docs-field-card" key={`${field.location}-${field.name}`}>
+            <div className="docs-field-card__topline">
+              <strong>{field.name}</strong>
+              <span className="docs-field-card__type">{field.type}</span>
+            </div>
+            {field.description ? <p>{field.description}</p> : null}
+            {field.example ? (
+              <code className="docs-field-card__example">{field.example}</code>
+            ) : null}
+          </article>
         ))}
       </div>
     </section>
@@ -56,7 +63,7 @@ function ResponseCards({ responses }: { responses: ApiReferenceResponse[] }) {
     <section className="docs-subsection">
       <div className="docs-subsection__header">
         <h4>Responses</h4>
-        <span>{responses.length} variants</span>
+        <span>{responses.length} example{responses.length === 1 ? "" : "s"}</span>
       </div>
       <div className="docs-response-grid">
         {responses.map((response) => (
@@ -68,7 +75,7 @@ function ResponseCards({ responses }: { responses: ApiReferenceResponse[] }) {
               </div>
               <CopyButton value={response.body} />
             </div>
-            <p>{response.description}</p>
+            {response.description ? <p>{response.description}</p> : null}
             <pre className="docs-code-block">{response.body}</pre>
           </article>
         ))}
@@ -78,6 +85,9 @@ function ResponseCards({ responses }: { responses: ApiReferenceResponse[] }) {
 }
 
 function EndpointCard({ endpoint }: { endpoint: ApiReferenceEndpoint }) {
+  const requestFields = splitFields(endpoint.requestFields);
+  const queryFields = splitFields(endpoint.queryParameters);
+
   return (
     <article className="docs-endpoint-card" id={endpoint.id}>
       <div className="docs-endpoint-card__hero">
@@ -87,38 +97,37 @@ function EndpointCard({ endpoint }: { endpoint: ApiReferenceEndpoint }) {
             <span className="docs-endpoint__auth">{endpoint.auth}</span>
           </div>
           <h3>{endpoint.title}</h3>
-          <code>{endpoint.path}</code>
+          <div className="docs-endpoint-card__path-row">
+            <code>{endpoint.path}</code>
+            <CopyButton value={endpoint.path} />
+          </div>
         </div>
         <p>{endpoint.description}</p>
       </div>
 
       <div className="docs-endpoint-card__grid">
         <div className="docs-endpoint-card__stack">
-          <FieldTable title="Query parameters" fields={endpoint.queryParameters} />
-          <FieldTable title="Request body" fields={endpoint.requestFields} />
+          <FieldList fields={queryFields.required} title="Required query parameters" />
+          <FieldList fields={queryFields.optional} title="Optional query parameters" />
+          <FieldList fields={requestFields.required} title="Required body fields" />
+          <FieldList fields={requestFields.optional} title="Optional body fields" />
+        </div>
 
+        <div className="docs-endpoint-card__stack">
           {endpoint.requestExample ? (
             <section className="docs-subsection">
               <div className="docs-subsection__header">
-                <h4>Request payload</h4>
-                <div className="docs-subsection__actions">
-                  <span>JSON</span>
-                  <CopyButton value={endpoint.requestExample} />
-                </div>
+                <h4>Request example</h4>
+                <CopyButton value={endpoint.requestExample} />
               </div>
               <pre className="docs-code-block">{endpoint.requestExample}</pre>
             </section>
           ) : null}
-        </div>
 
-        <div className="docs-endpoint-card__stack">
           <section className="docs-subsection">
             <div className="docs-subsection__header">
               <h4>cURL</h4>
-              <div className="docs-subsection__actions">
-                <span>Ready to copy</span>
-                <CopyButton value={endpoint.curlExample} />
-              </div>
+              <CopyButton value={endpoint.curlExample} />
             </div>
             <pre className="docs-code-block">{endpoint.curlExample}</pre>
           </section>
@@ -140,17 +149,23 @@ export function ReferenceShell({
     <section className="docs-shell">
       <div className="docs-shell__hero">
         <SectionBadge>API Reference</SectionBadge>
-        <h1>Build on RouteX with three core merchant endpoints.</h1>
+        <h1>RouteX API reference</h1>
         <p>
-          Use the public RouteX test-mode endpoints with concise payload examples,
-          copy-ready requests, and normalized response samples.
+          Clean request examples for the core merchant endpoints you need to
+          collect payments, verify transactions, and trigger payouts in test mode.
         </p>
         <div className="docs-shell__meta">
           <span>Base URL</span>
           <code>{baseUrl ?? "Not configured"}</code>
+          {baseUrl ? <CopyButton value={baseUrl} /> : null}
           <span className="playground-status-chip">
             {sourceMode === "live" ? "Test mode" : "Spec unavailable"}
           </span>
+        </div>
+        <div className="docs-shell__actions">
+          <Link className="push-button push-button--primary" href="/sandbox">
+            Open sandbox
+          </Link>
         </div>
       </div>
 
@@ -165,9 +180,6 @@ export function ReferenceShell({
             <div className="docs-group__header">
               <p className="docs-card__eyebrow">{group.title}</p>
               <h2>{group.description}</h2>
-              <p className="docs-group__copy">
-                Clean request shapes on the left, copyable request and response examples on the right.
-              </p>
             </div>
             <div className="docs-group__stack">
               {group.endpoints.map((endpoint) => (

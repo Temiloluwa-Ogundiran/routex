@@ -7,10 +7,11 @@ test("docs page shows standard reference sections and payload examples", async (
 
   await expect(
     page.getByRole("heading", {
-      name: "Build on RouteX with three core merchant endpoints.",
+      name: "RouteX API reference",
     }),
   ).toBeVisible();
   await expect(page.getByText("Base URL")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open sandbox" })).toBeVisible();
   await expect(page.getByText("Public API reference unavailable")).toBeVisible();
   await expect(
     page.getByText("The public API reference is not connected yet."),

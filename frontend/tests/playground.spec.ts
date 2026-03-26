@@ -5,9 +5,9 @@ test("sandbox playground shows a disabled state when sandbox wiring is missing",
 }) => {
   await page.goto("http://127.0.0.1:3000");
 
-  await expect(page.getByText("Sandbox unavailable", { exact: true })).toBeVisible();
+  await expect(page.getByText("Setup required", { exact: true })).toBeVisible();
   await expect(
-    page.getByText(/sandbox access is not available yet on this deployment/i),
+    page.getByText(/sandbox access is not configured on this deployment yet/i),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Sandbox Unavailable" }),

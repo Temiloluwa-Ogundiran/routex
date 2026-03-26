@@ -36,8 +36,8 @@ async def get_merchant_tokens(request: MerchantGetRequest, session: AsyncSession
     if not merchant:
         raise HTTPException(status_code=404, detail="Merchant not found")
     
-    if not userService.user_in_merchant(user= user, merchant= merchant, session= session):
-        return HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
+    if not await userService.user_in_merchant(user= user, merchant= merchant, session= session):
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
     
     token_dict = await tokenService.get_merchant_tokens(merchant=merchant, session= session)
 
@@ -55,8 +55,8 @@ async def get_merchant(email: str = Query(..., description="Merchant email"), se
         raise HTTPException(status_code=404, detail="Merchant not found")
     response = MerchantResponse.model_validate(merchant)
 
-    if not userService.user_in_merchant(user= user, merchant= merchant, session= session):
-        return HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
+    if not await userService.user_in_merchant(user= user, merchant= merchant, session= session):
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
     
     response.role = await userService.get_user_role(session= session, user= user, merchant= merchant)
     return response
@@ -66,8 +66,8 @@ async def get_merchant_revenue(id: str = Query(..., description="Merchant ID"), 
     merchant = await merchantService.get_by_id_or_email(id= id, session= session)
     if not merchant:
         raise HTTPException(status_code=404, detail="Merchant not found")
-    if not userService.user_in_merchant(user= user, merchant= merchant, session= session):
-        return HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
+    if not await userService.user_in_merchant(user= user, merchant= merchant, session= session):
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
     total_revenue = await merchantService.get_merchant_revenue(session= session, merchant= merchant, mode= mode)
     return {"total_revenue": total_revenue}
 
@@ -85,8 +85,8 @@ async def get_merchant_periodic_revenue(
     if not merchant:
         raise HTTPException(status_code=404, detail="Merchant not found")
     
-    if not userService.user_in_merchant(user= user, merchant= merchant, session= session):
-        return HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
+    if not await userService.user_in_merchant(user= user, merchant= merchant, session= session):
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "user not allowed to view merchant details")
     
     revenue_breakdown = await merchantService.get_merchant_periodic_revenue(
         session= session, merchant= merchant,
