@@ -6,6 +6,7 @@ from database.session import get_async_session
 from enums.transactionEnums import TransactionProcessor, TransactionStatus
 from external_services import interswitchService
 from services import transactionService
+from settings import SERVER_URL
 
 interswitch_checkout_router = APIRouter()
 
@@ -31,7 +32,7 @@ async def interswitch_checkout_bridge(
     form_fields = interswitchService.build_checkout_form_fields(
         transaction=transaction,
         customer_email=customer_email,
-        server_base_url=str(request.base_url).rstrip("/"),
+        server_base_url=(SERVER_URL or str(request.base_url)).rstrip("/"),
     )
     return HTMLResponse(
         content=interswitchService.build_bridge_html(

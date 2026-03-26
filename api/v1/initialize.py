@@ -11,7 +11,7 @@ from schemas.v1Schema import *
 from enums import transactionEnums, tokenEnums
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.session import get_async_session
-from settings import CHECKOUT_URL
+from settings import CHECKOUT_URL, SERVER_URL
 
 initialize_router = APIRouter()
 
@@ -122,7 +122,7 @@ async def initiate_checkout(
             "mode": mode,
         }
         if decision.selected_gateway == "isw":
-            adapter_kwargs["server_base_url"] = str(request.base_url).rstrip("/")
+            adapter_kwargs["server_base_url"] = (SERVER_URL or str(request.base_url)).rstrip("/")
 
         response, status, charge_url = await adapter.initialize_collection(**adapter_kwargs)
         transaction = await transactionService.get_transaction_by_merchant_and_reference(
