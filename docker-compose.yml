@@ -1,3 +1,26 @@
+x-backend-env: &backend-env
+  DB_URL: ${DB_URL:-postgresql+asyncpg://postgres:postgres@postgres:5432/routex}
+  REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+  AGG_SECRET: ${AGG_SECRET:-}
+  AUTH_SECRET: ${AUTH_SECRET:-}
+  SERVER_URL: ${SERVER_URL:-https://routexapi.xoroai.cloud}
+  FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-https://routex.xoroai.cloud}
+  CHECKOUT_URL: ${CHECKOUT_URL:-https://routex.xoroai.cloud}
+  RESEND_API_KEY: ${RESEND_API_KEY:-}
+  AUTH_EMAIL: ${AUTH_EMAIL:-}
+  RECEIPT_EMAIL: ${RECEIPT_EMAIL:-}
+  PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY:-}
+  FLTW_SECRET_KEY: ${FLTW_SECRET_KEY:-}
+  FLTW_SECRET_HASH: ${FLTW_SECRET_HASH:-}
+  KORA_SECRET_KEY: ${KORA_SECRET_KEY:-}
+  INTERSWITCH_MERCHANT_CODE: ${INTERSWITCH_MERCHANT_CODE:-}
+  INTERSWITCH_PAY_ITEM_ID: ${INTERSWITCH_PAY_ITEM_ID:-}
+  INTERSWITCH_CLIENT_ID: ${INTERSWITCH_CLIENT_ID:-}
+  INTERSWITCH_SECRET_KEY: ${INTERSWITCH_SECRET_KEY:-}
+  PROXY_URL: ${PROXY_URL:-}
+  PROXY_USERNAME: ${PROXY_USERNAME:-}
+  PROXY_PASSWORD: ${PROXY_PASSWORD:-}
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -32,9 +55,7 @@ services:
       context: .
       dockerfile: Dockerfile.api
     environment:
-      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/routex
-      REDIS_URL: redis://redis:6379/0
-      SERVER_URL: http://localhost:8000
+      <<: *backend-env
     expose:
       - "8000"
     depends_on:
@@ -48,8 +69,7 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     environment:
-      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/routex
-      REDIS_URL: redis://redis:6379/0
+      <<: *backend-env
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,8 +83,7 @@ services:
       context: .
       dockerfile: Dockerfile.beat
     environment:
-      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/routex
-      REDIS_URL: redis://redis:6379/0
+      <<: *backend-env
     depends_on:
       postgres:
         condition: service_healthy
