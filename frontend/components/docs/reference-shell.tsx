@@ -169,6 +169,29 @@ export function ReferenceShell({
         </div>
       </div>
 
+      {sourceMode === "live" ? (
+        <section className="docs-guide-card">
+          <div className="docs-subsection__header">
+            <h4>Webhook behavior</h4>
+          </div>
+          <div className="docs-guide-card__list">
+            <p>
+              Set <code>notification_url</code> to your server endpoint if you
+              want RouteX to POST normalized payment updates after confirmation.
+            </p>
+            <p>
+              RouteX receives provider callbacks on the backend first, then
+              forwards the normalized event to your <code>notification_url</code>.
+            </p>
+            <p>
+              Some gateways require RouteX webhook URLs in the provider
+              dashboard, while hosted return URLs are still passed in the
+              checkout payload.
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       {sourceMode !== "live" ? (
         <section className="docs-unavailable">
           <h2>Public API reference unavailable</h2>

@@ -1,7 +1,6 @@
-from settings import PAYSTACK_SECRET, FLTW_SECRET_KEY
+from settings import FLTW_SECRET_KEY
 from services.httpRequestService import post_request
-from settings import logging, FRONTEND_BASE_URL, AGG_EMAIL
-import uuid
+from settings import logging, FRONTEND_BASE_URL
 from enums.transactionEnums import *
 from services import transactionService, merchantService, customerService
 from enums.transactionEnums import TransactionCurrency
@@ -22,7 +21,6 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
                      reference:str, currency: str = TransactionCurrency.NIGERIA.value, 
                      redirect_url: str|None=None, notification_url:str|None = None,
                      narration: str|None = None, metadata:dict|None = None) ->tuple[dict, int, str|None]:
-    print(HEADERS)
     customer, _ = await customerService.add_get_or_create_customer(session=session, email=email, merchant= merchant)
 
     transaction: Transaction = await transactionService.create_transaction(
@@ -40,8 +38,8 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
     
     url = BASE_URL 
     data = {
-        "amount" : amount * 100,
-        "customer": {"email": AGG_EMAIL},
+        "amount" : amount,
+        "customer": {"email": email},
         "currency": currency,
         "redirect_url": redirect_url or FRONTEND_BASE_URL,
         "tx_ref": transaction.processor_reference,
@@ -61,7 +59,6 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
         pass
     transaction.narration = narration if narration else f"Aggregator Pay in through {TransactionProcessor.FLUTTERWAVE.value}"
     transaction = await transactionService.save_transaction(session= session, transaction= transaction)
-    print(data)
     response_data, response_status = await post_request(url= url, headers= HEADERS, data= json.dumps(data))
     
     try:

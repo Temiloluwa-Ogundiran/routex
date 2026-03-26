@@ -138,10 +138,10 @@ const ENDPOINT_METADATA: Record<string, EndpointMeta> = {
   "POST /api/v1/initiate": {
     groupTitle: "Collections",
     groupDescription:
-      "Accept a payment in test mode with one hosted checkout endpoint and a consistent RouteX response shape.",
+      "Accept payments in test mode with one clean hosted-checkout flow and normalized RouteX responses.",
     title: "Initialize a routed collection",
     description:
-      "Create a hosted checkout session, optionally lock the request to a specific gateway, and receive the RouteX checkout URL with routing metadata.",
+      "Create a hosted checkout session, optionally force a specific gateway, and receive a single RouteX checkout URL with routing metadata. If you include notification_url, RouteX will send normalized payment webhooks there after provider confirmation.",
     auth: "Bearer secret key",
   },
   "GET /api/v1/transactions/verify": {
@@ -165,7 +165,8 @@ const ENDPOINT_METADATA: Record<string, EndpointMeta> = {
 };
 
 const FIELD_DESCRIPTION_OVERRIDES: Record<string, string> = {
-  amount: "Amount to process in the smallest supported decimal unit for NGN requests.",
+  amount:
+    "Amount in the customer-facing currency unit. Example: send 2500 to charge NGN 2,500. RouteX converts internally for gateways that require minor units.",
   currency: "Currency code for this request. The current MVP supports NGN.",
   customer: "Customer details for the payment.",
   "customer.email": "Customer email address.",
@@ -178,7 +179,8 @@ const FIELD_DESCRIPTION_OVERRIDES: Record<string, string> = {
   metadata: "Optional metadata object returned with the transaction.",
   mode: "Preferred payment channel for the checkout experience.",
   narration: "Optional text shown to the customer or receiving gateway.",
-  notification_url: "Server endpoint RouteX can notify after payment updates.",
+  notification_url:
+    "Your server webhook URL. RouteX sends normalized charge or payout events here after payment confirmation.",
   redirect_url: "Where RouteX should return the customer after checkout.",
   reference: "Your unique merchant reference for this request.",
 };

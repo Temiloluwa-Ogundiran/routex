@@ -923,6 +923,28 @@ button {
   gap: 1rem;
 }
 
+.docs-guide-card {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 4rem;
+  padding: 1.25rem 1.4rem;
+  border: 2px solid var(--routex-black);
+  border-radius: 1.25rem;
+  background: #eef4f2;
+  box-shadow: var(--shadow-hard);
+  color: var(--routex-black);
+}
+
+.docs-guide-card__list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.docs-guide-card__list p {
+  margin: 0;
+  line-height: 1.55;
+}
+
 .docs-shell__hero h1 {
   margin: 0;
   font-family: var(--font-heading), sans-serif;
@@ -960,6 +982,10 @@ button {
   letter-spacing: -0.03em;
 }
 
+.docs-group__header h2 {
+  color: var(--routex-white);
+}
+
 .docs-unavailable p {
   margin: 0.5rem 0 0;
 }
@@ -983,6 +1009,11 @@ button {
 
 .docs-group__header .docs-card__eyebrow {
   color: var(--routex-sage);
+}
+
+.docs-group__header p:not(.docs-card__eyebrow) {
+  margin: 0;
+  color: #dbe4df;
 }
 
 .docs-group__stack {
@@ -2350,6 +2381,10 @@ button {
 
   .docs-group {
     padding-inline: 1.5rem;
+  }
+
+  .docs-guide-card {
+    margin-inline: 1.5rem;
   }
 
   .docs-table {

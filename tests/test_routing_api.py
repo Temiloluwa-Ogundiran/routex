@@ -1,4 +1,5 @@
 import pytest
+import json
 from unittest.mock import AsyncMock, patch
 
 from sqlalchemy import select
@@ -59,6 +60,12 @@ class TestRoutingApi:
             select(Transaction).where(Transaction.reference == "ROUTE_INIT_001")
         )
         assert transaction is not None
+
+        assert mock_post_request.await_count == 1
+        _, call_kwargs = mock_post_request.await_args
+        flutterwave_payload = json.loads(call_kwargs["data"])
+        assert flutterwave_payload["amount"] == 5000.0
+        assert flutterwave_payload["customer"]["email"] == "customer@test.com"
 
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)
     @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)

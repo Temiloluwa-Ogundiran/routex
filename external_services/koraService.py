@@ -86,7 +86,7 @@ async def initialize(session: AsyncSession, email: str, amount: float, merchant:
         'currency': currency,
         'amount': amount,
         'reference': transaction.processor_reference,
-        "customer": {"email": AGG_EMAIL},
+        "customer": {"email": email},
         "notification_url": notification_url,
     }
     if redirect_url:
