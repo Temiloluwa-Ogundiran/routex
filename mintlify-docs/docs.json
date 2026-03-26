@@ -6,22 +6,24 @@
     "light": "#FFFFFF",
     "dark": "#0A0A0A"
   },
-  "navigation": [
-    {
-      "group": "Overview",
-      "pages": ["index", "authentication"]
-    },
-    {
-      "group": "API Reference",
-      "pages": [
-        "collections",
-        "verification",
-        "payouts",
-        "webhooks",
-        "gateway-behavior"
-      ]
-    }
-  ],
+  "navigation": {
+    "groups": [
+      {
+        "group": "Overview",
+        "pages": ["index", "authentication"]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "collections",
+          "verification",
+          "payouts",
+          "webhooks",
+          "gateway-behavior"
+        ]
+      }
+    ]
+  },
   "api": {
     "mdx": {
       "server": "https://routexapi.xoroai.cloud",
