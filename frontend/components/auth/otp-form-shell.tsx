@@ -16,7 +16,7 @@ export function OtpFormShell({
   return (
     <main className="auth-shell auth-shell--otp">
       <section className="auth-shell__intro">
-        <p className="section-badge">{badge}</p>
+        <p className="auth-shell__eyebrow">{badge}</p>
         <h1>{title}</h1>
         <p className="auth-shell__copy">{description}</p>
       </section>

@@ -18,6 +18,11 @@ class InitializeTransactionRequest(BaseModel):
     amount: float
     currency: transactionEnums.TransactionCurrency = Field(description="Currency in lower case")
     reference: str
+    gateway_code: Optional[str] = Field(
+        default=None,
+        description="Optional gateway override. Use pstk, fltw, kora, or isw. If omitted, RouteX routes automatically.",
+        examples=["pstk"],
+    )
     redirect_url: Optional[str] = None
     notification_url: Optional[str] = None
     narration: Optional[str] = None

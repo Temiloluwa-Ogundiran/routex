@@ -7,7 +7,7 @@ test("sandbox playground shows a disabled state when sandbox wiring is missing",
 
   await expect(page.getByText("Sandbox unavailable", { exact: true })).toBeVisible();
   await expect(
-    page.getByText(/sandbox requests are disabled until routex_api_base_url/i),
+    page.getByText(/sandbox access is not available yet on this deployment/i),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Sandbox Unavailable" }),
@@ -43,4 +43,45 @@ test("playground api returns a clear configuration error when sandbox wiring is 
     live: false,
     sandbox: true,
   });
+});
+
+test("signed-in merchants see the sandbox as available when status wiring resolves", async ({
+  page,
+}) => {
+  await page.context().addCookies([
+    {
+      name: "routex_user_session",
+      value: "demo-user-session",
+      url: "http://127.0.0.1:3000",
+    },
+  ]);
+
+  await page.route("**/api/auth/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "user_123",
+        email: "ada@example.com",
+        name: "Ada Obi",
+      }),
+    });
+  });
+
+  await page.route("**/api/playground/status", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        available: true,
+        statusLabel: "Merchant sandbox",
+        message: "Signed in with your RouteX test workspace.",
+      }),
+    });
+  });
+
+  await page.goto("http://127.0.0.1:3000");
+
+  await expect(page.getByRole("button", { name: "Send Request" })).toBeEnabled();
+  await expect(page.getByText("Signed in with your RouteX test workspace.")).toBeVisible();
 });

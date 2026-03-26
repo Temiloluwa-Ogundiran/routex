@@ -6,10 +6,6 @@ import { Suspense, useEffect, useState } from "react";
 
 import { AuthFormShell } from "../../components/auth/auth-form-shell";
 import { PushButton } from "../../components/ui/push-button";
-import {
-  PendingAuthRecord,
-  storePendingAuthRecord,
-} from "../../lib/auth-session";
 
 type SignupFormState = {
   email: string;
@@ -46,14 +42,42 @@ function SignupPageContent() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function redirectIfAuthenticated() {
+      const response = await fetch("/api/auth/me", {
+        cache: "no-store",
+        credentials: "same-origin",
+      }).catch(() => null);
+
+      if (!response?.ok || cancelled) {
+        return;
+      }
+
+      router.replace(getSafeRedirectTarget(searchParams.get("next")));
+      router.refresh();
+    }
+
+    void redirectIfAuthenticated();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, searchParams]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
     setErrorMessage(null);
 
     try {
+      const nextTarget = getSafeRedirectTarget(searchParams.get("next"));
       const response = await fetch("/api/auth/signup", {
-        body: JSON.stringify(formState),
+        body: JSON.stringify({
+          ...formState,
+          redirectTo: nextTarget,
+        }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -67,16 +91,8 @@ function SignupPageContent() {
         );
       }
 
-      const pendingAuthRecord: PendingAuthRecord = {
-        email: formState.email,
-        mode: "signup",
-        name: formState.name,
-        password: formState.password,
-        redirectTo: getSafeRedirectTarget(searchParams.get("next")),
-      };
-      storePendingAuthRecord(pendingAuthRecord);
       router.push(
-        `/verify-otp?mode=signup&email=${encodeURIComponent(formState.email)}`,
+        `/verify-otp?mode=signup&email=${encodeURIComponent(formState.email)}&next=${encodeURIComponent(nextTarget)}`,
       );
     } catch (error) {
       setErrorMessage(

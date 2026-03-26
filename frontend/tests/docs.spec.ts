@@ -7,7 +7,7 @@ test("docs page shows standard reference sections and payload examples", async (
 
   await expect(
     page.getByRole("heading", {
-      name: "RouteX API reference for collections, payouts, and verification.",
+      name: "Build on RouteX with three core merchant endpoints.",
     }),
   ).toBeVisible();
   await expect(page.getByText("Base URL")).toBeVisible();

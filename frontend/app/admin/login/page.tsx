@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { AuthFormShell } from "../../../components/auth/auth-form-shell";
 import { PushButton } from "../../../components/ui/push-button";
@@ -29,6 +29,30 @@ function AdminLoginPageContent() {
     password: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function redirectIfAuthenticated() {
+      const response = await fetch("/api/admin/me", {
+        cache: "no-store",
+        credentials: "same-origin",
+      }).catch(() => null);
+
+      if (!response?.ok || cancelled) {
+        return;
+      }
+
+      router.replace(getSafeRedirectTarget(searchParams.get("next")));
+      router.refresh();
+    }
+
+    void redirectIfAuthenticated();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, searchParams]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

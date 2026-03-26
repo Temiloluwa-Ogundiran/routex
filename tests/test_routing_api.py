@@ -105,6 +105,70 @@ class TestRoutingApi:
 
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)
     @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)
+    @patch("external_services.paystackService.post_request", new_callable=AsyncMock)
+    async def test_initiate_honors_manual_gateway_override(
+        self,
+        mock_post_request,
+        mock_get_merchant,
+        mock_verify_token,
+        client,
+        test_merchant,
+    ):
+        mock_verify_token.return_value = True
+        mock_get_merchant.return_value = test_merchant
+        mock_post_request.return_value = (
+            {"data": {"authorization_url": "https://checkout.example.com/pstk-session"}},
+            200,
+        )
+
+        response = await client.post(
+            "/api/v1/initiate",
+            json={
+                "reference": "ROUTE_INIT_PSTK_001",
+                "amount": 5000.0,
+                "currency": "NGN",
+                "customer": {"email": "customer@test.com"},
+                "gateway_code": "pstk",
+            },
+            headers=_merchant_headers(test_merchant.id),
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["selected_gateway"] == "pstk"
+        assert payload["routing"]["selection_reason"] == "merchant selected gateway override"
+        assert payload["routing"]["fallback_order"][0] == "pstk"
+        assert payload["checkout_url"] == "https://checkout.example.com/pstk-session"
+
+    @patch("services.tokenService.verify_token", new_callable=AsyncMock)
+    @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)
+    async def test_initiate_rejects_unknown_manual_gateway_override(
+        self,
+        mock_get_merchant,
+        mock_verify_token,
+        client,
+        test_merchant,
+    ):
+        mock_verify_token.return_value = True
+        mock_get_merchant.return_value = test_merchant
+
+        response = await client.post(
+            "/api/v1/initiate",
+            json={
+                "reference": "ROUTE_INIT_UNKNOWN_GATEWAY",
+                "amount": 5000.0,
+                "currency": "NGN",
+                "customer": {"email": "customer@test.com"},
+                "gateway_code": "bogus",
+            },
+            headers=_merchant_headers(test_merchant.id),
+        )
+
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Requested gateway 'bogus' is not supported."
+
+    @patch("services.tokenService.verify_token", new_callable=AsyncMock)
+    @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)
     @patch("services.emailService.send_merchant_receipt_email")
     @patch("services.emailService.send_customer_receipt_email")
     @patch("external_services.koraService.resolve_account", new_callable=AsyncMock)

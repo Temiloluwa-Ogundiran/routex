@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 import {
+  PENDING_AUTH_COOKIE_NAME,
   USER_SESSION_COOKIE_NAME,
+  createClearedPendingAuthCookieOptions,
   createUserSessionCookieOptions,
+  decodePendingAuthRecord,
 } from "../../../../../lib/auth-session";
 import { getApiBaseUrl } from "../../../../../lib/runtime-config";
 
@@ -15,9 +19,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const requestCookies = await cookies();
+  const pendingAuth = decodePendingAuthRecord(
+    requestCookies.get(PENDING_AUTH_COOKIE_NAME)?.value,
+  );
+
+  if (!pendingAuth || pendingAuth.mode !== "signup") {
+    return NextResponse.json(
+      { status: false, message: "Your sign-up code has expired. Start again." },
+      { status: 400 },
+    );
+  }
+
   const payload = await request.json();
   const backendResponse = await fetch(`${apiBaseUrl}/auth/signup/verify-otp`, {
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      email: pendingAuth.email,
+      name: pendingAuth.name,
+      otp: payload.otp,
+      password: pendingAuth.password,
+    }),
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
@@ -39,6 +60,11 @@ export async function POST(request: NextRequest) {
       USER_SESSION_COOKIE_NAME,
       String(responseBody.access_token),
       createUserSessionCookieOptions(),
+    );
+    response.cookies.set(
+      PENDING_AUTH_COOKIE_NAME,
+      "",
+      createClearedPendingAuthCookieOptions(),
     );
   }
 

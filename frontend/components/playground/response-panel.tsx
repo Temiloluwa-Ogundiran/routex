@@ -1,3 +1,5 @@
+import { CopyButton } from "../ui/copy-button";
+
 type ResponsePanelProps = {
   isAvailable: boolean;
   isPending: boolean;
@@ -25,6 +27,9 @@ export function ResponsePanel({
             {isAvailable ? "Ready" : "Unavailable"}
           </span>
         )}
+      </div>
+      <div className="playground-panel__toolbar">
+        <CopyButton value={responseBody} />
       </div>
       <pre className="playground-response">{responseBody}</pre>
     </section>

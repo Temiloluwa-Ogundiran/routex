@@ -6,7 +6,6 @@ PUBLIC_EXACT_PATHS = {
     "/api/v1/initiate",
     "/api/v1/transactions/verify",
     "/api/v1/payout",
-    "/public/openapi.json",
 }
 
 PRIVATE_PATH_PREFIXES = (

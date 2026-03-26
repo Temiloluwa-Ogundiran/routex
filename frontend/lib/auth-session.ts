@@ -10,8 +10,9 @@ export type PendingAuthRecord = {
 
 export const USER_SESSION_COOKIE_NAME = "routex_user_session";
 export const ADMIN_SESSION_COOKIE_NAME = "routex_admin_session";
-export const PENDING_AUTH_STORAGE_KEY = "routex.pending-auth";
+export const PENDING_AUTH_COOKIE_NAME = "routex_pending_auth";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 12;
+const PENDING_AUTH_MAX_AGE_SECONDS = 60 * 15;
 
 function createSessionCookieOptions(maxAge: number) {
   return {
@@ -31,6 +32,10 @@ export function createAdminSessionCookieOptions() {
   return createSessionCookieOptions(SESSION_MAX_AGE_SECONDS);
 }
 
+export function createPendingAuthCookieOptions() {
+  return createSessionCookieOptions(PENDING_AUTH_MAX_AGE_SECONDS);
+}
+
 export function createClearedUserSessionCookieOptions() {
   return createSessionCookieOptions(0);
 }
@@ -39,18 +44,24 @@ export function createClearedAdminSessionCookieOptions() {
   return createSessionCookieOptions(0);
 }
 
-export function readPendingAuthRecord(): PendingAuthRecord | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
+export function createClearedPendingAuthCookieOptions() {
+  return createSessionCookieOptions(0);
+}
 
-  const rawRecord = window.sessionStorage.getItem(PENDING_AUTH_STORAGE_KEY);
-  if (!rawRecord) {
+export function encodePendingAuthRecord(record: PendingAuthRecord) {
+  return Buffer.from(JSON.stringify(record), "utf-8").toString("base64url");
+}
+
+export function decodePendingAuthRecord(value: string | undefined): PendingAuthRecord | null {
+  if (!value) {
     return null;
   }
 
   try {
-    const parsedRecord = JSON.parse(rawRecord) as PendingAuthRecord;
+    const parsedRecord = JSON.parse(
+      Buffer.from(value, "base64url").toString("utf-8"),
+    ) as PendingAuthRecord;
+
     if (
       parsedRecord &&
       (parsedRecord.mode === "login" || parsedRecord.mode === "signup") &&
@@ -64,20 +75,4 @@ export function readPendingAuthRecord(): PendingAuthRecord | null {
   }
 
   return null;
-}
-
-export function storePendingAuthRecord(record: PendingAuthRecord) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.sessionStorage.setItem(PENDING_AUTH_STORAGE_KEY, JSON.stringify(record));
-}
-
-export function clearPendingAuthRecord() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.sessionStorage.removeItem(PENDING_AUTH_STORAGE_KEY);
 }

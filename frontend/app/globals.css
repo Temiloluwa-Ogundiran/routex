@@ -112,6 +112,10 @@ button {
   gap: 1rem;
 }
 
+.site-header__actions--loading {
+  min-height: 3rem;
+}
+
 .site-header__login {
   font-weight: 700;
 }
@@ -820,6 +824,11 @@ button {
   line-height: 1.6;
 }
 
+.playground-panel__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .playground-status-chip {
   padding: 0.45rem 0.8rem;
   border: 2px solid var(--routex-black);
@@ -832,6 +841,24 @@ button {
 
 .playground-status-chip--pending {
   background: var(--routex-sage);
+}
+
+.copy-button {
+  width: fit-content;
+  padding: 0.45rem 0.8rem;
+  border: 2px solid var(--routex-black);
+  border-radius: 0.8rem;
+  background: var(--routex-white);
+  box-shadow: var(--shadow-hard);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 0 var(--routex-black);
 }
 
 .playground-textarea,
@@ -933,13 +960,24 @@ button {
 
 .docs-group {
   display: grid;
-  gap: 1rem;
+  gap: 1.1rem;
   padding: 0 4rem;
 }
 
 .docs-group__header {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.55rem;
+  padding: 1.2rem 1.25rem;
+  border: 2px solid var(--routex-black);
+  border-radius: 1.25rem;
+  background: var(--routex-yellow);
+  box-shadow: var(--shadow-hard);
+}
+
+.docs-group__copy {
+  margin: 0;
+  max-width: 46rem;
+  line-height: 1.6;
 }
 
 .docs-group__stack {
@@ -950,10 +988,10 @@ button {
 .docs-endpoint-card {
   display: grid;
   gap: 1.25rem;
-  padding: 1.25rem;
+  padding: 1.4rem;
   border: 2px solid var(--routex-black);
   border-radius: 1.25rem;
-  background: #f7f5ee;
+  background: #fffdf7;
   box-shadow: var(--shadow-hard);
 }
 
@@ -1017,6 +1055,12 @@ button {
   align-items: center;
 }
 
+.docs-subsection__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .docs-subsection__header h4 {
   margin: 0;
 }
@@ -1037,8 +1081,7 @@ button {
     minmax(10rem, 1fr)
     minmax(8rem, 0.8fr)
     minmax(5rem, 0.5fr)
-    minmax(13rem, 1.2fr)
-    minmax(8rem, 0.8fr);
+    minmax(16rem, 1.5fr);
   gap: 0.75rem;
   padding: 0.65rem 0.75rem;
   border: 2px solid var(--routex-black);
@@ -1087,6 +1130,13 @@ button {
 
 .docs-response-card__header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.docs-response-card__badge-group {
+  display: flex;
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
@@ -1134,6 +1184,20 @@ button {
   border-radius: 1.75rem;
   background: var(--routex-yellow);
   box-shadow: var(--shadow-hard-lg);
+}
+
+.auth-shell__eyebrow {
+  width: fit-content;
+  margin: 0;
+  padding: 0.45rem 0.8rem;
+  border: 2px solid var(--routex-black);
+  border-radius: 999px;
+  background: var(--routex-white);
+  box-shadow: var(--shadow-hard);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .auth-shell__intro h1 {
@@ -2247,6 +2311,10 @@ button {
 
   .docs-group {
     padding-inline: 1.5rem;
+  }
+
+  .docs-table {
+    grid-template-columns: 1fr;
   }
 
   .docs-unavailable {

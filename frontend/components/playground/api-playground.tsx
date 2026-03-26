@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   getPlaygroundEndpoint,
   PLAYGROUND_ENDPOINTS,
@@ -15,12 +15,14 @@ function formatJson(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
-type ApiPlaygroundProps = {
-  mode: "live" | "disabled";
+type PlaygroundAvailability = {
+  available: boolean;
+  message: string;
+  statusLabel: string;
 };
 
-function buildReadyMessage(mode: ApiPlaygroundProps["mode"]) {
-  if (mode === "live") {
+function buildReadyMessage(isLive: boolean) {
+  if (isLive) {
     return {
       status: "ready",
       message: "Choose an endpoint and send a real sandbox request.",
@@ -34,25 +36,71 @@ function buildReadyMessage(mode: ApiPlaygroundProps["mode"]) {
   };
 }
 
-export function ApiPlayground({ mode }: ApiPlaygroundProps) {
+const INITIAL_AVAILABILITY: PlaygroundAvailability = {
+  available: false,
+  message: "Checking sandbox access for this session.",
+  statusLabel: "Checking access",
+};
+
+export function ApiPlayground() {
   const [selectedId, setSelectedId] = useState<PlaygroundEndpointId>("initiate");
   const [requestBody, setRequestBody] = useState(
     formatJson(getPlaygroundEndpoint("initiate")?.requestTemplate ?? {}),
   );
+  const [availability, setAvailability] = useState<PlaygroundAvailability>(
+    INITIAL_AVAILABILITY,
+  );
   const [responseBody, setResponseBody] = useState(
-    formatJson(buildReadyMessage(mode)),
+    formatJson(buildReadyMessage(false)),
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const selectedEndpoint = getPlaygroundEndpoint(selectedId);
-  const isLive = mode === "live";
+  const isLive = availability.available;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAvailability() {
+      const response = await fetch("/api/playground/status", {
+        cache: "no-store",
+        credentials: "same-origin",
+      }).catch(() => null);
+
+      if (!response) {
+        if (!cancelled) {
+          setAvailability({
+            available: false,
+            message: "We could not confirm sandbox access right now.",
+            statusLabel: "Sandbox unavailable",
+          });
+          setResponseBody(formatJson(buildReadyMessage(false)));
+        }
+        return;
+      }
+
+      const payload = (await response.json().catch(() => null)) as PlaygroundAvailability | null;
+      if (cancelled || !payload) {
+        return;
+      }
+
+      setAvailability(payload);
+      setResponseBody(formatJson(buildReadyMessage(payload.available)));
+    }
+
+    void loadAvailability();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleEndpointChange(nextId: PlaygroundEndpointId) {
     const endpoint = getPlaygroundEndpoint(nextId);
     setSelectedId(nextId);
     setRequestBody(formatJson(endpoint?.requestTemplate ?? {}));
-    setResponseBody(formatJson(buildReadyMessage(mode)));
+    setResponseBody(formatJson(buildReadyMessage(isLive)));
     setErrorMessage(null);
   }
 
@@ -118,8 +166,8 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
           <h2>Test the API without leaving the landing page.</h2>
           <p>
             Inspect the real request payloads for collections, verification, and
-            payouts. When sandbox access is ready, requests run against the live
-            test environment. Until then, the console stays read-only.
+            payouts. Signed-in merchants can run real test-mode requests here
+            with their RouteX workspace keys.
           </p>
         </div>
         <a className="inline-link" href="/docs">
@@ -151,7 +199,7 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
             description={selectedEndpoint.description}
             endpoint={selectedEndpoint.path}
             method={selectedEndpoint.method}
-            statusLabel={isLive ? "Live sandbox" : "Sandbox unavailable"}
+            statusLabel={availability.statusLabel}
             onBodyChange={setRequestBody}
           />
           <ResponsePanel
@@ -172,11 +220,7 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
           </PushButton>
         </div>
 
-        {!isLive ? (
-          <p className="playground-hint">
-            Sandbox requests are temporarily unavailable on this deployment.
-          </p>
-        ) : null}
+        <p className="playground-hint">{availability.message}</p>
 
         {errorMessage ? <p className="playground-error">{errorMessage}</p> : null}
       </div>

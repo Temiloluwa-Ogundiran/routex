@@ -9,11 +9,8 @@ import { ProblemSolution } from "../components/sections/problem-solution";
 import { ProofSection } from "../components/sections/proof-section";
 import { TrustMarquee } from "../components/sections/trust-marquee";
 import { UseCases } from "../components/sections/use-cases";
-import { isLivePlaygroundConfigured } from "../lib/runtime-config";
 
 export default function HomePage() {
-  const playgroundMode = isLivePlaygroundConfigured() ? "live" : "disabled";
-
   return (
     <div className="site-shell">
       <SiteHeader />
@@ -24,7 +21,7 @@ export default function HomePage() {
         <FeatureGrid />
         <HowItWorks />
         <UseCases />
-        <ApiPlayground mode={playgroundMode} />
+        <ApiPlayground />
         <ProofSection />
         <FinalCta />
       </main>

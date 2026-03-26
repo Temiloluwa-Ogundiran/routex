@@ -3,7 +3,7 @@ import {
   getPlaygroundEndpoint,
   type PlaygroundEndpointId,
 } from "../../../lib/playground-endpoints";
-import { getApiBaseUrl, getPlaygroundSecretKey } from "../../../lib/runtime-config";
+import { resolvePlaygroundAccess } from "../../../lib/playground-access";
 
 type PlaygroundRequestBody = {
   endpointId?: PlaygroundEndpointId;
@@ -73,23 +73,22 @@ export async function POST(request: Request) {
     );
   }
 
-  const apiBaseUrl = getApiBaseUrl();
-  const secretKey = getPlaygroundSecretKey();
+  const access = await resolvePlaygroundAccess();
 
-  if (!apiBaseUrl || !secretKey) {
+  if (!access.apiBaseUrl || !access.secretKey || !access.available) {
     return NextResponse.json(
       {
         sandbox: true,
         live: false,
         endpoint: endpoint.path,
         method: endpoint.method,
-        message: "Sandbox access is not available on this deployment yet.",
+        message: access.message,
       },
       { status: 503 },
     );
   }
 
-  const targetUrl = new URL(`${apiBaseUrl}${endpoint.path}`);
+  const targetUrl = new URL(`${access.apiBaseUrl}${endpoint.path}`);
 
   if (endpoint.method === "GET") {
     targetUrl.search = buildSearchParams(body.payload).toString();
@@ -99,7 +98,7 @@ export async function POST(request: Request) {
     const response = await fetch(targetUrl.toString(), {
       method: endpoint.method,
       headers: {
-        Authorization: `Bearer ${secretKey}`,
+        Authorization: `Bearer ${access.secretKey}`,
         ...(endpoint.method === "POST"
           ? { "Content-Type": "application/json" }
           : {}),

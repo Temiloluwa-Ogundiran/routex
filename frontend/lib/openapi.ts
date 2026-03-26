@@ -138,30 +138,49 @@ const ENDPOINT_METADATA: Record<string, EndpointMeta> = {
   "POST /api/v1/initiate": {
     groupTitle: "Collections",
     groupDescription:
-      "Create routed hosted checkout sessions and let RouteX select the healthiest gateway for the payment.",
+      "Accept a payment in test mode with one hosted checkout endpoint and a consistent RouteX response shape.",
     title: "Initialize a routed collection",
     description:
-      "Creates a hosted checkout session, records the routing decision, and returns the checkout URL plus the selected gateway metadata.",
-    auth: "Merchant key required",
+      "Create a hosted checkout session, optionally lock the request to a specific gateway, and receive the RouteX checkout URL with routing metadata.",
+    auth: "Bearer secret key",
   },
   "GET /api/v1/transactions/verify": {
     groupTitle: "Collections",
     groupDescription:
-      "Confirm the normalized outcome of a customer payment from one endpoint, regardless of the underlying PSP.",
+      "Confirm the final customer payment state through one normalized verification endpoint.",
     title: "Verify a transaction",
     description:
-      "Returns the latest normalized transaction state, selected gateway, gateway reference, and recorded routing attempts.",
-    auth: "Merchant key required",
+      "Fetch the latest RouteX status, selected gateway, gateway reference, and routed attempt history for a transaction reference.",
+    auth: "Bearer secret key",
   },
   "POST /api/v1/payout": {
     groupTitle: "Payouts",
     groupDescription:
-      "Disburse funds through the unified payout surface while keeping routing, fees, and gateway references consistent.",
+      "Send funds through the unified payout surface while keeping routing, fees, and references consistent.",
     title: "Create a payout",
     description:
-      "Validates wallet balance, chooses an eligible payout gateway, and returns the accepted payout details with routing metadata.",
-    auth: "Merchant key required",
+      "Validate wallet balance, choose an eligible payout gateway, and return the accepted payout details with routing metadata.",
+    auth: "Bearer secret key",
   },
+};
+
+const FIELD_DESCRIPTION_OVERRIDES: Record<string, string> = {
+  amount: "Amount to process in the smallest supported decimal unit for NGN requests.",
+  currency: "Currency code for this request. The current MVP supports NGN.",
+  customer: "Customer details for the payment.",
+  "customer.email": "Customer email address.",
+  "customer.name": "Optional customer display name.",
+  destination: "Destination bank account details for the payout.",
+  "destination.account_number": "Destination bank account number.",
+  "destination.bank_code": "Destination bank code.",
+  gateway_code:
+    "Optional gateway override. Omit this field to let RouteX choose automatically.",
+  metadata: "Optional metadata object returned with the transaction.",
+  mode: "Preferred payment channel for the checkout experience.",
+  narration: "Optional text shown to the customer or receiving gateway.",
+  notification_url: "Server endpoint RouteX can notify after payment updates.",
+  redirect_url: "Where RouteX should return the customer after checkout.",
+  reference: "Your unique merchant reference for this request.",
 };
 
 function getGroupTemplate(title: string): ApiReferenceGroup {
@@ -371,11 +390,18 @@ function toInlineExample(value: unknown) {
   return JSON.stringify(value);
 }
 
+function getFieldDescription(fieldName: string, description: string | undefined) {
+  if (description && description !== "No description provided.") {
+    return description;
+  }
+
+  return FIELD_DESCRIPTION_OVERRIDES[fieldName] ?? "Included in the RouteX request payload.";
+}
+
 function extractSchemaFields(
   schema: OpenApiSchema | undefined,
   document: OpenApiDocument,
   location: "query" | "body",
-  prefix = "",
 ): ApiReferenceField[] {
   const resolved = unwrapNullableSchema(schema, document);
   if (!resolved?.properties) {
@@ -386,27 +412,17 @@ function extractSchemaFields(
   const fields: ApiReferenceField[] = [];
 
   for (const [fieldName, fieldSchema] of Object.entries(resolved.properties)) {
-    const path = prefix ? `${prefix}.${fieldName}` : fieldName;
-    const unwrappedField = unwrapNullableSchema(fieldSchema, document);
-    const description =
-      fieldSchema.description ??
-      unwrappedField?.description ??
-      "No description provided.";
-
     fields.push({
-      name: path,
+      name: fieldName,
       type: schemaTypeLabel(fieldSchema, document),
       required: requiredFields.has(fieldName),
-      description,
+      description: getFieldDescription(
+        fieldName,
+        fieldSchema.description ?? unwrapNullableSchema(fieldSchema, document)?.description,
+      ),
       example: toInlineExample(buildExampleValue(fieldSchema, document, fieldName)),
       location,
     });
-
-    if (unwrappedField?.properties) {
-      fields.push(
-        ...extractSchemaFields(fieldSchema, document, location, path),
-      );
-    }
   }
 
   return fields;
@@ -450,7 +466,7 @@ function buildResponseExamples(
       return {
         statusCode,
         title: namedExample?.[1]?.summary ?? `HTTP ${statusCode}`,
-        description: response.description ?? "No description provided.",
+        description: response.description ?? "RouteX response payload.",
         body: formatCodeBlock(exampleValue),
       };
     });
@@ -508,7 +524,7 @@ function getEndpointMeta(method: EndpointMethod, path: string): EndpointMeta {
       groupDescription: "RouteX public API endpoints.",
       title: `${method} ${path}`,
       description: "Public RouteX API endpoint.",
-      auth: path.startsWith("/api/v1/") ? "Merchant key required" : "None",
+      auth: path.startsWith("/api/v1/") ? "Bearer secret key" : "None",
     }
   );
 }
@@ -549,6 +565,9 @@ function buildGroupsFromOpenApi(
       if (!method || !operation) {
         continue;
       }
+      if (!ENDPOINT_ORDER.includes(`${method} ${path}`)) {
+        continue;
+      }
 
       const meta = getEndpointMeta(method, path);
       const requestSchema = getPreferredJsonMediaType(
@@ -565,7 +584,7 @@ function buildGroupsFromOpenApi(
           name: parameter.name,
           type: schemaTypeLabel(parameter.schema, document),
           required: Boolean(parameter.required),
-          description: parameter.description ?? "No description provided.",
+          description: getFieldDescription(parameter.name, parameter.description),
           example: toInlineExample(
             parameter.example ??
               buildExampleValue(parameter.schema, document, parameter.name),

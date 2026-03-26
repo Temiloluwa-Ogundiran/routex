@@ -2,15 +2,10 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { OtpFormShell } from "../../components/auth/otp-form-shell";
 import { PushButton } from "../../components/ui/push-button";
-import {
-  PendingAuthRecord,
-  clearPendingAuthRecord,
-  readPendingAuthRecord,
-} from "../../lib/auth-session";
 
 type OtpFormState = {
   otp: string;
@@ -28,64 +23,47 @@ function VerifyOtpPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedMode = searchParams.get("mode");
-  const requestedEmail = searchParams.get("email");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pendingAuth, setPendingAuth] = useState<PendingAuthRecord | null>(null);
   const [formState, setFormState] = useState<OtpFormState>({ otp: "" });
 
   useEffect(() => {
-    setPendingAuth(readPendingAuthRecord());
-  }, []);
+    let cancelled = false;
 
-  const effectivePendingAuth = useMemo(() => {
-    if (pendingAuth) {
-      return pendingAuth;
+    async function redirectIfAuthenticated() {
+      const response = await fetch("/api/auth/me", {
+        cache: "no-store",
+        credentials: "same-origin",
+      }).catch(() => null);
+
+      if (!response?.ok || cancelled) {
+        return;
+      }
+
+      router.replace(getSafeRedirectTarget(searchParams.get("next")));
+      router.refresh();
     }
 
-    return requestedEmail && requestedMode
-      ? ({
-          email: requestedEmail,
-          mode: requestedMode === "signup" ? "signup" : "login",
-          name: "",
-          password: "",
-          redirectTo: getSafeRedirectTarget(searchParams.get("next")),
-        } as PendingAuthRecord)
-      : null;
-  }, [pendingAuth, requestedEmail, requestedMode, searchParams]);
+    void redirectIfAuthenticated();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, searchParams]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    if (!effectivePendingAuth) {
-      setErrorMessage("Start from login or signup, then enter the code here.");
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
       const endpoint =
-        effectivePendingAuth.mode === "signup"
+        requestedMode === "signup"
           ? "/api/auth/signup/verify-otp"
           : "/api/auth/login/verify-otp";
-      const payload =
-        effectivePendingAuth.mode === "signup"
-          ? {
-              email: effectivePendingAuth.email,
-              name: effectivePendingAuth.name,
-              otp: formState.otp,
-              password: effectivePendingAuth.password,
-            }
-          : {
-              email: effectivePendingAuth.email,
-              otp: formState.otp,
-              password: effectivePendingAuth.password,
-            };
 
       const response = await fetch(endpoint, {
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ otp: formState.otp }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -99,8 +77,7 @@ function VerifyOtpPageContent() {
         );
       }
 
-      clearPendingAuthRecord();
-      router.replace(effectivePendingAuth.redirectTo ?? "/dashboard");
+      router.replace(getSafeRedirectTarget(searchParams.get("next")));
       router.refresh();
     } catch (error) {
       setErrorMessage(

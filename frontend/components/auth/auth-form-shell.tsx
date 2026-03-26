@@ -18,7 +18,7 @@ export function AuthFormShell({
   return (
     <main className="auth-shell">
       <section className="auth-shell__intro">
-        <p className="section-badge">{badge}</p>
+        <p className="auth-shell__eyebrow">{badge}</p>
         <h1>{title}</h1>
         <p className="auth-shell__copy">{description}</p>
         {points && points.length > 0 ? (

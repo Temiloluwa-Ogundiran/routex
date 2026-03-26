@@ -88,13 +88,25 @@ async def initiate_checkout(
         raise HTTPException(status_code = 400, detail = "Transaction reference not unique for merchant")
     
     try:
-        decision = await routingService.build_routing_decision(
-            session=session,
-            operation="collection",
-            currency=str(payload.currency),
-            amount=payload.amount,
-            merchant_id=merchant.id,
-        )
+        if payload.gateway_code:
+            decision = await routingService.build_manual_routing_decision(
+                session=session,
+                operation="collection",
+                currency=str(payload.currency),
+                amount=payload.amount,
+                merchant_id=merchant.id,
+                gateway_code=payload.gateway_code,
+                channel=payload.mode.value if payload.mode else None,
+            )
+        else:
+            decision = await routingService.build_routing_decision(
+                session=session,
+                operation="collection",
+                currency=str(payload.currency),
+                amount=payload.amount,
+                merchant_id=merchant.id,
+                channel=payload.mode.value if payload.mode else None,
+            )
         adapter = get_adapter(decision.selected_gateway)
         adapter_kwargs = {
             "session": session,
@@ -151,8 +163,12 @@ async def initiate_checkout(
                 "routing": routingService.build_routing_metadata(audit.decision_id, decision),
             }
         return JSONResponse(content=data, status_code=status)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except HTTPException:
+        raise
     except Exception as e:
-        return JSONResponse(content= {'details': f'{e}'}, status_code= 400)
+        raise HTTPException(status_code=502, detail="Unable to initialize routed checkout") from e
     
 @initialize_router.post(
     "/api/v2/initiate",

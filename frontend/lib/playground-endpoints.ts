@@ -20,15 +20,14 @@ export const PLAYGROUND_ENDPOINTS: PlaygroundEndpoint[] = [
       reference: "ORD_1001",
       amount: 25000,
       currency: "NGN",
-      channel: "card",
+      gateway_code: "pstk",
       customer: {
         email: "buyer@example.com",
         name: "Ada Obi",
       },
-      routing_preferences: {
-        preferred_gateways: ["pstk", "fltw", "kora", "isw"],
-        allow_failover: true,
-      },
+      redirect_url: "https://merchant.example.com/return",
+      notification_url: "https://merchant.example.com/webhook",
+      mode: "card",
     },
   },
   {

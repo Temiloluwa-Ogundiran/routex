@@ -60,6 +60,13 @@ DEFAULT_PROCESSOR_CATALOG = {
 }
 
 
+def _validate_routing_request(currency: str, operation: str) -> None:
+    if currency != "NGN":
+        raise ValueError("Routing service currently supports NGN only.")
+    if operation not in {"collection", "payout"}:
+        raise ValueError(f"Unsupported routing operation: {operation}")
+
+
 def _supports_operation(processor: Processor, operation: str) -> bool:
     if operation == "collection":
         return bool(processor.supports_collections)
@@ -112,6 +119,20 @@ def _score_processor(processor: Processor, snapshot) -> float:
     )
 
 
+def _requested_gateway_error(gateway_code: str, rejection_reason: str, operation: str) -> str:
+    if rejection_reason == "processor_inactive":
+        return f"Requested gateway '{gateway_code}' is currently inactive."
+    if rejection_reason == "gateway_unavailable":
+        return f"Requested gateway '{gateway_code}' is currently unavailable."
+    if rejection_reason == "rule_denied":
+        return f"Requested gateway '{gateway_code}' is blocked by routing rules."
+    if rejection_reason == "not_in_rule_allowlist":
+        return f"Requested gateway '{gateway_code}' is not allowed by the active routing rules."
+    if rejection_reason == f"unsupported_{operation}":
+        return f"Requested gateway '{gateway_code}' does not support {operation}s."
+    return f"Requested gateway '{gateway_code}' is not eligible for this request."
+
+
 async def ensure_processor_catalog(session: AsyncSession) -> None:
     result = await session.execute(select(Processor))
     existing_processors = {
@@ -145,11 +166,7 @@ async def build_routing_decision(
     channel: str | None = None,
 ) -> RoutingDecision:
     del merchant_id
-
-    if currency != "NGN":
-        raise ValueError("Routing service currently supports NGN only.")
-    if operation not in {"collection", "payout"}:
-        raise ValueError(f"Unsupported routing operation: {operation}")
+    _validate_routing_request(currency, operation)
 
     await ensure_processor_catalog(session)
     result = await session.execute(select(Processor))
@@ -217,6 +234,74 @@ async def build_routing_decision(
         score_breakdown=score_breakdown,
         rejected_gateways=rejected_gateways,
         selection_reason=selection_reason,
+    )
+
+
+async def build_manual_routing_decision(
+    session: AsyncSession,
+    operation: str,
+    currency: str,
+    amount: float,
+    merchant_id: str,
+    gateway_code: str,
+    channel: str | None = None,
+) -> RoutingDecision:
+    del merchant_id
+    _validate_routing_request(currency, operation)
+
+    requested_gateway = gateway_code.strip().lower()
+    await ensure_processor_catalog(session)
+    result = await session.execute(select(Processor))
+    processors = result.scalars().all()
+    processor_lookup = {processor.code: processor for processor in processors}
+    requested_processor = processor_lookup.get(requested_gateway)
+
+    if requested_processor is None:
+        raise ValueError(f"Requested gateway '{requested_gateway}' is not supported.")
+
+    snapshots = await gatewayHealthService.get_gateway_snapshots(session)
+    rule_policy = await routerRuleService.resolve_routing_rule_policy(
+        session,
+        operation=operation,
+        amount=amount,
+        channel=channel,
+    )
+
+    score_breakdown: dict[str, float] = {}
+    rejected_gateways: dict[str, str] = {}
+
+    for processor in processors:
+        snapshot = snapshots.get(processor.code)
+        rejection_reason = _get_rejection_reason(
+            processor,
+            operation,
+            snapshot,
+            rule_policy=rule_policy,
+        )
+        if rejection_reason:
+            rejected_gateways[processor.code] = rejection_reason
+            continue
+
+        score_breakdown[processor.code] = _score_processor(processor, snapshot)
+
+    requested_rejection = rejected_gateways.get(requested_gateway)
+    if requested_rejection:
+        raise ValueError(
+            _requested_gateway_error(requested_gateway, requested_rejection, operation),
+        )
+
+    ranked_remaining_gateways = sorted(
+        [gateway for gateway in score_breakdown if gateway != requested_gateway],
+        key=lambda gateway_code: score_breakdown[gateway_code],
+        reverse=True,
+    )
+
+    return RoutingDecision(
+        selected_gateway=requested_gateway,
+        ranked_gateways=[requested_gateway, *ranked_remaining_gateways],
+        score_breakdown=score_breakdown,
+        rejected_gateways=rejected_gateways,
+        selection_reason="merchant selected gateway override",
     )
 
 

@@ -1,3 +1,5 @@
+import { CopyButton } from "../ui/copy-button";
+
 type RequestPanelProps = {
   body: string;
   description: string;
@@ -27,6 +29,9 @@ export function RequestPanel({
         <span className="playground-status-chip">{statusLabel}</span>
       </div>
       <p className="playground-panel__description">{description}</p>
+      <div className="playground-panel__toolbar">
+        <CopyButton value={body} />
+      </div>
       <textarea
         aria-label="Request payload"
         className="playground-textarea"

@@ -23,13 +23,8 @@ export function SiteFooter() {
         <div>
           <p className="site-footer__eyebrow">Developers</p>
           <Link href="/docs">API Docs</Link>
-          <Link href="/#quickstart">Quickstart</Link>
-        </div>
-
-        <div>
-          <p className="site-footer__eyebrow">Company</p>
-          <Link href="/signup">Create Account</Link>
-          <Link href="/login">Log In</Link>
+          <Link href="/#quickstart">Sandbox</Link>
+          <Link href="/dashboard">Dashboard</Link>
         </div>
       </div>
     </footer>

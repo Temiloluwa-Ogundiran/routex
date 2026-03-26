@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  PENDING_AUTH_COOKIE_NAME,
+  createPendingAuthCookieOptions,
+  encodePendingAuthRecord,
+} from "../../../../lib/auth-session";
 import { getApiBaseUrl } from "../../../../lib/runtime-config";
 
 export async function POST(request: NextRequest) {
@@ -26,5 +31,21 @@ export async function POST(request: NextRequest) {
     status: false,
   }));
 
-  return NextResponse.json(responseBody, { status: backendResponse.status });
+  const response = NextResponse.json(responseBody, { status: backendResponse.status });
+
+  if (backendResponse.ok) {
+    response.cookies.set(
+      PENDING_AUTH_COOKIE_NAME,
+      encodePendingAuthRecord({
+        email: String(payload.email ?? ""),
+        mode: "login",
+        password: String(payload.password ?? ""),
+        redirectTo:
+          typeof payload.redirectTo === "string" ? payload.redirectTo : undefined,
+      }),
+      createPendingAuthCookieOptions(),
+    );
+  }
+
+  return response;
 }
