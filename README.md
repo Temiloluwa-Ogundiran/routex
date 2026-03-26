@@ -58,9 +58,6 @@ RouteX is built to demonstrate a complete payment operations story in a few minu
 This submission is intentionally **test mode only**. The product is shaped for MVP credibility, live demo clarity, and clean extensibility into a full production orchestration platform.
 
 ## Team Contributions
-
-Judges should use this section to verify participation.
-
 ### Temiloluwa Ogundiran
 
 - Backend architecture and API implementation
