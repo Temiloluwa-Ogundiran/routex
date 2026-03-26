@@ -88,7 +88,7 @@ async def _send_otp_email(email: str, otp: str) -> None:
     payload = _build_message(
         from_email=settings.AUTH_EMAIL,
         to_email=email,
-        subject="Your OTP Code",
+        subject="Your RouteX verification code",
         html_content=html_body,
     )
     await _send_async(payload)

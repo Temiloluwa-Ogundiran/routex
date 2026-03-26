@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 
 import { MerchantDashboardShell } from "../../components/app/merchant-dashboard-shell";
-import { SiteFooter } from "../../components/layout/site-footer";
-import { SiteHeader } from "../../components/layout/site-header";
 
 function DashboardLoadingFallback() {
   return (
@@ -19,13 +17,11 @@ function DashboardLoadingFallback() {
 export default async function DashboardPage() {
   return (
     <div className="site-shell">
-      <SiteHeader />
       <main className="dashboard-shell">
         <Suspense fallback={<DashboardLoadingFallback />}>
           <MerchantDashboardShell />
         </Suspense>
       </main>
-      <SiteFooter />
     </div>
   );
 }

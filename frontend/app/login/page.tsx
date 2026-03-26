@@ -87,12 +87,7 @@ function LoginPageContent() {
   return (
     <AuthFormShell
       badge="User access"
-      description="Request a one-time code and we will email it to you. Your password stays in a temporary browser session just long enough to complete verification."
-      points={[
-        "Email-only OTP delivery through the backend auth flow",
-        "Protected dashboard access after verification",
-        "No raw OTP is returned in the response body",
-      ]}
+      description="Sign in with your email and password to receive your one-time code."
       title="Sign in to RouteX"
     >
       <div className="auth-shell__card-header">

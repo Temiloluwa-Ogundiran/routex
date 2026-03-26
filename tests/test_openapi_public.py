@@ -11,5 +11,8 @@ class TestPublicOpenApi:
         paths = response.json()["paths"]
         assert "/api/v1/initiate" in paths
         assert "/api/v1/payout" in paths
+        assert "/api/v1/transactions/verify" in paths
+        assert "/api/v2/initiate" not in paths
+        assert "/webhook/test-signature" not in paths
         assert "/admin/login" not in paths
         assert "/analytics/router/dashboard" not in paths

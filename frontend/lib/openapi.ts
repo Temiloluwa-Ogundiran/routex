@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "./runtime-config";
+import { getApiBaseUrl, getPublicApiBaseUrl } from "./runtime-config";
 
 export const PUBLIC_OPENAPI_URL = "/public/openapi.json";
 
@@ -124,19 +124,15 @@ export type ApiReferenceData = {
   unavailableReason: string | null;
 };
 
-const GROUP_ORDER = ["Collections", "Payouts", "Checkout", "Operations"];
+const GROUP_ORDER = ["Collections", "Payouts"];
 
 const ENDPOINT_ORDER = [
   "POST /api/v1/initiate",
   "GET /api/v1/transactions/verify",
   "POST /api/v1/payout",
-  "POST /api/v2/complete",
-  "POST /api/v2/complete/authorize",
-  "POST /webhook/test-signature",
-  "GET /public/openapi.json",
 ];
 
-const DEFAULT_API_BASE_URL = "https://api.yourdomain.com";
+const DEFAULT_API_BASE_URL = "https://routexapi.xoroai.cloud";
 
 const ENDPOINT_METADATA: Record<string, EndpointMeta> = {
   "POST /api/v1/initiate": {
@@ -146,7 +142,7 @@ const ENDPOINT_METADATA: Record<string, EndpointMeta> = {
     title: "Initialize a routed collection",
     description:
       "Creates a hosted checkout session, records the routing decision, and returns the checkout URL plus the selected gateway metadata.",
-    auth: "Bearer merchant secret key",
+    auth: "Merchant key required",
   },
   "GET /api/v1/transactions/verify": {
     groupTitle: "Collections",
@@ -155,7 +151,7 @@ const ENDPOINT_METADATA: Record<string, EndpointMeta> = {
     title: "Verify a transaction",
     description:
       "Returns the latest normalized transaction state, selected gateway, gateway reference, and recorded routing attempts.",
-    auth: "Bearer merchant secret key",
+    auth: "Merchant key required",
   },
   "POST /api/v1/payout": {
     groupTitle: "Payouts",
@@ -164,43 +160,7 @@ const ENDPOINT_METADATA: Record<string, EndpointMeta> = {
     title: "Create a payout",
     description:
       "Validates wallet balance, chooses an eligible payout gateway, and returns the accepted payout details with routing metadata.",
-    auth: "Bearer merchant secret key",
-  },
-  "POST /api/v2/complete": {
-    groupTitle: "Checkout",
-    groupDescription:
-      "Complete hosted checkout flows that start from the RouteX checkout surface and then fan into channel-specific payment flows.",
-    title: "Complete a v2 checkout session",
-    description:
-      "Takes a pending checkout reference and chosen channel, then advances the checkout into transfer, crypto, or mobile-money execution.",
-    auth: "None",
-  },
-  "POST /api/v2/complete/authorize": {
-    groupTitle: "Checkout",
-    groupDescription:
-      "Authorize follow-up checkout steps like mobile-money OTP confirmation after an initial payment prompt.",
-    title: "Authorize a mobile-money checkout",
-    description:
-      "Confirms a pending mobile-money checkout with the OTP or PIN returned by the provider's challenge step.",
-    auth: "None",
-  },
-  "POST /webhook/test-signature": {
-    groupTitle: "Operations",
-    groupDescription:
-      "Utility endpoints that help you validate integrations, inspect contracts, and generate test payloads while wiring RouteX.",
-    title: "Generate a test webhook signature",
-    description:
-      "Builds a signed test payload so you can validate webhook verification flows before going live.",
-    auth: "None",
-  },
-  "GET /public/openapi.json": {
-    groupTitle: "Operations",
-    groupDescription:
-      "Utility endpoints that help you validate integrations, inspect contracts, and generate test payloads while wiring RouteX.",
-    title: "Fetch the public OpenAPI contract",
-    description:
-      "Returns the sanitized public OpenAPI document that powers the RouteX docs site and public contract tooling.",
-    auth: "None",
+    auth: "Merchant key required",
   },
 };
 
@@ -544,13 +504,11 @@ function getEndpointMeta(method: EndpointMethod, path: string): EndpointMeta {
     ENDPOINT_METADATA[`${method} ${path}`] ?? {
       groupTitle: path.includes("payout")
         ? "Payouts"
-        : path.includes("complete")
-          ? "Checkout"
-          : "Operations",
+        : "Collections",
       groupDescription: "RouteX public API endpoints.",
       title: `${method} ${path}`,
       description: "Public RouteX API endpoint.",
-      auth: path.startsWith("/api/v1/") ? "Bearer merchant secret key" : "None",
+      auth: path.startsWith("/api/v1/") ? "Merchant key required" : "None",
     }
   );
 }
@@ -652,15 +610,16 @@ function buildGroupsFromOpenApi(
 
 export async function getApiReferenceData(): Promise<ApiReferenceData> {
   const baseUrl = getApiBaseUrl();
+  const publicBaseUrl = getPublicApiBaseUrl();
 
   if (!baseUrl) {
     return {
       groups: [],
       sourceLabel: PUBLIC_OPENAPI_URL,
       sourceMode: "unavailable",
-      baseUrl: null,
+      baseUrl: publicBaseUrl,
       unavailableReason:
-        "Set ROUTEX_API_BASE_URL so the frontend can fetch the public OpenAPI document from the backend.",
+        "The public API reference is not connected yet. Set the backend URL and reload this page.",
     };
   }
 
@@ -676,26 +635,29 @@ export async function getApiReferenceData(): Promise<ApiReferenceData> {
         sourceMode: "unavailable",
         baseUrl,
         unavailableReason:
-          "The frontend could not fetch the public OpenAPI document from the backend.",
+          "We could not load the public API reference right now.",
       };
     }
 
     const document = (await response.json()) as OpenApiDocument;
     return {
-      groups: buildGroupsFromOpenApi(document, baseUrl || DEFAULT_API_BASE_URL),
-      sourceLabel: `${baseUrl}${PUBLIC_OPENAPI_URL}`,
+      groups: buildGroupsFromOpenApi(
+        document,
+        publicBaseUrl || baseUrl || DEFAULT_API_BASE_URL,
+      ),
+      sourceLabel: `${publicBaseUrl || baseUrl}${PUBLIC_OPENAPI_URL}`,
       sourceMode: "live",
-      baseUrl,
+      baseUrl: publicBaseUrl || baseUrl,
       unavailableReason: null,
     };
   } catch {
     return {
       groups: [],
-      sourceLabel: `${baseUrl}${PUBLIC_OPENAPI_URL}`,
+      sourceLabel: `${publicBaseUrl || baseUrl}${PUBLIC_OPENAPI_URL}`,
       sourceMode: "unavailable",
-      baseUrl,
+      baseUrl: publicBaseUrl || baseUrl,
       unavailableReason:
-        "The backend is unreachable right now. Confirm the API container is running and ROUTEX_API_BASE_URL points to it.",
+        "We could not reach the API right now. Please try again shortly.",
     };
   }
 }

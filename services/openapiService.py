@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
 
-PUBLIC_PATH_PREFIXES = (
-    "/api/v1/",
-    "/api/v2/",
+PUBLIC_EXACT_PATHS = {
+    "/api/v1/initiate",
+    "/api/v1/transactions/verify",
+    "/api/v1/payout",
     "/public/openapi.json",
-    "/webhook/test-signature",
-)
+}
 
 PRIVATE_PATH_PREFIXES = (
     "/admin/",
@@ -27,9 +27,7 @@ def build_public_openapi(app: FastAPI) -> dict:
         path = getattr(route, "path", "")
         if any(path.startswith(prefix) for prefix in PRIVATE_PATH_PREFIXES):
             continue
-        if path == "/public/openapi.json" or any(
-            path.startswith(prefix) for prefix in PUBLIC_PATH_PREFIXES
-        ):
+        if path in PUBLIC_EXACT_PATHS:
             public_routes.append(route)
 
     return get_openapi(

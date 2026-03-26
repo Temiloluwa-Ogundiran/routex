@@ -177,6 +177,11 @@ test("dashboard renders the live merchant overview", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: /ada stores workspace/i })).toBeVisible();
   await expect(page.getByText(/welcome back, ada obi/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Log In" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Start Testing" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "API docs" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sandbox" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
   await expect(page.getByText("NGN 280,000.00")).toBeVisible();
   await expect(page.getByRole("heading", { name: /wallet balances/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: /recent transactions/i })).toBeVisible();

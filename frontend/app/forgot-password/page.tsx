@@ -53,12 +53,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthFormShell
       badge="Password help"
-      description="Request a password reset email and continue back into RouteX with the same design language as the rest of the app."
-      points={[
-        "Reset links are delivered by the backend email provider",
-        "The page stays public and safe to share",
-        "No OTP or token is shown in the response body",
-      ]}
+      description="Request a reset link and we will send it to your email address."
       title="Recover your RouteX account"
     >
       <div className="auth-shell__card-header">

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 const NAV_ITEMS = [
-  { label: "Product", href: "#product" },
-  { label: "How It Works", href: "#how-it-works" },
+  { label: "Product", href: "/#product" },
+  { label: "How It Works", href: "/#how-it-works" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Docs", href: "/docs" },
   { label: "Sandbox", href: "/#quickstart" },

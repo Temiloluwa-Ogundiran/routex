@@ -60,7 +60,7 @@ function VerifyOtpPageContent() {
     setErrorMessage(null);
 
     if (!effectivePendingAuth) {
-      setErrorMessage("Open login or signup first so we know which session to verify.");
+      setErrorMessage("Start from login or signup, then enter the code here.");
       setIsSubmitting(false);
       return;
     }
@@ -114,8 +114,7 @@ function VerifyOtpPageContent() {
   return (
     <OtpFormShell
       badge="Step 2 of 2"
-      description="Enter the six-digit code sent to your email address. RouteX stores your pending credentials locally only until verification succeeds."
-      pendingEmail={effectivePendingAuth?.email ?? requestedEmail ?? null}
+      description="Enter the six-digit code from your inbox to finish signing in."
       title="Verify your one-time code"
     >
       <div className="auth-shell__card-header">
@@ -157,7 +156,7 @@ function VerifyOtpPageContent() {
       </form>
 
       <p className="auth-form__switch">
-        Need a fresh session? <Link href="/login">Sign in again</Link>
+        Need a new code? <Link href="/login">Sign in again</Link>
       </p>
     </OtpFormShell>
   );

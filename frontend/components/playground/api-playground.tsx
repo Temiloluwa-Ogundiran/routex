@@ -30,7 +30,7 @@ function buildReadyMessage(mode: ApiPlaygroundProps["mode"]) {
   return {
     status: "unavailable",
     message:
-      "Sandbox requests are disabled until ROUTEX_API_BASE_URL and ROUTEX_PLAYGROUND_SECRET_KEY are configured on the frontend server.",
+      "Sandbox access will appear here as soon as this deployment is fully connected.",
   };
 }
 
@@ -59,7 +59,7 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
   function handleSubmit() {
     if (!isLive) {
       setErrorMessage(
-        "Sandbox testing is disabled until the frontend is connected to a backend sandbox key.",
+        "Sandbox access is not available yet on this deployment.",
       );
       return;
     }
@@ -118,9 +118,8 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
           <h2>Test the API without leaving the landing page.</h2>
           <p>
             Inspect the real request payloads for collections, verification, and
-            payouts. When sandbox credentials are configured, requests proxy to
-            the live backend. Otherwise the console stays read-only and points
-            you to the required setup.
+            payouts. When sandbox access is ready, requests run against the live
+            test environment. Until then, the console stays read-only.
           </p>
         </div>
         <a className="inline-link" href="/docs">
@@ -175,8 +174,7 @@ export function ApiPlayground({ mode }: ApiPlaygroundProps) {
 
         {!isLive ? (
           <p className="playground-hint">
-            Configure `ROUTEX_API_BASE_URL` and `ROUTEX_PLAYGROUND_SECRET_KEY`
-            on the frontend server to enable live sandbox calls.
+            Sandbox requests are temporarily unavailable on this deployment.
           </p>
         ) : null}
 

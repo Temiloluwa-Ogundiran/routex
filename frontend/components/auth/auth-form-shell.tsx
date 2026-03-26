@@ -4,7 +4,7 @@ type AuthFormShellProps = {
   badge: string;
   children: ReactNode;
   description: string;
-  points: string[];
+  points?: string[];
   title: string;
 };
 
@@ -21,19 +21,21 @@ export function AuthFormShell({
         <p className="section-badge">{badge}</p>
         <h1>{title}</h1>
         <p className="auth-shell__copy">{description}</p>
-        <ul className="icon-list auth-shell__points">
-          {points.map((point) => (
-            <li key={point}>
-              <span
-                aria-hidden="true"
-                className="icon-list__mark icon-list__mark--solution"
-              >
-                +
-              </span>
-              <span>{point}</span>
-            </li>
-          ))}
-        </ul>
+        {points && points.length > 0 ? (
+          <ul className="icon-list auth-shell__points">
+            {points.map((point) => (
+              <li key={point}>
+                <span
+                  aria-hidden="true"
+                  className="icon-list__mark icon-list__mark--solution"
+                >
+                  +
+                </span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
 
       <section className="auth-shell__form">

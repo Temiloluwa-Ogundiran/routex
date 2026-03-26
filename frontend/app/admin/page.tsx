@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 
 import { AdminDashboardShell } from "../../components/admin/admin-dashboard-shell";
-import { SiteFooter } from "../../components/layout/site-footer";
-import { SiteHeader } from "../../components/layout/site-header";
 
 function AdminDashboardLoadingFallback() {
   return (
@@ -21,11 +19,9 @@ function AdminDashboardLoadingFallback() {
 export default function AdminDashboardPage() {
   return (
     <div className="site-shell">
-      <SiteHeader />
       <Suspense fallback={<AdminDashboardLoadingFallback />}>
         <AdminDashboardShell />
       </Suspense>
-      <SiteFooter />
     </div>
   );
 }

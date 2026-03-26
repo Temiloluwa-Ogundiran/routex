@@ -83,8 +83,7 @@ export async function POST(request: Request) {
         live: false,
         endpoint: endpoint.path,
         method: endpoint.method,
-        message:
-          "Sandbox testing is unavailable until ROUTEX_API_BASE_URL and ROUTEX_PLAYGROUND_SECRET_KEY are configured on the frontend server.",
+        message: "Sandbox access is not available on this deployment yet.",
       },
       { status: 503 },
     );
@@ -129,8 +128,7 @@ export async function POST(request: Request) {
         live: false,
         endpoint: endpoint.path,
         method: endpoint.method,
-        message:
-          "The frontend could not reach the backend sandbox right now. Confirm the API is deployed and reachable from the frontend container.",
+        message: "We could not reach the sandbox right now. Please try again shortly.",
       },
       { status: 502 },
     );

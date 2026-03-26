@@ -9,7 +9,6 @@ import { SectionBadge } from "../ui/section-badge";
 type ReferenceShellProps = {
   baseUrl: string | null;
   groups: ApiReferenceGroup[];
-  sourceLabel: string;
   sourceMode: "live" | "unavailable";
   unavailableReason: string | null;
 };
@@ -126,7 +125,6 @@ function EndpointCard({ endpoint }: { endpoint: ApiReferenceEndpoint }) {
 export function ReferenceShell({
   baseUrl,
   groups,
-  sourceLabel,
   sourceMode,
   unavailableReason,
 }: ReferenceShellProps) {
@@ -134,41 +132,18 @@ export function ReferenceShell({
     <section className="docs-shell">
       <div className="docs-shell__hero">
         <SectionBadge>API Reference</SectionBadge>
-        <h1>RouteX API docs built from the live public contract.</h1>
+        <h1>RouteX API reference for collections, payouts, and verification.</h1>
         <p>
-          Integrate once for collections, verification, payouts, hosted checkout
-          continuations, and public operational utilities. Every example below
-          is sourced from the backend&apos;s sanitized OpenAPI export.
+          Use the core RouteX merchant endpoints with clean payload examples,
+          response bodies, and test-mode request samples.
         </p>
         <div className="docs-shell__meta">
           <span>Base URL</span>
           <code>{baseUrl ?? "Not configured"}</code>
-          <span>OpenAPI source</span>
-          <code>{sourceLabel}</code>
           <span className="playground-status-chip">
-            {sourceMode === "live" ? "Live spec" : "Spec unavailable"}
+            {sourceMode === "live" ? "Test mode" : "Spec unavailable"}
           </span>
         </div>
-      </div>
-
-      <div className="docs-summary-grid">
-        <article className="docs-summary-card">
-          <p className="docs-card__eyebrow">Authentication</p>
-          <h2>Merchant API calls use your secret key.</h2>
-          <p>
-            Send `Authorization: Bearer ROUTEX_TEST_xxx` or
-            `Authorization: Bearer ROUTEX_LIVE_xxx` for collections, payouts,
-            and transaction verification.
-          </p>
-        </article>
-        <article className="docs-summary-card">
-          <p className="docs-card__eyebrow">Webhook note</p>
-          <h2>Public docs stay public. Operational callbacks hit the backend.</h2>
-          <p>
-            Hosted checkout returns and provider webhooks should always point to
-            the backend domain, not the frontend site.
-          </p>
-        </article>
       </div>
 
       {sourceMode !== "live" ? (

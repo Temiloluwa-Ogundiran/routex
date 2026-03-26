@@ -65,12 +65,7 @@ function AdminLoginPageContent() {
   return (
     <AuthFormShell
       badge="Admin access"
-      description="Sign in to the RouteX router control room. This session stays separate from the merchant dashboard so platform operations remain isolated."
-      points={[
-        "Separate admin session cookie from the user dashboard",
-        "Gateway health, failovers, and routing rules live here",
-        "Admin routes are protected independently from merchant routes",
-      ]}
+      description="Sign in to manage RouteX admin tools."
       title="Sign in to RouteX Admin"
     >
       <div className="auth-shell__card-header">

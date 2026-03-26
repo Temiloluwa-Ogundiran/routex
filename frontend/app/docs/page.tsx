@@ -15,7 +15,6 @@ export default async function DocsPage() {
         <ReferenceShell
           baseUrl={referenceData.baseUrl}
           groups={referenceData.groups}
-          sourceLabel={referenceData.sourceLabel}
           sourceMode={referenceData.sourceMode}
           unavailableReason={referenceData.unavailableReason}
         />

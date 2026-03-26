@@ -90,12 +90,7 @@ function SignupPageContent() {
   return (
     <AuthFormShell
       badge="Create account"
-      description="Join RouteX and verify your email with a code that is delivered only through the backend."
-      points={[
-        "The signup form keeps the pending password in sessionStorage temporarily",
-        "Verification uses the same backend contract as login",
-        "Successful verification immediately clears the temporary session",
-      ]}
+      description="Create your account and confirm your email to open your RouteX workspace."
       title="Create your RouteX account"
     >
       <div className="auth-shell__card-header">

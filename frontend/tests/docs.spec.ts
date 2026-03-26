@@ -7,10 +7,12 @@ test("docs page shows standard reference sections and payload examples", async (
 
   await expect(
     page.getByRole("heading", {
-      name: "RouteX API docs built from the live public contract.",
+      name: "RouteX API reference for collections, payouts, and verification.",
     }),
   ).toBeVisible();
-  await expect(page.getByText("OpenAPI source")).toBeVisible();
+  await expect(page.getByText("Base URL")).toBeVisible();
   await expect(page.getByText("Public API reference unavailable")).toBeVisible();
-  await expect(page.getByText("ROUTEX_API_BASE_URL")).toBeVisible();
+  await expect(
+    page.getByText("The public API reference is not connected yet."),
+  ).toBeVisible();
 });

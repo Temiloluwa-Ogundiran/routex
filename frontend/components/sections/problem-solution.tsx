@@ -8,8 +8,8 @@ const PROBLEMS = [
 const BENEFITS = [
   "One integration across four gateways",
   "Dynamic gateway scoring from health and performance",
-  "Unified verification and webhooks",
-  "Dashboard visibility for failovers and trends",
+  "Unified payment verification",
+  "One dashboard for payment performance and trends",
 ];
 
 export function ProblemSolution() {

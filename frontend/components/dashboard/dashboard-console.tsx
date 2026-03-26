@@ -167,8 +167,8 @@ export function DashboardConsole({
           <h1>Watch RouteX move traffic before conversion drops.</h1>
           <p>
             This control room surfaces gateway health, routed transactions,
-            failover recoveries, and manual override controls in one
-            neo-brutalist operations view backed by the live admin APIs.
+            failover recoveries, and manual override controls in one focused
+            admin view.
           </p>
         </div>
 

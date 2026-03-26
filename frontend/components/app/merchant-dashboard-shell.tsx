@@ -94,7 +94,7 @@ async function readDashboardData(
     window.location.href = "/login";
     return {
       status: false,
-      message: "Your session expired. Please sign in again.",
+      message: "Please sign in again.",
     };
   }
 
@@ -401,12 +401,24 @@ export function MerchantDashboardShell() {
           <p className="section-badge">Merchant Workspace</p>
           <h1>{selectedMerchant.name} workspace</h1>
           <p>
-            Welcome back, {dashboard.user.name}. This is your live RouteX merchant
-            surface for balances, transactions, payment links, and API access.
+            Welcome back, {dashboard.user.name}. Manage balances, transactions,
+            payment links, and API access from one RouteX workspace.
           </p>
         </div>
 
         <div className="dashboard-hero__actions dashboard-hero__actions--stretch">
+          <div className="dashboard-app-actions">
+            <Link className="push-button push-button--secondary" href="/docs">
+              API docs
+            </Link>
+            <Link className="push-button push-button--secondary" href="/#quickstart">
+              Sandbox
+            </Link>
+            <PushButton onClick={() => void signOutUser()} variant="primary">
+              Sign out
+            </PushButton>
+          </div>
+
           <label className="dashboard-select-field">
             <span className="dashboard-control-label">Merchant</span>
             <select
@@ -440,18 +452,6 @@ export function MerchantDashboardShell() {
                 Live
               </button>
             </div>
-          </div>
-
-          <div className="dashboard-hero__actions">
-            <Link className="push-button push-button--secondary" href="/docs">
-              API docs
-            </Link>
-            <Link className="push-button push-button--secondary" href="/#sandbox">
-              API tester
-            </Link>
-            <PushButton onClick={() => void signOutUser()} variant="primary">
-              Sign out
-            </PushButton>
           </div>
         </div>
 
@@ -605,7 +605,9 @@ export function MerchantDashboardShell() {
               </button>
             </div>
           </div>
-          <p className="dashboard-copy-feedback">{copiedLabel ?? "Use your keys from here or generate API calls from the docs."}</p>
+          <p className="dashboard-copy-feedback">
+            {copiedLabel ?? "Use your keys here or jump into the docs and sandbox when you're ready."}
+          </p>
         </article>
       </section>
 

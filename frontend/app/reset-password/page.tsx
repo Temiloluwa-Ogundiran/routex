@@ -76,12 +76,7 @@ function ResetPasswordPageContent() {
   return (
     <AuthFormShell
       badge="Reset password"
-      description="Use the reset code from your email to choose a fresh password and continue into RouteX."
-      points={[
-        "The route stays public but still uses the backend verification flow",
-        "Successful reset signs the user in and sets the session cookie",
-        "The reset code is taken from the query string when available",
-      ]}
+      description="Choose a new password and get back into your RouteX account."
       title="Reset your password"
     >
       <div className="auth-shell__card-header">
