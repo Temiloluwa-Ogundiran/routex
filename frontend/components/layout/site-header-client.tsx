@@ -18,9 +18,8 @@ type AuthState = {
 
 const BASE_NAV_ITEMS = [
   { label: "Product", href: "/#product" },
-  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Platform", href: "/#platform" },
   { label: "Docs", href: "/docs" },
-  { label: "Sandbox", href: "/sandbox" },
 ];
 
 async function readJson(response: Response) {
@@ -78,26 +77,14 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
 
   const navItems = useMemo(() => {
     if (authState.kind === "user") {
-      return [
-        ...BASE_NAV_ITEMS.slice(0, 2),
-        { label: "Dashboard", href: "/dashboard" },
-        ...BASE_NAV_ITEMS.slice(2),
-      ];
+      return BASE_NAV_ITEMS;
     }
 
     if (authState.kind === "admin") {
-      return [
-        ...BASE_NAV_ITEMS.slice(0, 2),
-        { label: "Admin", href: "/admin" },
-        ...BASE_NAV_ITEMS.slice(2),
-      ];
+      return BASE_NAV_ITEMS;
     }
 
-    return [
-      ...BASE_NAV_ITEMS.slice(0, 2),
-      { label: "Dashboard", href: "/login?next=%2Fdashboard" },
-      ...BASE_NAV_ITEMS.slice(2),
-    ];
+    return BASE_NAV_ITEMS;
   }, [authState.kind]);
 
   async function handleSignOut() {
@@ -121,11 +108,8 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
     if (authState.kind === "user") {
       return (
         <div className="site-header__actions">
-          <Link className="site-header__login" href="/docs">
-            API Docs
-          </Link>
-          <Link className="push-button push-button--secondary" href="/sandbox">
-            Sandbox
+          <Link className="site-header__login" href="/dashboard">
+            Dashboard
           </Link>
           <button className="push-button push-button--primary" onClick={() => void handleSignOut()} type="button">
             Sign out
@@ -150,10 +134,10 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
     return (
       <div className="site-header__actions">
         <Link className="site-header__login" href="/login">
-          Log In
+          Log in
         </Link>
-        <Link className="push-button push-button--primary" href="/sandbox">
-          Start Testing
+        <Link className="push-button push-button--primary" href="/signup">
+          Get started
         </Link>
       </div>
     );

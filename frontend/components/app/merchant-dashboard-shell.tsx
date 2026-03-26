@@ -411,7 +411,7 @@ export function MerchantDashboardShell() {
             <Link className="push-button push-button--secondary" href="/docs">
               API docs
             </Link>
-            <Link className="push-button push-button--secondary" href="/sandbox">
+            <Link className="push-button push-button--secondary" href="/docs/collections">
               Sandbox
             </Link>
             <PushButton onClick={() => void signOutUser()} variant="primary">
@@ -668,7 +668,7 @@ export function MerchantDashboardShell() {
               <p className="dashboard-panel__eyebrow">Payment links</p>
               <h3>Payment links</h3>
             </div>
-            <Link className="inline-link" href="/docs#payment-links">
+            <Link className="inline-link" href="/docs/collections">
               Endpoint guide
             </Link>
           </div>

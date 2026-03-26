@@ -1,4 +1,3 @@
-import { ApiPlayground } from "../components/playground/api-playground";
 import { FeatureGrid } from "../components/sections/feature-grid";
 import { FinalCta } from "../components/sections/final-cta";
 import { HeroSection } from "../components/sections/hero-section";
@@ -21,7 +20,6 @@ export default function HomePage() {
         <FeatureGrid />
         <HowItWorks />
         <UseCases />
-        <ApiPlayground />
         <ProofSection />
         <FinalCta />
       </main>

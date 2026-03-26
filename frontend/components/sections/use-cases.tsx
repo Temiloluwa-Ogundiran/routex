@@ -23,7 +23,7 @@ export function UseCases() {
   return (
     <section className="story-section story-section--light" id="dashboard">
       <div className="section-heading section-heading--centered">
-        <h2>WHO IS ROUTEX FOR?</h2>
+        <h2>Made for checkout teams, platforms, and ops.</h2>
       </div>
 
       <div className="persona-grid">

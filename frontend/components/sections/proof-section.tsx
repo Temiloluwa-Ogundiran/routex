@@ -17,9 +17,9 @@ export function ProofSection() {
   return (
     <section className="story-section story-section--sage">
       <div className="section-heading section-heading--centered">
-        <h2>BUILT TO SHOW ITS WORK.</h2>
+        <h2>Route decisions should be visible, not mysterious.</h2>
         <p>
-          RouteX is designed to make routing decisions visible, not mysterious.
+          Track the chosen gateway, failover recoveries, and webhook outcomes from one surface.
         </p>
       </div>
 

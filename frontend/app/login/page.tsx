@@ -103,8 +103,8 @@ function LoginPageContent() {
 
   return (
     <AuthFormShell
-      badge="Merchant login"
-      description="Enter your email and password. We will send a one-time code to your inbox."
+      badge="Merchant access"
+      description="Enter your email and password. We will send a one-time code to finish sign in."
       title="Sign in to RouteX"
     >
       <div className="auth-shell__card-header">
@@ -162,7 +162,7 @@ function LoginPageContent() {
       </form>
 
       <p className="auth-form__switch">
-        New here? <Link href="/signup">Create your RouteX account</Link>
+        New here? <Link href="/signup">Open your RouteX workspace</Link>
       </p>
     </AuthFormShell>
   );

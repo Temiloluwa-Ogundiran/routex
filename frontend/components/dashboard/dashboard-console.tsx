@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useEffectEvent, useState } from "react";
 import posthog from "posthog-js";
 
@@ -173,6 +174,9 @@ export function DashboardConsole({
         </div>
 
         <div className="dashboard-hero__actions">
+          <Link className="push-button push-button--secondary" href="/docs">
+            Open docs
+          </Link>
           <button
             className="push-button push-button--primary"
             disabled={isRefreshing}

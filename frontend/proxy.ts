@@ -40,14 +40,7 @@ export function proxy(request: NextRequest) {
     pathname === "/signup" ||
     pathname === "/verify-otp"
   ) {
-    if (!userSessionToken) {
-      return NextResponse.next();
-    }
-
-    const nextTarget = request.nextUrl.searchParams.get("next");
-    const destination =
-      nextTarget && nextTarget.startsWith("/") ? nextTarget : "/dashboard";
-    return NextResponse.redirect(new URL(destination, request.url));
+    return NextResponse.next();
   }
 
   if (!pathname.startsWith("/dashboard")) {

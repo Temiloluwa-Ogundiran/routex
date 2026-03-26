@@ -175,6 +175,8 @@ frontend/.next/
 frontend/.next_stale_*/
 frontend/test-results/
 frontend/playwright-report/
+mintlify-docs/node_modules/
+mintlify-docs/*.log
 /docs/
 /tasks/
 AGENTS.md

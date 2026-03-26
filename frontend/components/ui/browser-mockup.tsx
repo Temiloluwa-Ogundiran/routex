@@ -12,8 +12,8 @@ export function BrowserMockup() {
 
       <div className="browser-mockup__body">
         <div className="browser-mockup__headline">
-          <p>Gateway score</p>
-          <strong>92.4% routed healthy</strong>
+          <p>Active gateway score</p>
+          <strong>92.4% route health</strong>
         </div>
 
         <div className="browser-mockup__top-grid">
@@ -23,9 +23,9 @@ export function BrowserMockup() {
             <small>Latency 1.1s</small>
           </article>
           <article className="metric-card metric-card--dark">
-            <span>Failover saves</span>
-            <strong>18 today</strong>
-            <small>Recovered checkouts</small>
+            <span>Recovered today</span>
+            <strong>18 failovers</strong>
+            <small>Saved transactions</small>
           </article>
         </div>
 
@@ -44,7 +44,7 @@ export function BrowserMockup() {
           </div>
           <div className="browser-mockup__event">
             <strong>Failover event</strong>
-            <span>Paystack timeout rerouted to Korapay</span>
+            <span>Paystack timeout rerouted to Korapay in 1.8s</span>
           </div>
         </div>
       </div>

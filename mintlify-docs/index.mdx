@@ -1,0 +1,44 @@
+---
+title: RouteX API Docs
+description: Public RouteX developer docs for test mode collections, verification, payouts, and webhooks.
+---
+
+# RouteX API Docs
+
+RouteX gives merchants one payment layer for collections and payouts. In this MVP, everything is test mode only, and the docs focus on the public surface external developers actually need.
+
+## What you can build
+
+- Hosted collections with automatic routing or a manual gateway override
+- Transaction verification from one normalized endpoint
+- Payouts with the same merchant secret key flow
+- Merchant webhooks with a single normalized payload shape
+
+## Quick start
+
+1. Create a test merchant workspace.
+2. Copy the test secret key from your RouteX dashboard.
+3. Send `Authorization: Bearer <test-secret-key>` with your requests.
+4. Initialize a collection with `POST /api/v1/initiate`.
+5. Verify with `GET /api/v1/transactions/verify`.
+
+## Base URL
+
+```bash
+https://routexapi.xoroai.cloud
+```
+
+## Request conventions
+
+- Amounts are sent in customer-facing currency units.
+- Use `gateway_code` only when you want to force a gateway.
+- Omit `gateway_code` to let RouteX route automatically.
+- Send `notification_url` when you want RouteX to POST normalized webhook events back to your server.
+
+## Example headers
+
+```bash
+Authorization: Bearer ROUTEX_TEST_xxx
+Content-Type: application/json
+```
+

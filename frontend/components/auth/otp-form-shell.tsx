@@ -22,7 +22,7 @@ export function OtpFormShell({
       </section>
 
       <section className="auth-shell__form">
-        <div className="playground-panel auth-shell__card">{children}</div>
+        <div className="auth-shell__card">{children}</div>
       </section>
     </main>
   );

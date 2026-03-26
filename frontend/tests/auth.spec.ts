@@ -13,6 +13,7 @@ test("login page renders the auth form", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/login");
 
   await expect(page.getByRole("heading", { name: /sign in to routex/i })).toBeVisible();
+  await expect(page.getByText(/enter your email and password/i)).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Password")).toBeVisible();
   await expect(page.getByRole("button", { name: /send otp/i })).toBeVisible();
@@ -22,6 +23,7 @@ test("signup page renders the registration form", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/signup");
 
   await expect(page.getByRole("heading", { name: /create your routex account/i })).toBeVisible();
+  await expect(page.getByText(/open your routex workspace/i)).toBeVisible();
   await expect(page.getByLabel("Full name")).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Password")).toBeVisible();
@@ -31,7 +33,7 @@ test("signup page renders the registration form", async ({ page }) => {
 test("verify otp page renders the otp form", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/verify-otp");
 
-  await expect(page.getByRole("heading", { name: /verify your one-time code/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /enter your email code/i })).toBeVisible();
   await expect(page.getByLabel("One-time code")).toBeVisible();
   await expect(page.getByRole("button", { name: /verify code/i })).toBeVisible();
 });
@@ -40,6 +42,7 @@ test("forgot password page renders the recovery form", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/forgot-password");
 
   await expect(page.getByRole("heading", { name: /recover your routex account/i })).toBeVisible();
+  await expect(page.getByText(/send a reset code to your inbox/i)).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByRole("button", { name: /send reset link/i })).toBeVisible();
 });

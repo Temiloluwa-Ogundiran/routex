@@ -91,13 +91,13 @@ function VerifyOtpPageContent() {
   return (
     <OtpFormShell
       badge="Step 2 of 2"
-      description="Enter the six-digit code from your inbox to finish signing in."
-      title="Verify your one-time code"
+      description="Enter the six-digit code we emailed to you to finish signing in."
+      title="Enter your email code"
     >
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Verification</p>
-          <h2>Enter your email code</h2>
+          <h2>Enter the 6-digit code</h2>
         </div>
         <span className="playground-status-chip">6-digit code</span>
       </div>

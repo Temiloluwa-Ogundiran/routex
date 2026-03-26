@@ -1,0 +1,55 @@
+---
+title: Gateway Behavior
+description: How RouteX chooses gateways and handles gateway-specific payload rules.
+---
+
+# Gateway Behavior
+
+RouteX supports manual gateway selection and automatic routing.
+
+## Manual override
+
+Send `gateway_code` when you want to force one gateway:
+
+- `pstk`
+- `fltw`
+- `kora`
+- `isw`
+
+If the gateway is eligible, RouteX uses it first.
+
+## Automatic routing
+
+Omit `gateway_code` and RouteX will:
+
+1. Check gateway health.
+2. Apply routing rules.
+3. Rank eligible gateways.
+4. Pick the best route.
+
+## Amount handling
+
+Send amounts in customer-facing units.
+
+Example:
+
+- `2500` means `NGN 2,500`
+- RouteX converts internally when a gateway needs minor units
+
+## Redirects and notifications
+
+- `redirect_url` returns the customer after checkout.
+- `notification_url` receives the merchant webhook payload after confirmation.
+
+## Provider setup
+
+Some providers need webhook URLs configured in their dashboard.
+Some flows only need URLs in the checkout payload.
+
+For this MVP:
+
+- Paystack uses provider dashboard webhook setup plus payload redirect handling.
+- Flutterwave uses provider dashboard webhook setup plus payload redirect handling.
+- Korapay uses payload-driven callback and notification URLs.
+- Interswitch uses payload-driven redirect handling plus backend webhook delivery.
+

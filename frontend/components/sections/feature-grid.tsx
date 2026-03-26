@@ -29,11 +29,11 @@ const FEATURES = [
 
 export function FeatureGrid() {
   return (
-    <section className="story-section story-section--yellow" id="features">
+    <section className="story-section story-section--yellow" id="platform">
       <div className="section-heading section-heading--centered">
         <SectionBadge>Features</SectionBadge>
-        <h2>EVERYTHING YOU NEED.</h2>
-        <p>No fluff. Just the payment routing tools teams actually need.</p>
+        <h2>Built for operators who cannot afford blind spots.</h2>
+        <p>One routing surface for checkout, payouts, observability, and fast recovery.</p>
       </div>
 
       <div className="feature-grid">

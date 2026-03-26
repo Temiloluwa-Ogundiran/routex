@@ -23,12 +23,12 @@ export function HowItWorks() {
     <section className="story-section story-section--dark" id="how-it-works">
       <div className="section-heading section-heading--split">
         <div>
-          <p className="section-kicker">Adoption flow</p>
-          <h2>How It Works</h2>
-          <p>Simple as 1-2-3.</p>
+          <p className="section-kicker">Implementation flow</p>
+          <h2>Launch faster with one RouteX integration.</h2>
+          <p>Keep your product wiring small while RouteX handles routing complexity.</p>
         </div>
         <Link className="inline-link" href="/docs">
-          See full API docs
+          Open docs
         </Link>
       </div>
 

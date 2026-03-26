@@ -4,29 +4,29 @@ import { SectionBadge } from "../ui/section-badge";
 
 export function HeroSection() {
   return (
-    <section className="hero-panel hero-panel--dotted" id="sandbox">
+    <section className="hero-panel hero-panel--dotted" id="product">
       <div className="hero-copy-block">
-        <SectionBadge>NEW: Intelligent gateway failover is live</SectionBadge>
+        <SectionBadge>Hyper-fast routing for test mode</SectionBadge>
         <h1 className="hero-title">
-          ROUTE EVERY PAYMENT
-          <span className="hero-title__outline"> THROUGH THE SMARTEST PATH.</span>
+          Route every payment
+          <span className="hero-title__outline"> with control.</span>
         </h1>
         <p className="hero-copy">
-          One integration for collections and payouts, smart gateway failover,
-          and visibility across Nigeria&apos;s leading payment rails.
+          Collections, payouts, and failover across Paystack, Flutterwave,
+          Korapay, and Interswitch with one RouteX control layer.
         </p>
         <div className="hero-actions">
-          <Link className="push-button push-button--primary" href="/sandbox">
-            Try Sandbox
+          <Link className="push-button push-button--primary" href="/signup">
+            Get started
           </Link>
           <Link className="push-button push-button--secondary" href="/docs">
-            View API Docs
+            Read the docs
           </Link>
         </div>
         <div className="hero-meta">
-          <span>NGN-first</span>
-          <span>Sandbox-ready</span>
-          <span>No live key required</span>
+          <span>Collections, payouts, and failover</span>
+          <span>Test mode across four gateways</span>
+          <span>Optional gateway override</span>
         </div>
       </div>
       <BrowserMockup />

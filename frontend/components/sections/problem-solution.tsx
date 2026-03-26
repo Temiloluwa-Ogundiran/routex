@@ -16,10 +16,10 @@ export function ProblemSolution() {
   return (
     <section className="story-section story-section--light" id="product">
       <div className="section-heading">
-        <h2>STOP THE PAYMENT CHAOS.</h2>
+        <h2>One control plane for collections, payouts, and failover.</h2>
         <p>
-          RouteX flips payment operations from reactive gateway switching to
-          one calm routing layer.
+          RouteX replaces reactive provider switching with one steady operating
+          layer for routing, recovery, and merchant webhooks.
         </p>
       </div>
 

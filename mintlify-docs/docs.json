@@ -1,0 +1,40 @@
+{
+  "name": "RouteX",
+  "theme": "mint",
+  "colors": {
+    "primary": "#FDE047",
+    "light": "#FFFFFF",
+    "dark": "#0A0A0A"
+  },
+  "navigation": [
+    {
+      "group": "Overview",
+      "pages": ["index", "authentication"]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "collections",
+        "verification",
+        "payouts",
+        "webhooks",
+        "gateway-behavior"
+      ]
+    }
+  ],
+  "api": {
+    "mdx": {
+      "server": "https://routexapi.xoroai.cloud",
+      "auth": {
+        "method": "bearer"
+      }
+    },
+    "playground": {
+      "display": "interactive"
+    },
+    "examples": {
+      "languages": ["curl"],
+      "defaults": "required"
+    }
+  }
+}

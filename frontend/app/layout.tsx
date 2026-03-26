@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
+import { Inter } from "next/font/google";
 import { PostHogIdentityBridge } from "../components/analytics/posthog-identity-bridge";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "RouteX",
@@ -14,16 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      style={
-        {
-          "--font-body": '"Aptos", "Segoe UI", sans-serif',
-          "--font-heading": '"Bahnschrift SemiCondensed", "Arial Narrow Bold", sans-serif',
-        } as CSSProperties
-      }
-    >
-      <body>
+    <html className={inter.variable} lang="en">
+      <body className="routex-root">
         <PostHogIdentityBridge />
         {children}
       </body>

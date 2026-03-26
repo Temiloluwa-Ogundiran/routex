@@ -106,7 +106,7 @@ function SignupPageContent() {
   return (
     <AuthFormShell
       badge="Create account"
-      description="Set up your account details and confirm your email to open your RouteX workspace."
+      description="Set up your details and confirm your email to open your RouteX workspace."
       title="Create your RouteX account"
     >
       <div className="auth-shell__card-header">

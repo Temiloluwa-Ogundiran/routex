@@ -1,0 +1,63 @@
+---
+title: Webhooks
+description: Receive normalized RouteX events after provider confirmation.
+---
+
+# Webhooks
+
+RouteX sends merchant webhooks to the `notification_url` you provide on collection or payout requests.
+
+## Signature
+
+Every webhook request includes:
+
+```bash
+X-AGGREGATOR-SIGNATURE
+```
+
+Verify the raw request body with your merchant webhook secret before accepting the event.
+
+## Event types
+
+- `charge.success`
+- `charge.failed`
+- `transfer.success`
+- `transfer.failed`
+
+## Payload shape
+
+```json
+{
+  "event": "charge.success",
+  "reference": "ORD_1001",
+  "data": {
+    "customer": {
+      "email": "buyer@example.com",
+      "name": "Ada Obi"
+    },
+    "amount": 2500,
+    "currency": "NGN",
+    "metadata": {
+      "order_id": "ORD_1001"
+    },
+    "gateway": "isw",
+    "gateway_reference": "ISW_PROC_001",
+    "status": "success"
+  }
+}
+```
+
+## Delivery flow
+
+1. The provider notifies RouteX first.
+2. RouteX normalizes the event.
+3. RouteX posts the normalized payload to your `notification_url`.
+4. Your server verifies `X-AGGREGATOR-SIGNATURE`.
+5. Your server returns `200` quickly.
+
+## Notes
+
+- `notification_url` is configured in the request payload.
+- Keep webhook handlers idempotent.
+- The same normalized shape is used across collections and payouts.
+

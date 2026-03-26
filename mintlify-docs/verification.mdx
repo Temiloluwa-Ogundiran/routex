@@ -1,0 +1,67 @@
+---
+title: Verification
+description: Confirm the final status of a RouteX transaction with one normalized endpoint.
+api: GET /api/v1/transactions/verify
+playground: interactive
+---
+
+# Verification
+
+Use verification to fetch the normalized RouteX status for a transaction reference.
+
+## Request
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `reference` | Yes | Merchant reference created during `POST /api/v1/initiate`. |
+
+## Example request
+
+```bash
+GET /api/v1/transactions/verify?reference=ORD_1001
+Authorization: Bearer ROUTEX_TEST_xxx
+```
+
+## Example response
+
+```json
+{
+  "status": true,
+  "message": "verification successful",
+  "data": {
+    "reference": "ORD_1001",
+    "status": "success",
+    "domain": "test",
+    "type": "credit",
+    "amount": 2500,
+    "fee": 37.5,
+    "currency": "NGN",
+    "narration": "Invoice payment",
+    "metadata": {
+      "order_id": "ORD_1001"
+    },
+    "created_at": "2026-03-25T12:00:00Z",
+    "updated_at": "2026-03-25T12:01:00Z",
+    "selected_gateway": "isw",
+    "gateway_reference": "ISW_PROC_001",
+    "attempts": [
+      {
+        "attempt_no": 1,
+        "gateway": "isw",
+        "status": "success",
+        "gateway_reference": "ISW_PROC_001",
+        "latency_ms": 840
+      }
+    ],
+    "customer": {
+      "email": "buyer@example.com"
+    }
+  }
+}
+```
+
+## Notes
+
+- The response is normalized, even when the underlying gateway payload differs.
+- If the transaction was routed manually, `selected_gateway` reflects that choice.
+- If the transaction was auto-routed, `selected_gateway` reflects the winning gateway.

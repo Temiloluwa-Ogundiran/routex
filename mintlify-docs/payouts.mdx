@@ -1,0 +1,83 @@
+---
+title: Payouts
+description: Send payouts with the same RouteX routing and verification model.
+api: POST /api/v1/payout
+playground: interactive
+---
+
+# Payouts
+
+Create a payout request with one RouteX endpoint and let RouteX pick an eligible payout path.
+
+## Request
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `reference` | Yes | Unique merchant payout reference. |
+| `amount` | Yes | Amount to pay out in customer-facing units. |
+| `currency` | Yes | Currency code such as `NGN`. |
+| `customer.email` | Yes | Recipient email address. |
+| `customer.name` | No | Recipient name if you have it. |
+| `destination.bank_code` | Yes | Bank code for the destination account. |
+| `destination.account_number` | Yes | Destination account number. |
+| `metadata` | No | Optional payout metadata. |
+| `narration` | No | Optional payout narration. |
+
+## Example request
+
+```json
+{
+  "reference": "PAYOUT_1001",
+  "amount": 5000,
+  "currency": "NGN",
+  "customer": {
+    "email": "recipient@example.com",
+    "name": "Grace"
+  },
+  "destination": {
+    "bank_code": "044",
+    "account_number": "0123456789"
+  },
+  "metadata": {
+    "batch": "march-settlement"
+  },
+  "narration": "Vendor settlement"
+}
+```
+
+## Example response
+
+```json
+{
+  "status": true,
+  "message": "Payout processed successfully",
+  "reference": "PAYOUT_1001",
+  "selected_gateway": "kora",
+  "gateway_reference": "KORA_PROC_001",
+  "routing": {
+    "decision_id": "route_decision_456",
+    "selected_gateway": "kora",
+    "selection_reason": "best payout availability",
+    "fallback_order": ["kora", "pstk"],
+    "score_breakdown": {
+      "kora": 95.7,
+      "pstk": 88.3
+    }
+  },
+  "data": {
+    "amount": 5000,
+    "fee": 50,
+    "reference": "PAYOUT_1001",
+    "customer": {
+      "email": "recipient@example.com",
+      "name": "Grace"
+    }
+  }
+}
+```
+
+## Notes
+
+- Payouts use the same merchant auth flow as collections.
+- RouteX keeps the merchant-facing reference and gateway reference separate.
+- If a payout webhook is configured, RouteX delivers normalized events to your `notification_url`.
