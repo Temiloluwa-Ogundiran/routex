@@ -1,4 +1,4 @@
-from settings import PAYSTACK_SECRET, PAYSTACK_LIVE_SECRET_KEY, AGG_EMAIL
+from settings import PAYSTACK_SECRET, AGG_EMAIL
 from services.httpRequestService import post_request
 from settings import logging
 import uuid
@@ -52,9 +52,6 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
     
     if metadata:
         transaction.metadata_payload = json.dumps(metadata)
-    if mode == tokenEnums.TokenMode.LIVE.value:
-        local_headers['Authorization'] = f"Bearer {PAYSTACK_LIVE_SECRET_KEY}"
-        
     # transaction.narration = narration if narration else f"Aggregator Pay in through {TransactionProcessor.PAYSTACK.value}"
     await transactionService.save_transaction(session= session, transaction= transaction)
     print(data)

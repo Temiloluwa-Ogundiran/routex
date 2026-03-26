@@ -5,7 +5,7 @@ import json
 import hmac
 import hashlib
 import os
-from settings import KORA_SECRET, PAYSTACK_SECRET, FLTW_SECRET_KEY, FLTW_SECRET_HASH, KORA_LIVE_SECRET_KEY, BASQET_LIVE_SECRET, BASQET_SECRET, INTERSWITCH_SECRET_KEY
+from settings import KORA_SECRET, PAYSTACK_SECRET, FLTW_SECRET_KEY, FLTW_SECRET_HASH, BASQET_LIVE_SECRET, BASQET_SECRET, INTERSWITCH_SECRET_KEY
 from services import transactionService, merchantService, tokenService, bulkpayoutService, walletService, emailService, webhookService
 import services.webhookNormalizationService as webhookNormalizationService
 from enums import transactionEnums, tokenEnums, eventEnums
@@ -255,7 +255,7 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON payload")
 
     data_bytes = json.dumps(payload_dict.get("data", {}), separators=(",", ":")).encode("utf-8")
-    expected_sig = hmac.new(KORA_LIVE_SECRET_KEY.encode(), data_bytes, hashlib.sha256).hexdigest()
+    expected_sig = hmac.new(KORA_SECRET.encode(), data_bytes, hashlib.sha256).hexdigest()
 
     if not hmac.compare_digest(sig_header, expected_sig):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid signature")

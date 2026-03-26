@@ -1,4 +1,4 @@
-from settings import KORA_SECRET, KORA_LIVE_SECRET_KEY, SERVER_URL, PROXY_URL, PROXY_USERNAME, PROXY_PASSWORD, logging, AGG_EMAIL, FRONTEND_BASE_URL
+from settings import KORA_SECRET, SERVER_URL, PROXY_URL, PROXY_USERNAME, PROXY_PASSWORD, logging, AGG_EMAIL, FRONTEND_BASE_URL
 from services.httpRequestService import post_request
 from enums.transactionEnums import *
 from services import transactionService, merchantService, customerService, bulkpayoutService, celeryService, walletService, emailService
@@ -40,7 +40,6 @@ async def resolve_account(acc_number: str, bank: Bank, currency: str = None) -> 
     url = BASE_URL + 'misc/banks/resolve'
     currency = currency or "NGN"
     local_headers = DEFAULT_HEADERS.copy()
-    local_headers["Authorization"] = f"Bearer {KORA_LIVE_SECRET_KEY}"
     data = {"account": acc_number, 'bank': bank.code, 'currency': currency}
     print(f"Resolve account payload: {json.dumps(data, indent=2)}")
 
@@ -58,8 +57,6 @@ async def initialize(session: AsyncSession, email: str, amount: float, merchant:
                      narration: str | None = None, metadata: dict | None = None) -> tuple[dict, int, str | None]:
     url = BASE_URL + 'charges/initialize'
     local_headers = DEFAULT_HEADERS.copy()
-    if mode == tokenEnums.TokenMode.LIVE.value:
-        local_headers["Authorization"] = f"Bearer {KORA_LIVE_SECRET_KEY}"
 
     customer, _ = await customerService.add_get_or_create_customer(session=session, email=email, merchant= merchant)
     transaction = await transactionService.create_transaction(
@@ -149,9 +146,6 @@ async def payout(session: AsyncSession, merchant: Merchant, acc_number: str, ban
 
     if wallet.balance < amount + amount_charged:
         return False, "Insufficient balance", 400, 0
-
-    if mode == tokenEnums.TokenMode.LIVE.value:
-        local_headers["Authorization"] = f"Bearer {KORA_LIVE_SECRET_KEY}"
 
     narration = narration or "Aggregator payout"
     processor_reference = await transactionService.generate_processor_reference(session=session)
@@ -263,7 +257,6 @@ async def charge_bank_transfer(session: AsyncSession, merchant: Merchant, tx: Tr
     headers = DEFAULT_HEADERS.copy()
     tx
     if tx.mode == tokenEnums.TokenMode.LIVE:
-        headers["Authorization"] = f"Bearer {KORA_LIVE_SECRET_KEY}"
         notification_url = SERVER_URL + "/kora/webhook/live"
     else:
         notification_url = SERVER_URL + "/kora/webhook/test"
@@ -325,7 +318,6 @@ async def charge_with_card(session: AsyncSession, merchant: Merchant, amount: fl
     headers = DEFAULT_HEADERS.copy()
 
     if tx.mode == tokenEnums.TokenMode.LIVE:
-        headers["Authorization"] = f"Bearer {KORA_LIVE_SECRET_KEY}"
         notification_url = SERVER_URL + "/kora/webhook/live"
     else:
         notification_url = SERVER_URL + "/kora/webhook/test"
@@ -377,7 +369,6 @@ async def charge_mobile_money(merchant: Merchant, tx: Transaction, customer_emai
     headers = DEFAULT_HEADERS.copy()
     tx
     if tx.mode == tokenEnums.TokenMode.LIVE:
-        headers["Authorization"] = f"Bearer {KORA_LIVE_SECRET_KEY}"
         notification_url = SERVER_URL + "/kora/webhook/live"
     else:
         notification_url = SERVER_URL + "/kora/webhook/test"
