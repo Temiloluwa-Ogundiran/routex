@@ -38,5 +38,10 @@
       "languages": ["curl"],
       "defaults": "required"
     }
+  },
+  "seo": {
+  "metatags": {
+    "canonical": "https://docs.routex.xoroai.cloud"
   }
+}
 }
