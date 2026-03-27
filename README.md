@@ -151,9 +151,6 @@ The merchant dashboard provides:
 The admin area is built for platform operations and routing visibility.
 
 ## MVP Scope
-
-This hackathon version is intentionally focused:
-
 - Nigeria-first
 - NGN-first
 - test-mode oriented
@@ -203,7 +200,7 @@ RouteX turns payment routing into a product instead of a hidden workaround. It g
 - product UI and dashboards
 - auth flows
 - docs experience
-- presentation polish
+
 
 ## Built With
 
