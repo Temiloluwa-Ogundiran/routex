@@ -1,20 +1,20 @@
 ---
 title: Collections
-description: Initialize hosted collections with automatic routing or a manual gateway override.
+description: Initialize a hosted checkout session and return a RouteX checkout link.
 openapi: POST /api/v1/initiate
 playground: interactive
 ---
 
 # Collections
 
-Initialize a payment session and get back a single RouteX checkout URL. If you send `gateway_code`, RouteX will try that gateway first. If you omit it, RouteX routes automatically.
+Create a hosted checkout session and get back one RouteX checkout link. The customer chooses the payment method on the hosted page.
 
 ## Request
 
 | Field | Required | Description |
 | --- | --- | --- |
 | `reference` | Yes | Unique merchant reference for this checkout. |
-| `amount` | Yes | Amount in customer-facing currency units. For example, send `2500` for `NGN 2,500`. |
+| `amount` | Yes | Amount in customer-facing currency units. Send `2500` for `NGN 2,500`. |
 | `currency` | Yes | Currency code. This MVP supports `NGN`. |
 | `customer.email` | Yes | Customer email address. |
 | `customer.name` | No | Optional customer display name. |
@@ -31,7 +31,6 @@ Initialize a payment session and get back a single RouteX checkout URL. If you s
   "reference": "ORD_1001",
   "amount": 2500,
   "currency": "NGN",
-  "gateway_code": "isw",
   "customer": {
     "email": "buyer@example.com",
     "name": "Ada Obi"
@@ -53,20 +52,7 @@ Initialize a payment session and get back a single RouteX checkout URL. If you s
   "message": "Charge created successfully",
   "reference": "ORD_1001",
   "checkout_url": "https://checkout.routex.xoroai.cloud/ORD_1001/20260325",
-  "selected_gateway": "isw",
-  "gateway_reference": "ISW_PROC_001",
-  "routing": {
-    "decision_id": "route_decision_123",
-    "selected_gateway": "isw",
-    "selection_reason": "highest score among eligible gateways",
-    "fallback_order": ["isw", "pstk", "fltw", "kora"],
-    "score_breakdown": {
-      "isw": 97.2,
-      "pstk": 91.5,
-      "fltw": 88.1,
-      "kora": 83.4
-    }
-  }
+  "selected_gateway": "isw"
 }
 ```
 
@@ -74,5 +60,8 @@ Initialize a payment session and get back a single RouteX checkout URL. If you s
 
 - `gateway_code` is optional.
 - When `gateway_code` is omitted, RouteX picks the gateway automatically.
-- RouteX handles gateway-specific amount conversion internally.
+- When `gateway_code` is present, RouteX uses that gateway if it is eligible.
+- Manual override example: `{ "gateway_code": "isw" }`
+- RouteX handles gateway-specific amount conversion for you.
+- The hosted checkout page lets customers choose the payment method.
 - If you send `notification_url`, RouteX uses it for merchant webhook delivery after provider confirmation.

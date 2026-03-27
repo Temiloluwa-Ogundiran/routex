@@ -16,13 +16,13 @@ function formatAmount(amount: number, currency: string) {
 
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   return (
-    <section className="dashboard-section">
+    <section className="dashboard-section" id="dashboard-transactions">
       <div className="section-heading section-heading--split">
         <div>
           <p className="section-kicker">Recent Routed Activity</p>
-          <h2>Recent Transactions</h2>
+          <h2>Recent Routed Transactions</h2>
         </div>
-        <p className="inline-link">Merchant-facing references with router outcomes.</p>
+        <p className="inline-link">References, gateways, status, and timestamps at a glance.</p>
       </div>
 
       <div className="dashboard-table-shell">

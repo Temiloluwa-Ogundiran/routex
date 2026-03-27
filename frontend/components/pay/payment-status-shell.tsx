@@ -25,19 +25,19 @@ const STATUS_COPY: Record<
   success: {
     badge: "Verified",
     heading: "Payment confirmed",
-    body: "RouteX verified your Interswitch payment and updated the transaction status.",
+    body: "RouteX verified your payment and updated the transaction status.",
     detail: "You can safely continue back to the merchant app.",
   },
   pending: {
     badge: "Reconciling",
     heading: "Payment pending",
-    body: "We received your return from Interswitch and we are still confirming the final payment outcome.",
+    body: "We received the provider return and we are still confirming the final payment outcome.",
     detail: "You can continue now, or wait for the merchant app to refresh the status.",
   },
   failed: {
     badge: "Needs attention",
     heading: "Payment failed",
-    body: "The payment could not be confirmed as successful from the Interswitch return flow.",
+    body: "The payment could not be confirmed as successful from the provider return flow.",
     detail: "You can head back to the merchant app to retry or choose another payment option.",
   },
 };

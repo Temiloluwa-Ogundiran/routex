@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import type { RouterDashboardData, RouterRule } from "../../lib/dashboard-api";
+import { OpsShell } from "../layout/ops-shell";
 import { DashboardConsole } from "../dashboard/dashboard-console";
 import { PushButton } from "../ui/push-button";
 
@@ -101,7 +102,29 @@ export function AdminDashboardShell() {
 
   if (loadState === "loading" || loadState === "idle") {
     return (
-      <main className="dashboard-shell">
+      <OpsShell
+        homeHref="/admin"
+        initials="RA"
+        navSections={[
+          {
+            label: "Main menu",
+            items: [
+              { href: "/admin", label: "Overview" },
+              { href: "#dashboard-gateways", label: "Gateway Health" },
+              { href: "#dashboard-controls", label: "Gateway Controls" },
+            ],
+          },
+          {
+            label: "Management",
+            items: [
+              { href: "#dashboard-rules", label: "Routing Rules" },
+              { href: "#dashboard-transactions", label: "Transactions" },
+            ],
+          },
+        ]}
+        subtitle="Router control"
+        title="RouteX Admin"
+      >
         <section className="dashboard-hero">
           <div className="dashboard-hero__copy">
             <p className="section-badge">Router Control Room</p>
@@ -109,13 +132,35 @@ export function AdminDashboardShell() {
             <p>We are pulling live router health, failovers, and policy controls.</p>
           </div>
         </section>
-      </main>
+      </OpsShell>
     );
   }
 
   if (loadState === "error" || !adminState) {
     return (
-      <main className="dashboard-shell">
+      <OpsShell
+        homeHref="/admin"
+        initials="RA"
+        navSections={[
+          {
+            label: "Main menu",
+            items: [
+              { href: "/admin", label: "Overview" },
+              { href: "#dashboard-gateways", label: "Gateway Health" },
+              { href: "#dashboard-controls", label: "Gateway Controls" },
+            ],
+          },
+          {
+            label: "Management",
+            items: [
+              { href: "#dashboard-rules", label: "Routing Rules" },
+              { href: "#dashboard-transactions", label: "Transactions" },
+            ],
+          },
+        ]}
+        subtitle="Router control"
+        title="RouteX Admin"
+      >
         <section className="dashboard-hero">
           <div className="dashboard-hero__copy">
             <p className="section-badge">Router Control Room</p>
@@ -128,14 +173,38 @@ export function AdminDashboardShell() {
             </div>
           </div>
         </section>
-      </main>
+      </OpsShell>
     );
   }
 
   return (
-    <DashboardConsole
-      initialDashboard={adminState.dashboard}
-      initialRules={adminState.rules}
-    />
+    <OpsShell
+      homeHref="/admin"
+      initials="RA"
+      navSections={[
+        {
+          label: "Main menu",
+          items: [
+            { href: "/admin", label: "Overview" },
+            { href: "#dashboard-gateways", label: "Gateway Health" },
+            { href: "#dashboard-controls", label: "Gateway Controls" },
+          ],
+        },
+        {
+          label: "Management",
+          items: [
+            { href: "#dashboard-rules", label: "Routing Rules" },
+            { href: "#dashboard-transactions", label: "Transactions" },
+          ],
+        },
+      ]}
+      subtitle="Router control"
+      title="RouteX Admin"
+    >
+      <DashboardConsole
+        initialDashboard={adminState.dashboard}
+        initialRules={adminState.rules}
+      />
+    </OpsShell>
   );
 }

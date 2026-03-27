@@ -1,5 +1,6 @@
 const rawDocsUrl =
   process.env.NEXT_PUBLIC_DOCS_URL ??
+  process.env.DOCS_ORIGIN ??
   process.env.MINTLIFY_DOCS_ORIGIN ??
   "https://docs.routex.xoroai.cloud";
 

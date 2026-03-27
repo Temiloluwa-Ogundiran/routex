@@ -4,31 +4,58 @@ import { docsHref } from "../../lib/docs-url";
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div className="site-footer__grid liquid-footer">
-        <div className="liquid-footer__brand">
-          <div className="liquid-footer__logo">
-            <span aria-hidden="true" className="liquid-footer__logo-dot" />
-            <span>RouteX</span>
+      <div className="site-footer__inner">
+        <div className="site-footer__grid">
+          <div className="site-footer__brand">
+            <div className="site-footer__logo">
+              <span aria-hidden="true" className="site-footer__logo-dot" />
+              <span>RouteX</span>
+            </div>
+            <p className="site-footer__copy">
+              Ship hosted collections, signed callbacks, and payout control
+              without turning your team into a PSP operations desk.
+            </p>
           </div>
+
+          <div className="site-footer__column">
+            <p className="site-footer__eyebrow">Platform</p>
+            <Link href="/#product">Product</Link>
+            <Link href="/#route">Why RouteX</Link>
+            <a href={docsHref()}>Docs</a>
+          </div>
+
+          <div className="site-footer__column">
+            <p className="site-footer__eyebrow">Access</p>
+            <Link href="/login">Log in</Link>
+            <Link href="/signup">Get started</Link>
+            <Link href="/pay/status">Payment status</Link>
+          </div>
+        </div>
+
+        <form action="/signup" className="site-footer__newsletter" method="get">
+          <p className="site-footer__eyebrow">Next move</p>
           <p className="site-footer__copy">
-            Payment orchestration for teams that want one beautiful surface for
-            collections, payouts, routing visibility, and merchant webhooks.
+            Drop in a work email and move straight into a RouteX workspace.
           </p>
-        </div>
-
-        <div className="liquid-footer__column">
-          <p className="site-footer__eyebrow">Platform</p>
-          <Link href="/#product">Product</Link>
-          <Link href="/#platform">Features</Link>
-          <a href={docsHref()}>Docs</a>
-        </div>
-
-        <div className="liquid-footer__column">
-          <p className="site-footer__eyebrow">Access</p>
-          <Link href="/login">Log in</Link>
-          <Link href="/signup">Get Started</Link>
-          <Link href="/admin/login">Admin</Link>
-        </div>
+          <div className="site-footer__newsletter-field">
+            <label className="site-footer__newsletter-label" htmlFor="footer-email">
+              <input
+                aria-label="Work email"
+                className="site-footer__newsletter-input"
+                id="footer-email"
+                name="email"
+                placeholder="Work email"
+                type="email"
+              />
+            </label>
+            <button className="push-button push-button--primary" type="submit">
+              Submit
+            </button>
+            <a className="site-footer__text-link" href={docsHref()}>
+              Or jump into the API reference
+            </a>
+          </div>
+        </form>
       </div>
     </footer>
   );

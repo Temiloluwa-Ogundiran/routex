@@ -52,14 +52,17 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthFormShell
-      badge="Password help"
-      description="Send a reset code to your inbox and choose a new password when you're ready."
-      title="Recover your RouteX account"
+      badge="Recovery lane"
+      description="We'll send a reset link to your inbox."
+      points={[
+        "Use the same work email that holds your RouteX merchant workspace.",
+      ]}
+      title="Reset your RouteX access"
     >
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Recovery</p>
-          <h2>Request a reset code</h2>
+          <h2>Request a reset link</h2>
         </div>
         <span className="playground-status-chip">Email recovery</span>
       </div>

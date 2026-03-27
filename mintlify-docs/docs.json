@@ -10,7 +10,7 @@
     "groups": [
       {
         "group": "Overview",
-        "pages": ["index", "authentication"]
+        "pages": ["index"]
       },
       {
         "group": "API Reference",
@@ -40,8 +40,8 @@
     }
   },
   "seo": {
-  "metatags": {
-    "canonical": "https://docs.routex.xoroai.cloud"
+    "metatags": {
+      "canonical": "https://docs.routex.xoroai.cloud"
+    }
   }
-}
 }

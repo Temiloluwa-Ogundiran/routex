@@ -118,14 +118,14 @@ export function GatewayControlPanel({
   }
 
   return (
-    <section className="dashboard-section">
+    <section className="dashboard-section" id="dashboard-controls">
       <div className="section-heading section-heading--split">
         <div>
           <p className="section-kicker">Manual Overrides</p>
           <h2>Gateway Controls</h2>
         </div>
         <p className="inline-link">
-          Changes flow through the backend admin proxy.
+          Update gateway weight, activation, and support flags through the admin proxy.
         </p>
       </div>
 

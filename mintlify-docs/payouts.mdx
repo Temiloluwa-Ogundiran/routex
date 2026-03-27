@@ -1,13 +1,13 @@
 ---
 title: Payouts
-description: Send payouts with the same RouteX routing and verification model.
+description: Create a RouteX payout request and receive a normalized response.
 openapi: POST /api/v1/payout
 playground: interactive
 ---
 
 # Payouts
 
-Create a payout request with one RouteX endpoint and let RouteX pick an eligible payout path.
+Create a payout request with one RouteX endpoint and let RouteX pick the eligible payout path.
 
 ## Request
 
@@ -54,16 +54,6 @@ Create a payout request with one RouteX endpoint and let RouteX pick an eligible
   "reference": "PAYOUT_1001",
   "selected_gateway": "kora",
   "gateway_reference": "KORA_PROC_001",
-  "routing": {
-    "decision_id": "route_decision_456",
-    "selected_gateway": "kora",
-    "selection_reason": "best payout availability",
-    "fallback_order": ["kora", "pstk"],
-    "score_breakdown": {
-      "kora": 95.7,
-      "pstk": 88.3
-    }
-  },
   "data": {
     "amount": 5000,
     "fee": 50,
@@ -80,4 +70,4 @@ Create a payout request with one RouteX endpoint and let RouteX pick an eligible
 
 - Payouts use the same merchant auth flow as collections.
 - RouteX keeps the merchant-facing reference and gateway reference separate.
-- If a payout webhook is configured, RouteX delivers normalized events to your `notification_url`.
+- If you provide `notification_url`, RouteX delivers normalized payout events there.

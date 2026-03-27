@@ -1,26 +1,17 @@
 ---
 title: RouteX API Docs
-description: Public RouteX developer docs for test mode collections, verification, payouts, and webhooks.
+description: Public RouteX developer docs for hosted collections, verification, payouts, webhooks, and gateway behavior.
 ---
 
 # RouteX API Docs
 
-RouteX gives merchants one payment layer for collections and payouts. In this MVP, everything is test mode only, and the docs focus on the public surface external developers actually need.
+RouteX gives merchants one public payment API in test mode. These docs stay focused on the endpoints external developers use.
 
-## What you can build
+## What you need
 
-- Hosted collections with automatic routing or a manual gateway override
-- Transaction verification from one normalized endpoint
-- Payouts with the same merchant secret key flow
-- Merchant webhooks with a single normalized payload shape
-
-## Quick start
-
-1. Create a test merchant workspace.
-2. Copy the test secret key from your RouteX dashboard.
-3. Send `Authorization: Bearer <test-secret-key>` with your requests.
-4. Initialize a collection with `POST /api/v1/initiate`.
-5. Verify with `GET /api/v1/transactions/verify`.
+- A test merchant workspace
+- Your test secret key from the RouteX dashboard
+- `Authorization: Bearer <test-secret-key>`
 
 ## Base URL
 
@@ -28,17 +19,19 @@ RouteX gives merchants one payment layer for collections and payouts. In this MV
 https://routexapi.xoroai.cloud
 ```
 
+## Public endpoints
+
+- `POST /api/v1/initiate`
+- `GET /api/v1/transactions/verify`
+- `POST /api/v1/payout`
+
 ## Request conventions
 
 - Amounts are sent in customer-facing currency units.
-- Use `gateway_code` only when you want to force a gateway.
 - Omit `gateway_code` to let RouteX route automatically.
-- Send `notification_url` when you want RouteX to POST normalized webhook events back to your server.
+- Send `gateway_code` only when you want to force a gateway.
+- Send `notification_url` when you want normalized webhook delivery.
 
-## Example headers
+## Webhooks
 
-```bash
-Authorization: Bearer ROUTEX_TEST_xxx
-Content-Type: application/json
-```
-
+RouteX posts normalized events to your `notification_url` after provider confirmation. Every request includes `X-AGGREGATOR-SIGNATURE`.

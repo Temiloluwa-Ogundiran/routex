@@ -47,6 +47,8 @@ Verify the raw request body with your merchant webhook secret before accepting t
 }
 ```
 
+The webhook body is normalized, so the same shape applies across providers.
+
 ## Delivery flow
 
 1. The provider notifies RouteX first.
@@ -60,4 +62,3 @@ Verify the raw request body with your merchant webhook secret before accepting t
 - `notification_url` is configured in the request payload.
 - Keep webhook handlers idempotent.
 - The same normalized shape is used across collections and payouts.
-

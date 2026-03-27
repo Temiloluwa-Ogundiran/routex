@@ -14,11 +14,20 @@ export function OtpFormShell({
   title,
 }: OtpFormShellProps) {
   return (
-    <main className="auth-shell auth-shell--otp liquid-auth-shell">
+    <main className="auth-shell auth-shell--otp">
       <section className="auth-shell__intro">
-        <span className="auth-shell__eyebrow">{badge}</span>
-        <h1>{title}</h1>
-        <p className="auth-shell__copy">{description}</p>
+        <div className="auth-shell__intro-copy">
+          <span className="auth-shell__eyebrow">{badge}</span>
+          <h1>{title}</h1>
+          <span aria-hidden="true" className="auth-shell__underline" />
+          <p className="auth-shell__copy">{description}</p>
+        </div>
+        <div aria-hidden="true" className="auth-shell__poster-grid">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       </section>
 
       <section className="auth-shell__form">

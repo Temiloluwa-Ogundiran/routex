@@ -1,6 +1,6 @@
 ---
 title: Verification
-description: Confirm the final status of a RouteX transaction with one normalized endpoint.
+description: Confirm a RouteX transaction status with one normalized endpoint.
 openapi: GET /api/v1/transactions/verify
 playground: interactive
 ---
@@ -63,5 +63,5 @@ Authorization: Bearer ROUTEX_TEST_xxx
 ## Notes
 
 - The response is normalized, even when the underlying gateway payload differs.
-- If the transaction was routed manually, `selected_gateway` reflects that choice.
-- If the transaction was auto-routed, `selected_gateway` reflects the winning gateway.
+- `selected_gateway` reflects the gateway RouteX used.
+- This endpoint is for merchant-facing status checks after `POST /api/v1/initiate`.

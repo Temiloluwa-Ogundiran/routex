@@ -175,6 +175,7 @@ frontend/.next/
 frontend/.next_stale_*/
 frontend/test-results/
 frontend/playwright-report/
+.playwright-cli/
 mintlify-docs/node_modules/
 mintlify-docs/*.log
 /docs/

@@ -16,11 +16,14 @@ export function AuthFormShell({
   title,
 }: AuthFormShellProps) {
   return (
-    <main className="auth-shell liquid-auth-shell">
+    <main className="auth-shell">
       <section className="auth-shell__intro">
-        <span className="auth-shell__eyebrow">{badge}</span>
-        <h1>{title}</h1>
-        <p className="auth-shell__copy">{description}</p>
+        <div className="auth-shell__intro-copy">
+          <span className="auth-shell__eyebrow">{badge}</span>
+          <h1>{title}</h1>
+          <span aria-hidden="true" className="auth-shell__underline" />
+          <p className="auth-shell__copy">{description}</p>
+        </div>
         {points && points.length > 0 ? (
           <ul className="icon-list auth-shell__points">
             {points.map((point) => (
@@ -36,6 +39,12 @@ export function AuthFormShell({
             ))}
           </ul>
         ) : null}
+        <div aria-hidden="true" className="auth-shell__poster-grid">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       </section>
 
       <section className="auth-shell__form">

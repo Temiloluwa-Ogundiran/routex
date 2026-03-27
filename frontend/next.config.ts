@@ -2,11 +2,14 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const mintlifyDocsOrigin =
+  process.env.DOCS_ORIGIN ??
   process.env.MINTLIFY_DOCS_ORIGIN ??
   process.env.NEXT_PUBLIC_DOCS_URL ??
   "https://docs.routex.xoroai.cloud";
 const publicDocsUrl =
-  process.env.NEXT_PUBLIC_DOCS_URL ?? mintlifyDocsOrigin;
+  process.env.NEXT_PUBLIC_DOCS_URL ??
+  process.env.DOCS_ORIGIN ??
+  mintlifyDocsOrigin;
 const isLocalDocsOrigin = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(
   mintlifyDocsOrigin,
 );

@@ -34,12 +34,14 @@ function SignupPageContent() {
 
   useEffect(() => {
     const rememberedEmail = searchParams.get("email");
-    if (rememberedEmail) {
-      setFormState((currentState) => ({
-        ...currentState,
-        email: rememberedEmail,
-      }));
+    if (!rememberedEmail) {
+      return;
     }
+
+    setFormState((currentState) => ({
+      ...currentState,
+      email: rememberedEmail,
+    }));
   }, [searchParams]);
 
   useEffect(() => {
@@ -105,14 +107,18 @@ function SignupPageContent() {
 
   return (
     <AuthFormShell
-      badge="Create account"
-      description="Set up your details, verify your email, and open your RouteX merchant workspace."
-      title="Create your RouteX account"
+      badge="Create workspace"
+      description="Create your team, verify your inbox, and start routing payments."
+      points={[
+        "Start in test mode with one merchant contract and signed callbacks.",
+        "Move from hosted checkout to payout control without rebuilding your payloads.",
+      ]}
+      title="Open your RouteX workspace"
     >
       <div className="auth-shell__card-header">
         <div>
-          <p className="playground-panel__eyebrow">Get started</p>
-          <h2>Set up your details</h2>
+          <p className="playground-panel__eyebrow">Workspace setup</p>
+          <h2>Set up your team</h2>
         </div>
         <span className="playground-status-chip">OTP</span>
       </div>
@@ -176,7 +182,7 @@ function SignupPageContent() {
         ) : null}
 
         <PushButton disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Sending code..." : "Create account"}
+          {isSubmitting ? "Sending code..." : "Create workspace"}
         </PushButton>
       </form>
 

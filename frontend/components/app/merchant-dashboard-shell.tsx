@@ -14,6 +14,7 @@ import {
   type MerchantWorkspaceMerchant,
 } from "../../lib/app-dashboard";
 import { docsHref } from "../../lib/docs-url";
+import { OpsShell } from "../layout/ops-shell";
 import { PushButton } from "../ui/push-button";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
@@ -60,15 +61,51 @@ function formatRelativeDateTime(value: string | null | undefined) {
   }).format(parsedDate);
 }
 
-function buildDashboardUrl(merchantId: string | null, mode: "test" | "live") {
-  const params = new URLSearchParams();
+function getInitials(value: string | null | undefined) {
+  if (!value) {
+    return "RX";
+  }
+
+  const parts = value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (parts.length === 0) {
+    return "RX";
+  }
+
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+}
+
+function buildDashboardUrl(
+  merchantId: string | null,
+  mode: "test" | "live",
+  currentSearchParams?: URLSearchParams,
+) {
+  const params = currentSearchParams
+    ? new URLSearchParams(currentSearchParams.toString())
+    : new URLSearchParams();
+
   if (merchantId) {
     params.set("merchantId", merchantId);
+  } else {
+    params.delete("merchantId");
   }
   params.set("mode", mode);
 
   const query = params.toString();
   return query ? `/dashboard?${query}` : "/dashboard";
+}
+
+function buildDashboardSectionUrl(
+  merchantId: string | null,
+  mode: "test" | "live",
+  sectionId: string,
+  currentSearchParams?: URLSearchParams,
+) {
+  return `${buildDashboardUrl(merchantId, mode, currentSearchParams)}#${sectionId}`;
 }
 
 async function readDashboardData(
@@ -200,6 +237,63 @@ export function MerchantDashboardShell() {
       ? selectedMerchant.live_balance
       : selectedMerchant.test_balance;
   }, [mode, selectedMerchant]);
+  const selectedMerchantId = selectedMerchant?.id ?? merchantId ?? null;
+  const dashboardHomeHref = useMemo(
+    () => buildDashboardUrl(selectedMerchantId, mode, searchParams),
+    [searchParams, selectedMerchantId, mode],
+  );
+  const opsNavSections = useMemo(
+    () => [
+      {
+        label: "Main menu",
+        items: [
+          { href: dashboardHomeHref, label: "Overview" },
+          {
+            href: buildDashboardSectionUrl(
+              selectedMerchantId,
+              mode,
+              "dashboard-wallets",
+              searchParams,
+            ),
+            label: "Wallets",
+          },
+          {
+            href: buildDashboardSectionUrl(
+              selectedMerchantId,
+              mode,
+              "dashboard-transactions",
+              searchParams,
+            ),
+            label: "Transactions",
+          },
+        ],
+      },
+      {
+        label: "Management",
+        items: [
+          {
+            href: buildDashboardSectionUrl(
+              selectedMerchantId,
+              mode,
+              "dashboard-api-keys",
+              searchParams,
+            ),
+            label: "API Keys",
+          },
+          {
+            href: buildDashboardSectionUrl(
+              selectedMerchantId,
+              mode,
+              "dashboard-payment-links",
+              searchParams,
+            ),
+            label: "Payment Links",
+          },
+        ],
+      },
+    ],
+    [dashboardHomeHref, searchParams, selectedMerchantId, mode],
+  );
 
   async function handleCreateMerchant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -263,7 +357,7 @@ export function MerchantDashboardShell() {
 
     const nextMerchantId = responseBody.id ?? null;
     startTransition(() => {
-      router.replace(buildDashboardUrl(nextMerchantId, "test"));
+      router.replace(buildDashboardUrl(nextMerchantId, "test", searchParams));
     });
     setRefreshKey((currentValue) => currentValue + 1);
   }
@@ -274,13 +368,15 @@ export function MerchantDashboardShell() {
     }
 
     startTransition(() => {
-      router.replace(buildDashboardUrl(selectedMerchant?.id ?? merchantId, nextMode));
+      router.replace(
+        buildDashboardUrl(selectedMerchant?.id ?? merchantId, nextMode, searchParams),
+      );
     });
   }
 
   function handleMerchantChange(nextMerchantId: string) {
     startTransition(() => {
-      router.replace(buildDashboardUrl(nextMerchantId || null, mode));
+      router.replace(buildDashboardUrl(nextMerchantId || null, mode, searchParams));
     });
   }
 
@@ -298,106 +394,141 @@ export function MerchantDashboardShell() {
 
   if (loadState === "loading" || loadState === "idle") {
     return (
-      <section className="dashboard-hero">
-        <div className="dashboard-hero__copy">
-          <p className="section-badge">Merchant Workspace</p>
-          <h1>Loading your RouteX workspace</h1>
-          <p>We are pulling your merchant profile, balances, transactions, and API keys.</p>
-        </div>
-      </section>
+      <OpsShell
+        homeHref={dashboardHomeHref}
+        initials={getInitials(dashboard?.user.name)}
+        navSections={opsNavSections}
+        subtitle="Merchant workspace"
+        title="RouteX Ops"
+      >
+        <section className="dashboard-hero">
+          <div className="dashboard-hero__copy">
+            <p className="section-badge">Merchant Workspace</p>
+            <h1>Loading your RouteX workspace</h1>
+            <p>
+              We are pulling your merchant profile, balances, transactions, and
+              API keys.
+            </p>
+          </div>
+        </section>
+      </OpsShell>
     );
   }
 
   if (loadState === "error" || !dashboard) {
     return (
-      <section className="dashboard-hero">
-        <div className="dashboard-hero__copy">
-          <p className="section-badge">Merchant Workspace</p>
-          <h1>We couldn&apos;t load your merchant workspace</h1>
-          <p>{errorMessage ?? "Please check your backend connection and try again."}</p>
-          <div className="dashboard-hero__actions">
-            <PushButton onClick={() => setRefreshKey((currentValue) => currentValue + 1)}>
-              Retry
-            </PushButton>
-            <a className="push-button push-button--secondary" href={docsHref()}>
-              Review docs
-            </a>
+      <OpsShell
+        homeHref={dashboardHomeHref}
+        initials="RX"
+        navSections={opsNavSections}
+        subtitle="Merchant workspace"
+        title="RouteX Ops"
+      >
+        <section className="dashboard-hero">
+          <div className="dashboard-hero__copy">
+            <p className="section-badge">Merchant Workspace</p>
+            <h1>We couldn&apos;t load your merchant workspace</h1>
+            <p>
+              {errorMessage ?? "Please check your backend connection and try again."}
+            </p>
+            <div className="dashboard-hero__actions">
+              <PushButton onClick={() => setRefreshKey((currentValue) => currentValue + 1)}>
+                Retry
+              </PushButton>
+              <a className="push-button push-button--secondary" href={docsHref()}>
+                Review docs
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </OpsShell>
     );
   }
 
   if (!selectedMerchant) {
     return (
-      <section className="dashboard-hero">
-        <div className="dashboard-hero__copy">
-          <p className="section-badge">Merchant Workspace</p>
-          <h1>Create your first merchant workspace</h1>
-          <p>
-            Your RouteX account is ready. Create a merchant workspace so you can
-            generate API keys, monitor revenue, manage wallets, and launch
-            collections and payouts.
-          </p>
-        </div>
-
-        <form
-          className="dashboard-create-form dashboard-card"
-          onSubmit={(event) => void handleCreateMerchant(event)}
-        >
-          <label className="auth-field">
-            <span className="dashboard-control-label">Merchant name</span>
-            <input
-              className="dashboard-control-input"
-              defaultValue=""
-              name="name"
-              placeholder="Ada Stores"
-              required
-              type="text"
-            />
-          </label>
-
-          <label className="auth-field">
-            <span className="dashboard-control-label">Support email</span>
-            <input
-              className="dashboard-control-input"
-              defaultValue={dashboard.user.email}
-              name="email"
-              placeholder="merchant@example.com"
-              required
-              type="email"
-            />
-          </label>
-
-          {createMerchantState.error ? (
-            <p className="auth-form__message auth-form__message--error">
-              {createMerchantState.error}
+      <OpsShell
+        homeHref={dashboardHomeHref}
+        initials={getInitials(dashboard.user.name)}
+        navSections={opsNavSections}
+        subtitle="Merchant workspace"
+        title="RouteX Ops"
+      >
+        <section className="dashboard-hero">
+          <div className="dashboard-hero__copy">
+            <p className="section-badge">Merchant Workspace</p>
+            <h1>Create your first merchant workspace</h1>
+            <p>
+              Your RouteX account is ready. Create a merchant workspace so you
+              can generate API keys, monitor revenue, manage wallets, and
+              launch collections and payouts.
             </p>
-          ) : null}
-          {createMerchantState.message ? (
-            <p className="auth-form__message auth-form__message--success">
-              {createMerchantState.message}
-            </p>
-          ) : null}
-
-          <div className="dashboard-hero__actions">
-            <PushButton disabled={createMerchantState.submitting} type="submit">
-              {createMerchantState.submitting
-                ? "Creating workspace..."
-                : "Create merchant workspace"}
-            </PushButton>
-            <a className="push-button push-button--secondary" href={docsHref()}>
-              Review API docs
-            </a>
           </div>
-        </form>
-      </section>
+
+          <form
+            className="dashboard-create-form dashboard-card"
+            onSubmit={(event) => void handleCreateMerchant(event)}
+          >
+            <label className="auth-field">
+              <span className="dashboard-control-label">Merchant name</span>
+              <input
+                className="dashboard-control-input"
+                defaultValue=""
+                name="name"
+                placeholder="Ada Stores"
+                required
+                type="text"
+              />
+            </label>
+
+            <label className="auth-field">
+              <span className="dashboard-control-label">Support email</span>
+              <input
+                className="dashboard-control-input"
+                defaultValue={dashboard.user.email}
+                name="email"
+                placeholder="merchant@example.com"
+                required
+                type="email"
+              />
+            </label>
+
+            {createMerchantState.error ? (
+              <p className="auth-form__message auth-form__message--error">
+                {createMerchantState.error}
+              </p>
+            ) : null}
+            {createMerchantState.message ? (
+              <p className="auth-form__message auth-form__message--success">
+                {createMerchantState.message}
+              </p>
+            ) : null}
+
+            <div className="dashboard-hero__actions">
+              <PushButton disabled={createMerchantState.submitting} type="submit">
+                {createMerchantState.submitting
+                  ? "Creating workspace..."
+                  : "Create merchant workspace"}
+              </PushButton>
+              <a className="push-button push-button--secondary" href={docsHref()}>
+                Review API docs
+              </a>
+            </div>
+          </form>
+        </section>
+      </OpsShell>
     );
   }
 
   return (
-    <>
-      <section className="dashboard-hero">
+    <OpsShell
+      homeHref={dashboardHomeHref}
+      initials={getInitials(dashboard.user.name)}
+      navSections={opsNavSections}
+      subtitle="Merchant workspace"
+      title={selectedMerchant.name}
+    >
+      <section className="dashboard-hero" id="dashboard-overview">
         <div className="dashboard-hero__copy">
           <p className="section-badge">Merchant Workspace</p>
           <h1>{selectedMerchant.name} workspace</h1>
@@ -511,7 +642,7 @@ export function MerchantDashboardShell() {
         </div>
       </section>
 
-      <section className="dashboard-card-grid dashboard-section">
+      <section className="dashboard-card-grid dashboard-section" id="dashboard-wallets">
         <article className="dashboard-card">
           <div className="dashboard-card__topline">
             <div>
@@ -539,7 +670,7 @@ export function MerchantDashboardShell() {
           </dl>
         </article>
 
-        <article className="dashboard-card">
+        <article className="dashboard-card" id="dashboard-api-keys">
           <div className="dashboard-card__topline">
             <div>
               <p className="dashboard-card__eyebrow">API keys</p>
@@ -609,7 +740,7 @@ export function MerchantDashboardShell() {
         </article>
       </section>
 
-      <section className="dashboard-table-shell dashboard-section">
+      <section className="dashboard-table-shell dashboard-section" id="dashboard-transactions">
         <div className="dashboard-panel__header dashboard-table-shell__header">
           <div>
             <p className="dashboard-panel__eyebrow">Transactions</p>
@@ -660,7 +791,7 @@ export function MerchantDashboardShell() {
       </section>
 
       <section className="dashboard-split">
-        <article className="dashboard-panel dashboard-panel--dark">
+        <article className="dashboard-panel dashboard-panel--dark" id="dashboard-payment-links">
           <div className="dashboard-panel__header">
             <div>
               <p className="dashboard-panel__eyebrow">Payment links</p>
@@ -748,6 +879,6 @@ export function MerchantDashboardShell() {
           </dl>
         </article>
       </section>
-    </>
+    </OpsShell>
   );
 }

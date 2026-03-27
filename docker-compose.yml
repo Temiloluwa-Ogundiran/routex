@@ -99,14 +99,16 @@ services:
       args:
         NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
         NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-}
-        MINTLIFY_DOCS_ORIGIN: ${MINTLIFY_DOCS_ORIGIN:-http://127.0.0.1:3001}
+        DOCS_ORIGIN: ${DOCS_ORIGIN:-https://docs.routex.xoroai.cloud}
+        NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL:-}
     environment:
       ROUTEX_API_BASE_URL: http://api:8000
       SERVER_URL: ${SERVER_URL:-https://routexapi.xoroai.cloud}
       ROUTEX_PLAYGROUND_SECRET_KEY: ${ROUTEX_PLAYGROUND_SECRET_KEY:-}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-}
-      MINTLIFY_DOCS_ORIGIN: ${MINTLIFY_DOCS_ORIGIN:-http://127.0.0.1:3001}
+      DOCS_ORIGIN: ${DOCS_ORIGIN:-https://docs.routex.xoroai.cloud}
+      NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL:-}
     expose:
       - "3000"
     depends_on:

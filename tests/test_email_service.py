@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from unittest.mock import MagicMock, patch
 
@@ -5,7 +7,7 @@ from services import emailService, receiptService
 
 
 @pytest.mark.asyncio
-async def test_send_otp_email_uses_routex_brand_and_subject(monkeypatch):
+async def test_send_otp_email_uses_neutral_routex_copy(monkeypatch):
     calls = []
 
     def fake_post(url, headers=None, data=None, timeout=None):
@@ -34,11 +36,13 @@ async def test_send_otp_email_uses_routex_brand_and_subject(monkeypatch):
     assert calls[0]["headers"]["Authorization"] == "Bearer resend_test_key"
     assert calls[0]["headers"]["Content-Type"] == "application/json"
     assert calls[0]["timeout"] == 15
-    assert '"subject": "Your RouteX security code"' in payload
+    payload_json = json.loads(payload)
+    assert '"subject": "Your RouteX verification code"' in payload
     assert "RouteX" in payload
     assert "X-Aggregator" not in payload
     assert "535627" in payload
-    assert "Use this code to continue." in payload
+    html_text = " ".join(payload_json["html"].split())
+    assert "signing in or creating a RouteX account" in html_text
 
 
 def test_otp_template_is_brand_clean():

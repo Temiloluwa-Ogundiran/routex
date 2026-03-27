@@ -4,8 +4,9 @@ test("docs root is served by mintlify with curated public content", async ({ pag
   await page.goto("http://127.0.0.1:3000/docs");
 
   await expect(page.getByText("RouteX API Docs")).toBeVisible();
-  await expect(page.getByText("What you can build")).toBeVisible();
+  await expect(page.getByText("What you need")).toBeVisible();
   await expect(page.getByText("https://routexapi.xoroai.cloud")).toBeVisible();
+  await expect(page.getByText("X-AGGREGATOR-SIGNATURE")).toBeVisible();
 });
 
 test("docs collections page shows the public initiate contract", async ({ page }) => {

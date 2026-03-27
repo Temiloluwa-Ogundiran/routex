@@ -19,8 +19,17 @@ type AuthState = {
 
 const BASE_NAV_ITEMS = [
   { label: "Product", href: "/#product" },
-  { label: "Platform", href: "/#platform" },
+  { label: "Why RouteX", href: "/#route" },
   { label: "Docs", href: docsHref() },
+];
+
+const TICKER_ITEMS = [
+  "RouteX ships loud",
+  "Checkout ready",
+  "Signed webhooks",
+  "Manual override",
+  "Failover ready",
+  "One merchant contract",
 ];
 
 async function readJson(response: Response) {
@@ -162,18 +171,28 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
 
   return (
     <header className="site-header">
-      <Link className="site-header__brand" href="/">
-        <span aria-hidden="true" className="site-header__mark">
-          R
-        </span>
-        <span className="site-header__wordmark">RouteX</span>
-      </Link>
+      <div aria-hidden="true" className="site-header__ticker">
+        <div className="site-header__ticker-track">
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, index) => (
+            <span key={`${item}-${index}`}>{item}</span>
+          ))}
+        </div>
+      </div>
 
-      <nav aria-label="Primary" className="site-header__nav">
-        {navItems.map(renderNavItem)}
-      </nav>
+      <div className="site-header__bar">
+        <Link className="site-header__brand" href="/">
+          <span aria-hidden="true" className="site-header__mark">
+            R
+          </span>
+          <span className="site-header__wordmark">RouteX</span>
+        </Link>
 
-      {renderActions()}
+        <nav aria-label="Primary" className="site-header__nav">
+          {navItems.map(renderNavItem)}
+        </nav>
+
+        {renderActions()}
+      </div>
     </header>
   );
 }

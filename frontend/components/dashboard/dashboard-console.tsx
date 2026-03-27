@@ -15,6 +15,7 @@ import { GatewayHealthGrid } from "./gateway-health-grid";
 import { RecentTransactions } from "./recent-transactions";
 import { RoutingRulesPanel } from "./routing-rules-panel";
 import { ScoreBreakdownCard } from "./score-breakdown-card";
+import { GeometricPanel } from "../ui/geometric-panel";
 import { PushButton } from "../ui/push-button";
 
 function StatCard({
@@ -161,43 +162,51 @@ export function DashboardConsole({
   const lastRefreshedAt = getLastRefreshedAt(dashboard.gateway_health);
 
   return (
-    <main className="dashboard-shell">
-      <section className="dashboard-hero">
-        <div className="dashboard-hero__copy">
-          <p className="section-badge">Router Control Room</p>
-          <h1>Watch RouteX move traffic before conversion drops.</h1>
-          <p>
-            This control room surfaces gateway health, routed transactions,
-            failover recoveries, and manual override controls in one focused
-            admin view.
-          </p>
+    <div className="dashboard-shell">
+      <section className="dashboard-hero dashboard-console__hero" id="dashboard-overview">
+        <div className="dashboard-console__copy-stack">
+          <div className="dashboard-hero__copy">
+            <p className="section-badge">Router Control Room</p>
+            <h1>Watch RouteX move traffic before conversion drops.</h1>
+            <p>
+              Gateway health, routed transactions, failover recovery, and manual
+              override controls live in one focused ops view.
+            </p>
+          </div>
+
+          <div className="dashboard-hero__actions">
+            <a className="push-button push-button--secondary" href={docsHref()}>
+              Open docs
+            </a>
+            <button
+              className="push-button push-button--primary"
+              disabled={isRefreshing}
+              onClick={() => void handleRefreshNow()}
+              type="button"
+            >
+              Refresh Health Now
+            </button>
+            <PushButton onClick={() => void signOutAdmin()} variant="secondary">
+              Sign out
+            </PushButton>
+            <div className="dashboard-hero__refresh-meta">
+              <p>{formatLastRefreshed(lastRefreshedAt)}</p>
+              <span className="dashboard-status-pill dashboard-status-pill--accent">
+                Auto-refresh: 30s
+              </span>
+            </div>
+          </div>
+
+          {refreshMessage ? (
+            <p className="dashboard-refresh-feedback">{refreshMessage}</p>
+          ) : null}
         </div>
 
-        <div className="dashboard-hero__actions">
-          <a className="push-button push-button--secondary" href={docsHref()}>
-            Open docs
-          </a>
-          <button
-            className="push-button push-button--primary"
-            disabled={isRefreshing}
-            onClick={() => void handleRefreshNow()}
-            type="button"
-          >
-            Refresh Health Now
-          </button>
-          <PushButton onClick={() => void signOutAdmin()} variant="secondary">
-            Sign out
-          </PushButton>
-          <div className="dashboard-hero__refresh-meta">
-            <p>{formatLastRefreshed(lastRefreshedAt)}</p>
-            <span className="dashboard-status-pill dashboard-status-pill--accent">
-              Auto-refresh: 30s
-            </span>
-          </div>
-        </div>
-        {refreshMessage ? (
-          <p className="dashboard-refresh-feedback">{refreshMessage}</p>
-        ) : null}
+        <GeometricPanel
+          caption="Blueprint Snapshot"
+          title="Gateway mesh"
+          detail={`${dashboard.summary.total_gateways} gateways, ${dashboard.summary.active_gateways} active routes, and ${dashboard.summary.recent_failover_count} recent failovers.`}
+        />
 
         <div className="dashboard-hero__stats">
           <StatCard
@@ -247,6 +256,6 @@ export function DashboardConsole({
         <FailoverFeed failovers={dashboard.recent_failovers} />
         <ScoreBreakdownCard gateways={dashboard.gateway_health} />
       </section>
-    </main>
+    </div>
   );
 }

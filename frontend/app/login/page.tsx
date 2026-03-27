@@ -32,12 +32,14 @@ function LoginPageContent() {
 
   useEffect(() => {
     const rememberedEmail = searchParams.get("email");
-    if (rememberedEmail) {
-      setFormState((currentState) => ({
-        ...currentState,
-        email: rememberedEmail,
-      }));
+    if (!rememberedEmail) {
+      return;
     }
+
+    setFormState((currentState) => ({
+      ...currentState,
+      email: rememberedEmail,
+    }));
   }, [searchParams]);
 
   useEffect(() => {
@@ -103,14 +105,18 @@ function LoginPageContent() {
 
   return (
     <AuthFormShell
-      badge="Merchant login"
-      description="Sign in with your email and password. We’ll send a one-time code to complete access."
+      badge="Merchant access"
+      description="Use your email and password to receive your access code."
+      points={[
+        "Get into balances, keys, transactions, and payouts from one merchant lane.",
+        "Keep checkout routing, callback monitoring, and payout control in one workspace.",
+      ]}
       title="Sign in to RouteX"
     >
       <div className="auth-shell__card-header">
         <div>
-          <p className="playground-panel__eyebrow">Welcome back</p>
-          <h2>Enter your details</h2>
+          <p className="playground-panel__eyebrow">Merchant sign in</p>
+          <h2>Open your workspace</h2>
         </div>
         <span className="playground-status-chip">OTP</span>
       </div>
@@ -157,7 +163,7 @@ function LoginPageContent() {
         ) : null}
 
         <PushButton disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Sending code..." : "Continue"}
+          {isSubmitting ? "Sending code..." : "Send code"}
         </PushButton>
       </form>
 

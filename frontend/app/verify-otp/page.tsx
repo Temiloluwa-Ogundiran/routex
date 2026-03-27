@@ -73,7 +73,9 @@ function VerifyOtpPageContent() {
 
       if (!response.ok) {
         throw new Error(
-          responseBody?.detail ?? responseBody?.message ?? "OTP verification failed",
+          responseBody?.detail ??
+            responseBody?.message ??
+            "OTP verification failed",
         );
       }
 
@@ -90,9 +92,9 @@ function VerifyOtpPageContent() {
 
   return (
     <OtpFormShell
-      badge="Step 2 of 2"
-      description="Enter the six-digit code we emailed to finish your RouteX sign in."
-      title="Enter your email code"
+      badge="Verify access"
+      description="Drop the six-digit code from your inbox to unlock RouteX."
+      title="Enter your code"
     >
       <div className="auth-shell__card-header">
         <div>

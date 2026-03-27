@@ -40,6 +40,10 @@ export function proxy(request: NextRequest) {
     pathname === "/signup" ||
     pathname === "/verify-otp"
   ) {
+    if (userSessionToken) {
+      const dashboardUrl = new URL("/dashboard", request.url);
+      return NextResponse.redirect(dashboardUrl);
+    }
     return NextResponse.next();
   }
 

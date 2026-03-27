@@ -208,7 +208,7 @@ export function RoutingRulesPanel({
   }
 
   return (
-    <section className="dashboard-section">
+    <section className="dashboard-section" id="dashboard-rules">
       <div className="section-heading section-heading--split">
         <div>
           <p className="section-kicker">Routing Policy Layer</p>
@@ -221,11 +221,11 @@ export function RoutingRulesPanel({
 
       <div className="routing-rules-layout">
         <article className="dashboard-control-card routing-rules-form-card">
-          <div className="dashboard-card__topline">
-            <div>
-              <p className="dashboard-card__eyebrow">Create Rule</p>
-              <h3>Shape eligibility before scoring</h3>
-            </div>
+            <div className="dashboard-card__topline">
+              <div>
+                <p className="dashboard-card__eyebrow">Create Rule</p>
+                <h3>Shape eligibility before routing</h3>
+              </div>
             <span className="dashboard-status-pill dashboard-status-pill--accent">
               Global only
             </span>

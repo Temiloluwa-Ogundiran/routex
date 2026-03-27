@@ -4,40 +4,40 @@ import { docsHref } from "../../lib/docs-url";
 
 export function HeroSection() {
   return (
-    <section className="hero-panel liquid-hero" id="product">
-      <div className="hero-copy-block">
-        <span className="liquid-hero__kicker">Next-gen payment routing</span>
-        <h1 className="hero-title">
-          FLUID
-          <span className="hero-title__outline"> PAYMENTS</span>
+    <section className="poster-hero" id="product">
+      <div className="poster-hero__content">
+        <span className="poster-badge">For builders &amp; breakers</span>
+        <h1 className="poster-hero__title">
+          Orchestrate payments without the PSP circus.
         </h1>
-        <p className="hero-copy">
-          RouteX gives merchants one premium surface for collections, payouts,
-          merchant webhooks, and gateway control across Flutterwave, Paystack,
-          Korapay, and Interswitch.
+        <span aria-hidden="true" className="poster-hero__underline" />
+        <p className="poster-hero__copy">
+          RouteX gives your team one merchant contract for hosted checkout,
+          signed callbacks, payout requests, and gateway overrides without
+          scattering product logic across four provider consoles.
         </p>
-        <div className="hero-actions">
+        <div className="poster-hero__actions">
           <Link className="push-button push-button--primary" href="/signup">
-            Open Account
+            Get Started
           </Link>
           <a className="push-button push-button--secondary" href={docsHref()}>
             View Docs
           </a>
         </div>
-        <div className="liquid-hero__social-proof">
-          <div className="liquid-hero__avatars" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <span />
+        <div className="poster-hero__proof">
+          <div className="poster-proof">
+            <strong>4 rails live</strong>
+            <span>Flutterwave, Paystack, Kora, Interswitch</span>
           </div>
-          <div>
-            <strong>4 gateways</strong>
-            <span>One clean merchant API</span>
+          <div className="poster-proof">
+            <strong>Hosted + API</strong>
+            <span>Send one payload. Let customers pick how they pay.</span>
           </div>
         </div>
       </div>
-      <BrowserMockup />
+      <div className="poster-hero__visual">
+        <BrowserMockup />
+      </div>
     </section>
   );
 }

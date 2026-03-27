@@ -1,6 +1,7 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
-async function grantAdminSession(page: Parameters<typeof test>[0]["page"]) {
+async function grantAdminSession(page: Page) {
   await page.context().addCookies([
     {
       name: "routex_admin_session",
@@ -10,7 +11,7 @@ async function grantAdminSession(page: Parameters<typeof test>[0]["page"]) {
   ]);
 }
 
-async function mockAdminDashboard(page: Parameters<typeof test>[0]["page"]) {
+async function mockAdminDashboard(page: Page) {
   await page.route("**/api/admin/router", async (route) => {
     await route.fulfill({
       status: 200,
@@ -112,6 +113,10 @@ test("admin route shows the router control room when a session cookie exists", a
   await mockAdminDashboard(page);
   await page.goto("http://127.0.0.1:3000/admin");
 
+  await expect(page.locator("body")).toHaveAttribute("data-rx-surface", "ops");
+  await expect(page.getByText(/main menu/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /gateway health/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /routing rules/i })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /watch routex move traffic before conversion drops/i }),
   ).toBeVisible();

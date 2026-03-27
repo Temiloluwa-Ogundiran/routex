@@ -3,21 +3,21 @@ import { docsHref } from "../../lib/docs-url";
 
 export function FinalCta() {
   return (
-    <section className="story-section story-section--cta liquid-cta-section" id="docs">
-      <div className="final-cta liquid-cta">
-        <h2>
-          Ready to <span>Flow?</span>
-        </h2>
-        <p>
-          Give your team one sharp surface for collections, payouts, merchant
-          webhooks, and live payment visibility.
+    <section className="acid-final-cta" id="docs">
+      <div className="acid-final-cta__panel">
+        <p className="feature-block__eyebrow">Launch lane</p>
+        <h2 className="acid-final-cta__title">Ready to route?</h2>
+        <p className="acid-final-cta__copy">
+          Start in test mode, keep the merchant payload clean, and let RouteX
+          handle hosted collections, signed webhooks, and provider-specific
+          orchestration behind the scenes.
         </p>
-        <div className="hero-actions">
+        <div className="acid-final-cta__actions">
           <Link className="push-button push-button--primary" href="/signup">
-            Get Started Now
+            Get started now
           </Link>
           <a className="push-button push-button--secondary" href={docsHref()}>
-            Explore Docs
+            Read API reference
           </a>
         </div>
       </div>

@@ -76,13 +76,16 @@ function ResetPasswordPageContent() {
   return (
     <AuthFormShell
       badge="Reset password"
-      description="Choose a new password and get back into your RouteX account."
-      title="Reset your password"
+      description="Drop in the reset link details and lock your workspace back in."
+      points={[
+        "Use the email and reset code from your inbox, then set a fresh password.",
+      ]}
+      title="Choose a new password"
     >
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Secure reset</p>
-          <h2>Choose a new password</h2>
+          <h2>Update your password</h2>
         </div>
         <span className="playground-status-chip">Email link</span>
       </div>
