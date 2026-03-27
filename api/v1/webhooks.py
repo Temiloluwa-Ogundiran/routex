@@ -146,7 +146,6 @@ async def test_webhook_signature(body: WebhookTestRequest):
         "signature": signature,
         "headers": {
             "X-AGGREGATOR-SIGNATURE": signature,
-            "X-XOROPAY-SIGNATURE": signature,
         },
         "tamper_test_rejected": tamper_rejected,
         "merchant_verification_code": (
@@ -154,8 +153,7 @@ async def test_webhook_signature(body: WebhookTestRequest):
             "raw_body = request.get_data()  # raw bytes before calling request.json\n"
             f"secret = \"{raw_secret}\"\n"
             "expected = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()\n"
-            "# check either header:\n"
-            "is_valid = hmac.compare_digest(expected, request.headers.get('X-XOROPAY-SIGNATURE') or request.headers.get('X-AGGREGATOR-SIGNATURE'))"
+            "is_valid = hmac.compare_digest(expected, request.headers['X-AGGREGATOR-SIGNATURE'])"
         ),
     }
 

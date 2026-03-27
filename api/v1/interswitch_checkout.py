@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from urllib.parse import parse_qs
 
 from database.session import get_async_session
 from enums.transactionEnums import TransactionProcessor, TransactionStatus
@@ -9,6 +10,23 @@ from services import transactionService
 from settings import SERVER_URL
 
 interswitch_checkout_router = APIRouter()
+
+
+async def _read_interswitch_return_fields(request: Request) -> dict[str, str]:
+    try:
+        form_data = await request.form()
+        return {
+            key: str(value)
+            for key, value in form_data.items()
+        }
+    except AssertionError:
+        raw_body = await request.body()
+        parsed_body = parse_qs(raw_body.decode("utf-8"), keep_blank_values=True)
+        return {
+            key: values[-1]
+            for key, values in parsed_body.items()
+            if values
+        }
 
 
 @interswitch_checkout_router.get(
@@ -50,7 +68,7 @@ async def interswitch_checkout_return(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
 ):
-    form_data = await request.form()
+    form_data = await _read_interswitch_return_fields(request)
     processor_reference = (
         form_data.get("txnref")
         or form_data.get("txn_ref")

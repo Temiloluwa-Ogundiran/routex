@@ -35,3 +35,10 @@ def test_public_docs_are_curated_and_concise():
     assert "GET /api/v1/transactions/verify" in index_content
     assert "POST /api/v1/payout" in index_content
     assert "X-AGGREGATOR-SIGNATURE" in webhooks_content
+
+
+def test_api_reference_group_points_to_live_public_openapi():
+    docs_json = (DOCS_DIR / "docs.json").read_text(encoding="utf-8")
+
+    assert '"group": "API Reference"' in docs_json
+    assert '"openapi": "https://routexapi.xoroai.cloud/public/openapi.json"' in docs_json

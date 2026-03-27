@@ -6,10 +6,11 @@ type ScoreBreakdownCardProps = {
 
 function computeSignalScore(gateway: RouterGatewayHealth) {
   return Math.round(
-    gateway.success_rate_5m * 0.5 +
-      gateway.success_rate_1h * 0.25 +
-      Math.max(0, 100 - gateway.p95_latency_ms / 25) * 0.15 +
-      Math.max(0, 100 - gateway.timeout_rate_5m * 10) * 0.1,
+    gateway.success_rate_5m * 0.45 +
+      gateway.success_rate_1h * 0.2 +
+      Math.max(0, 100 - gateway.p95_latency_ms / 50) * 0.2 +
+      (gateway.circuit_state.toLowerCase() === "closed" ? 100 : 0) * 0.1 +
+      Math.max(0, 100 - gateway.timeout_rate_5m * 10) * 0.05,
   );
 }
 

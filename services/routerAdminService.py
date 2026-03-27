@@ -89,8 +89,8 @@ async def update_gateway(
 
     if is_active is not None:
         processor.is_active = is_active
-    if priority_weight is not None:
-        processor.priority_weight = priority_weight
+    if priority_weight is not None or float(processor.priority_weight or 0.0) != 1.0:
+        processor.priority_weight = 1.0
 
     session.add(processor)
     await session.commit()

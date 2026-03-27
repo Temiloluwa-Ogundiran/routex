@@ -38,8 +38,7 @@ celery_app.conf.task_routes = {
     "services.celeryService.process_bulk_payout_batch": {"queue": "payout_queue"},
     "services.celeryService.schedule_bulk_payouts": {"queue": "payout_queue"},
     "services.celeryService.refresh_gateway_health_snapshots_task": {"queue": "default"},
-    # Webhook delivery moved to asyncio.create_task in webhookService.py
-    # "services.celeryService.send_webhook_task": {"queue": "webhook_queue"},
+    "services.celeryService.send_webhook_task": {"queue": "webhook_queue"},
 }
 celery_app.conf.task_default_queue = "default"
 celery_app.conf.beat_schedule = {
@@ -244,3 +243,45 @@ async def _expire_transaction(tx_id: str):
 #             raise self.retry(exc=exc, countdown=countdown)
 #         logger.error("Webhook permanently failed after %s attempts: event=%s url=%s",
 #                      self.max_retries + 1, event_type, url)
+
+_WEBHOOK_RETRY_COUNTDOWNS = [0, 5, 15]
+
+
+@celery_app.task(bind=True, max_retries=2)
+def send_webhook_task(self, url: str, payload_str: str, headers: dict, event_type: str):
+    try:
+        response = requests.post(
+            url,
+            data=payload_str.encode("utf-8"),
+            headers=headers,
+            timeout=10,
+        )
+        if response.status_code < 200 or response.status_code >= 300:
+            raise ValueError(f"Non-2xx response: {response.status_code}")
+
+        logger.info(
+            "Webhook delivered: event=%s url=%s status=%s",
+            event_type,
+            url,
+            response.status_code,
+        )
+    except Exception as exc:
+        attempt = self.request.retries
+        next_retry = attempt + 1
+        if next_retry <= self.max_retries:
+            countdown = _WEBHOOK_RETRY_COUNTDOWNS[next_retry]
+            logger.warning(
+                "Webhook failed (attempt %s/%s), retrying in %ss: %s",
+                attempt + 1,
+                self.max_retries + 1,
+                countdown,
+                exc,
+            )
+            raise self.retry(exc=exc, countdown=countdown)
+
+        logger.error(
+            "Webhook permanently failed after %s attempts: event=%s url=%s",
+            self.max_retries + 1,
+            event_type,
+            url,
+        )

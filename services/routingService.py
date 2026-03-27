@@ -28,7 +28,7 @@ DEFAULT_PROCESSOR_CATALOG = {
         "is_active": True,
         "supports_collections": True,
         "supports_payouts": False,
-        "priority_weight": 1.1,
+        "priority_weight": 1.0,
     },
     "pstk": {
         "name": "Paystack",
@@ -46,7 +46,7 @@ DEFAULT_PROCESSOR_CATALOG = {
         "is_active": True,
         "supports_collections": True,
         "supports_payouts": True,
-        "priority_weight": 0.95,
+        "priority_weight": 1.0,
     },
     "isw": {
         "name": "Interswitch",
@@ -55,7 +55,7 @@ DEFAULT_PROCESSOR_CATALOG = {
         "is_active": True,
         "supports_collections": True,
         "supports_payouts": False,
-        "priority_weight": 0.85,
+        "priority_weight": 1.0,
     },
 }
 
@@ -105,14 +105,12 @@ def _score_processor(processor: Processor, snapshot) -> float:
     latency_score = gatewayHealthService.compute_latency_score(
         snapshot.p95_latency_ms if snapshot else None,
     )
-    priority_score = min(float(processor.priority_weight or 1.0) * 100.0, 100.0)
     availability_score = 100.0 if gatewayHealthService.is_gateway_available(snapshot) else 0.0
 
     return round(
-        (0.40 * recent_success_score)
+        (0.45 * recent_success_score)
         + (0.20 * stability_score)
-        + (0.15 * latency_score)
-        + (0.10 * priority_score)
+        + (0.20 * latency_score)
         + (0.10 * availability_score)
         + (0.05 * max(0.0, 100.0 - (timeout_rate * 10.0))),
         2,
@@ -149,7 +147,13 @@ async def ensure_processor_catalog(session: AsyncSession) -> None:
             continue
 
         for field, value in defaults.items():
-            if getattr(processor, field) is None:
+            current_value = getattr(processor, field)
+            if field == "priority_weight" and float(current_value or 0.0) != float(value):
+                setattr(processor, field, value)
+                changed = True
+                continue
+
+            if current_value is None:
                 setattr(processor, field, value)
                 changed = True
 

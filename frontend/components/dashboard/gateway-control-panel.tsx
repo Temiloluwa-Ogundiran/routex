@@ -14,20 +14,10 @@ type GatewayControlPanelProps = {
   onGatewayUpdated: (gateway: RouterGatewayHealth) => void;
 };
 
-function buildWeightDrafts(gateways: RouterGatewayHealth[]) {
-  return Object.fromEntries(
-    gateways.map((gateway) => [
-      gateway.gateway_code,
-      gateway.priority_weight.toFixed(2),
-    ]),
-  );
-}
-
 export function GatewayControlPanel({
   gateways,
   onGatewayUpdated,
 }: GatewayControlPanelProps) {
-  const [weightDrafts, setWeightDrafts] = useState(() => buildWeightDrafts(gateways));
   const [pendingGatewayCode, setPendingGatewayCode] = useState<string | null>(null);
   const [messages, setMessages] = useState<Record<string, string>>({});
 
@@ -75,10 +65,6 @@ export function GatewayControlPanel({
         ...json.gateway,
       };
 
-      setWeightDrafts((current) => ({
-        ...current,
-        [gateway.gateway_code]: nextGateway.priority_weight.toFixed(2),
-      }));
       onGatewayUpdated(nextGateway);
       setMessage(gateway.gateway_code, "Gateway updated successfully.");
     } catch {
@@ -89,29 +75,10 @@ export function GatewayControlPanel({
   }
 
   async function handleToggle(gateway: RouterGatewayHealth) {
-    const nextWeight = Number.parseFloat(weightDrafts[gateway.gateway_code] ?? "0");
     await patchGateway(gateway, {
       gateway_name: gateway.gateway_name,
       is_active: !gateway.is_active,
-      priority_weight: Number.isFinite(nextWeight)
-        ? nextWeight
-        : gateway.priority_weight,
-      supports_collections: gateway.supports_collections,
-      supports_payouts: gateway.supports_payouts,
-    });
-  }
-
-  async function handleSave(gateway: RouterGatewayHealth) {
-    const nextWeight = Number.parseFloat(weightDrafts[gateway.gateway_code] ?? "");
-    if (!Number.isFinite(nextWeight) || nextWeight < 0) {
-      setMessage(gateway.gateway_code, "Enter a valid non-negative weight.");
-      return;
-    }
-
-    await patchGateway(gateway, {
-      gateway_name: gateway.gateway_name,
-      is_active: gateway.is_active,
-      priority_weight: nextWeight,
+      priority_weight: gateway.priority_weight,
       supports_collections: gateway.supports_collections,
       supports_payouts: gateway.supports_payouts,
     });
@@ -125,7 +92,8 @@ export function GatewayControlPanel({
           <h2>Gateway Controls</h2>
         </div>
         <p className="inline-link">
-          Update gateway weight, activation, and support flags through the admin proxy.
+          Routing weights are normalized. Live decisions use gateway health and
+          latency.
         </p>
       </div>
 
@@ -149,39 +117,18 @@ export function GatewayControlPanel({
                 </span>
               </div>
 
-              <div className="dashboard-control-form">
-                <label
-                  className="dashboard-control-label"
-                  htmlFor={`gateway-weight-${gateway.gateway_code}`}
-                >
-                  Weight for {gateway.gateway_name}
-                </label>
-                <input
-                  aria-label={`Weight for ${gateway.gateway_name}`}
-                  className="dashboard-control-input"
-                  id={`gateway-weight-${gateway.gateway_code}`}
-                  min="0"
-                  onChange={(event) =>
-                    setWeightDrafts((current) => ({
-                      ...current,
-                      [gateway.gateway_code]: event.target.value,
-                    }))
-                  }
-                  step="0.05"
-                  type="number"
-                  value={weightDrafts[gateway.gateway_code] ?? "0.00"}
-                />
-              </div>
+              <dl className="dashboard-stat-list">
+                <div>
+                  <dt>Routing weight</dt>
+                  <dd>1.00</dd>
+                </div>
+                <div>
+                  <dt>Decision inputs</dt>
+                  <dd>Health + latency</dd>
+                </div>
+              </dl>
 
               <div className="dashboard-control-actions">
-                <PushButton
-                  disabled={isPending}
-                  onClick={() => void handleSave(gateway)}
-                  type="button"
-                  variant="secondary"
-                >
-                  Save {gateway.gateway_name}
-                </PushButton>
                 <PushButton
                   disabled={isPending}
                   onClick={() => void handleToggle(gateway)}
@@ -193,7 +140,7 @@ export function GatewayControlPanel({
 
               <p className="dashboard-control-feedback">
                 {messages[gateway.gateway_code] ??
-                  "Adjust routing weight or pause this gateway for new traffic."}
+                  "Use this panel to pause or restore a gateway while live routing keeps scores aligned."}
               </p>
             </article>
           );

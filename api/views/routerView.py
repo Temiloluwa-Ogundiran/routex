@@ -35,6 +35,7 @@ async def get_router_dashboard(
     admin: Admin = Depends(adminService.get_current_admin),
 ):
     del admin
+    await gatewayHealthService.refresh_gateway_health_snapshots(session)
     return await routerAnalyticsService.get_dashboard_summary(session)
 
 
@@ -47,6 +48,7 @@ async def get_router_gateways(
     admin: Admin = Depends(adminService.get_current_admin),
 ):
     del admin
+    await gatewayHealthService.refresh_gateway_health_snapshots(session)
     return await routerAnalyticsService.get_gateway_health_summary(session)
 
 

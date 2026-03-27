@@ -170,7 +170,7 @@ export function DashboardConsole({
             <h1>Watch RouteX move traffic before conversion drops.</h1>
             <p>
               Gateway health, routed transactions, failover recovery, and manual
-              override controls live in one focused ops view.
+              activation controls live in one focused ops view.
             </p>
           </div>
 

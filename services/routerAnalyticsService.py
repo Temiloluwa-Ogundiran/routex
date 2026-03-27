@@ -15,11 +15,19 @@ import services.routingService as routingService
 async def get_gateway_health_summary(session: AsyncSession) -> list[dict]:
     await routingService.ensure_processor_catalog(session)
 
-    processors_result = await session.execute(
-        select(Processor).order_by(Processor.priority_weight.desc(), Processor.code.asc())
-    )
+    processors_result = await session.execute(select(Processor).order_by(Processor.code.asc()))
     processors = processors_result.scalars().all()
     snapshots = await gatewayHealthService.get_gateway_snapshots(session)
+    ranked_processors = sorted(
+        processors,
+        key=lambda processor: (
+            not bool(processor.is_active),
+            not gatewayHealthService.is_gateway_available(snapshots.get(processor.code)),
+            -routingService._score_processor(processor, snapshots.get(processor.code)),
+            float(getattr(snapshots.get(processor.code), "p95_latency_ms", 0.0) or 0.0),
+            processor.code,
+        ),
+    )
 
     return [
         {
@@ -36,7 +44,7 @@ async def get_gateway_health_summary(session: AsyncSession) -> list[dict]:
             "circuit_state": getattr(snapshots.get(processor.code), "circuit_state", "unknown"),
             "last_checked_at": getattr(snapshots.get(processor.code), "last_checked_at", None),
         }
-        for processor in processors
+        for processor in ranked_processors
     ]
 
 

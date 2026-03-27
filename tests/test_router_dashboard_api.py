@@ -175,8 +175,9 @@ class TestRouterDashboardApi:
         payload = response.json()
         assert payload["gateway_code"] == "pstk"
         assert payload["is_active"] is False
-        assert payload["priority_weight"] == 1.4
+        assert payload["priority_weight"] == 1.0
         assert processor.is_active is False
+        assert processor.priority_weight == 1.0
 
     async def test_admin_can_refresh_gateway_health(
         self,

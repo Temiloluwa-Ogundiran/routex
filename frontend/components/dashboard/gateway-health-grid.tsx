@@ -12,7 +12,7 @@ export function GatewayHealthGrid({ gateways }: GatewayHealthGridProps) {
           <p className="section-kicker">Live Routing Signals</p>
           <h2>Gateway Health</h2>
         </div>
-        <p className="inline-link">Auto-sorted by priority and freshness.</p>
+        <p className="inline-link">Auto-ranked by live health and latency.</p>
       </div>
 
       <div className="dashboard-card-grid">
@@ -48,8 +48,8 @@ export function GatewayHealthGrid({ gateways }: GatewayHealthGridProps) {
                 <dd>{gateway.timeout_rate_5m.toFixed(1)}%</dd>
               </div>
               <div>
-                <dt>Weight</dt>
-                <dd>{gateway.priority_weight.toFixed(2)}</dd>
+                <dt>Success 1h</dt>
+                <dd>{gateway.success_rate_1h.toFixed(1)}%</dd>
               </div>
             </dl>
 

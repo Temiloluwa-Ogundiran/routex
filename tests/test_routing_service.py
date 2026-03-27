@@ -107,6 +107,86 @@ class TestRoutingService:
         assert set(decision.score_breakdown) == {"fltw", "pstk", "kora"}
         assert decision.rejected_gateways["isw"] == "processor_inactive"
 
+    async def test_routing_scores_ignore_priority_weight_bias_and_rank_by_health_then_latency(
+        self,
+        async_session,
+    ):
+        processors = [
+            Processor(
+                code="pstk",
+                name="Paystack",
+                charge=1.5,
+                markup=0.0,
+                priority_weight=5.0,
+                supports_collections=True,
+                supports_payouts=True,
+                is_active=True,
+            ),
+            Processor(
+                code="fltw",
+                name="Flutterwave",
+                charge=1.4,
+                markup=0.0,
+                priority_weight=0.1,
+                supports_collections=True,
+                supports_payouts=True,
+                is_active=True,
+            ),
+            Processor(
+                code="kora",
+                name="Korapay",
+                charge=1.3,
+                markup=0.0,
+                priority_weight=1.0,
+                supports_collections=True,
+                supports_payouts=True,
+                is_active=False,
+            ),
+            Processor(
+                code="isw",
+                name="Interswitch",
+                charge=1.6,
+                markup=0.0,
+                priority_weight=1.0,
+                supports_collections=True,
+                supports_payouts=False,
+                is_active=False,
+            ),
+        ]
+
+        snapshots = [
+            GatewayHealthSnapshot(
+                gateway_code="pstk",
+                success_rate_5m=93.0,
+                success_rate_1h=91.0,
+                timeout_rate_5m=1.5,
+                p95_latency_ms=980.0,
+                circuit_state="closed",
+            ),
+            GatewayHealthSnapshot(
+                gateway_code="fltw",
+                success_rate_5m=98.0,
+                success_rate_1h=96.0,
+                timeout_rate_5m=0.5,
+                p95_latency_ms=760.0,
+                circuit_state="closed",
+            ),
+        ]
+
+        async_session.add_all(processors + snapshots)
+        await async_session.commit()
+
+        decision = await routingService.build_routing_decision(
+            session=async_session,
+            operation="collection",
+            currency="NGN",
+            amount=5000,
+            merchant_id="m_123",
+        )
+
+        assert decision.selected_gateway == "fltw"
+        assert decision.ranked_gateways == ["fltw", "pstk"]
+
     async def test_selects_highest_scoring_eligible_gateway(
         self,
         async_session,

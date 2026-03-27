@@ -1,12 +1,16 @@
+import json
 from unittest.mock import patch
 
 import pytest
 from sqlalchemy import select
+from cryptography.fernet import Fernet
 
 from database.models.RoutingAttempt import RoutingAttempt
+from database.models.Token import Token
 from database.models.Transaction import Transaction
 from enums.eventEnums import EventType
 from enums.transactionEnums import TransactionStatus, TransactionType
+from services import webhookService
 
 
 @pytest.mark.asyncio
@@ -88,3 +92,60 @@ class TestWebhookDelivery:
         mock_dispatch.assert_called_once()
         assert mock_dispatch.call_args.kwargs["transaction"].id == transaction.id
         assert mock_dispatch.call_args.kwargs["event"] == EventType.CHARGE_SUCCESS
+
+    @patch("services.celeryService.send_webhook_task.delay")
+    async def test_webhook_dispatch_queues_celery_delivery_with_aggregator_signature_only(
+        self,
+        mock_delay,
+        async_session,
+        test_merchant,
+        test_customer,
+        monkeypatch,
+    ):
+        agg_secret = "N9uM0cgA3-4W1hLqgNGVZy2lxwM21O08OZl5sB2h_OI="
+        raw_secret = "test_webhook_secret_123"
+        monkeypatch.setattr("settings.AGG_SECRET", agg_secret)
+
+        transaction = Transaction(
+            merchant_id=test_merchant.id,
+            customer_id=test_customer.id,
+            amount=2500.0,
+            currency="NGN",
+            type=TransactionType.CREDIT.value,
+            status=TransactionStatus.SUCCESS.value,
+            mode="test",
+            processor="fltw",
+            selected_gateway="fltw",
+            reference="WEBHOOK_QUEUE_001",
+            processor_reference="PROC_WEBHOOK_QUEUE_001",
+            notification_url="https://merchant.example.com/webhook",
+            metadata_payload={"order_id": "WEBHOOK_QUEUE_001"},
+        )
+        async_session.add(transaction)
+        token_obj = Token(
+            merchant_id=test_merchant.id,
+            secret_key=Fernet(agg_secret).encrypt(raw_secret.encode()).decode(),
+            public_key=Fernet(agg_secret).encrypt(b"public_key").decode(),
+            type="test",
+            is_active=True,
+        )
+        async_session.add(token_obj)
+        await async_session.commit()
+        await async_session.refresh(transaction)
+
+        webhookService.dispatch(
+            transaction=transaction,
+            event=EventType.CHARGE_SUCCESS,
+            token=token_obj,
+        )
+
+        mock_delay.assert_called_once()
+        kwargs = mock_delay.call_args.kwargs
+        assert kwargs["url"] == "https://merchant.example.com/webhook"
+        assert kwargs["event_type"] == EventType.CHARGE_SUCCESS.value
+        assert set(kwargs["headers"]) == {"Content-Type", "X-AGGREGATOR-SIGNATURE"}
+
+        payload = json.loads(kwargs["payload_str"])
+        assert payload["event"] == EventType.CHARGE_SUCCESS.value
+        assert payload["reference"] == "WEBHOOK_QUEUE_001"
+        assert payload["data"]["customer"]["email"] == test_customer.email
