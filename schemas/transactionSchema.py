@@ -42,12 +42,16 @@ class BulkPayoutDetailResponse(BulkPayoutResponse):
 class PayoutCustomerDetails(BaseModel):
     account_number: str
     bank_code: str
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
 
 class PayoutRequest(BaseModel):
     merchant_id: str
+    reference: Optional[str] = None
     amount: float
     currency:  TransactionCurrency = TransactionCurrency.NIGERIA.value
     customer: PayoutCustomerDetails
+    mode: TokenMode = TokenMode.TEST
     narration: Optional[str] = None
 
 class BulkPayoutCustomerDetails(BaseModel):

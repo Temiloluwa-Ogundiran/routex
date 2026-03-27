@@ -72,7 +72,12 @@ def normalize_gateway_code(gateway_code: str | None) -> str | None:
     normalized = gateway_code.strip().lower()
     if not normalized:
         return None
-    if not TransactionProcessor.is_valid(normalized):
+    if normalized not in {
+        TransactionProcessor.KORA.value,
+        TransactionProcessor.PAYSTACK.value,
+        TransactionProcessor.FLUTTERWAVE.value,
+        TransactionProcessor.INTERSWITCH.value,
+    }:
         raise ValueError("Invalid gateway code")
     return normalized
 

@@ -8,7 +8,7 @@ from database.models.RoutingAttempt import RoutingAttempt
 from database.models.RoutingDecisionAudit import RoutingDecisionAudit
 from database.models.Transaction import Transaction
 from external_services import interswitchService
-from enums.transactionEnums import TransactionStatus, TransactionType
+from enums.transactionEnums import TransactionProcessor, TransactionStatus, TransactionType
 from services import routingService
 
 
@@ -231,16 +231,8 @@ class TestRoutingApi:
 
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)
     @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)
-    @patch("services.emailService.send_merchant_receipt_email")
-    @patch("services.emailService.send_customer_receipt_email")
-    @patch("external_services.koraService.resolve_account", new_callable=AsyncMock)
-    @patch("external_services.koraService.post_request", new_callable=AsyncMock)
-    async def test_payout_returns_selected_gateway_and_router_metadata(
+    async def test_payout_simulates_internal_balance_deduction(
         self,
-        mock_post_request,
-        mock_resolve_account,
-        mock_send_customer_receipt,
-        mock_send_merchant_receipt,
         mock_get_merchant,
         mock_verify_token,
         client,
@@ -248,14 +240,8 @@ class TestRoutingApi:
         test_merchant,
         test_wallet,
     ):
-        del test_wallet
-        del mock_send_customer_receipt
-        del mock_send_merchant_receipt
-
         mock_verify_token.return_value = True
         mock_get_merchant.return_value = test_merchant
-        mock_resolve_account.return_value = (True, "Ada Lovelace")
-        mock_post_request.return_value = ({"status": True}, 200)
 
         response = await client.post(
             "/api/v1/payout",
@@ -278,10 +264,24 @@ class TestRoutingApi:
 
         assert response.status_code == 200
         payload = response.json()
-        assert payload["selected_gateway"] == "kora"
-        assert payload["routing"]["fallback_order"][0] == "kora"
-        assert payload["gateway_reference"]
+        assert payload["message"] == "Payout simulated successfully"
+        assert "selected_gateway" not in payload
+        assert "routing" not in payload
+        assert "gateway_reference" not in payload
         assert payload["data"]["reference"] == "ROUTE_PAYOUT_001"
+        assert payload["data"]["balance_before"] == 10000.0
+        assert payload["data"]["balance_after"] == 8940.0
+        assert payload["data"]["total_deducted"] == 1060.0
+
+        transaction = await async_session.scalar(
+            select(Transaction).where(Transaction.reference == "ROUTE_PAYOUT_001")
+        )
+        assert transaction is not None
+        assert transaction.processor == TransactionProcessor.INTERNAL
+        assert transaction.selected_gateway == "internal"
+
+        await async_session.refresh(test_wallet)
+        assert test_wallet.balance == 8940.0
 
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)
     @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)

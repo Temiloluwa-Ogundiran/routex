@@ -7,7 +7,7 @@ playground: interactive
 
 # Payouts
 
-Create a payout request with one RouteX endpoint and let RouteX pick the eligible payout path.
+Create a payout request and RouteX deducts it from the merchant balance directly.
 
 ## Request
 
@@ -50,17 +50,24 @@ Create a payout request with one RouteX endpoint and let RouteX pick the eligibl
 ```json
 {
   "status": true,
-  "message": "Payout processed successfully",
+  "message": "Payout simulated successfully",
   "reference": "PAYOUT_1001",
-  "selected_gateway": "kora",
-  "gateway_reference": "KORA_PROC_001",
   "data": {
     "amount": 5000,
+    "currency": "NGN",
     "fee": 50,
+    "total_deducted": 5050,
+    "balance_before": 20000,
+    "balance_after": 14950,
     "reference": "PAYOUT_1001",
     "customer": {
       "email": "recipient@example.com",
       "name": "Grace"
+    },
+    "destination": {
+      "bank_code": "044",
+      "bank_name": "Access Bank",
+      "account_number": "0123456789"
     }
   }
 }
@@ -69,5 +76,5 @@ Create a payout request with one RouteX endpoint and let RouteX pick the eligibl
 ## Notes
 
 - Payouts use the same merchant auth flow as collections.
-- RouteX keeps the merchant-facing reference and gateway reference separate.
-- If you provide `notification_url`, RouteX delivers normalized payout events there.
+- RouteX checks the wallet first, then records the payout internally.
+- No external gateway is used for the payout flow.

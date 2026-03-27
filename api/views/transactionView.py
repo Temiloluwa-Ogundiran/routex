@@ -147,43 +147,75 @@ async def payout(
     if not await userService.user_in_merchant(session= session, merchant= merchant, user= user):
         raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "User does not belong to merchant")
     
-    if not merchant.is_verified :
+    if data.mode == tokenEnums.TokenMode.LIVE and not merchant.is_verified:
         raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "Merchant not authorized for this operation")
 
-    # Get wallet for balance check and charge calculation
     wallet = await walletService.get_wallet(
         session=session,
         merchant_id=merchant.id,
         currency=data.currency,
-        mode=tokenEnums.TokenMode.LIVE.value
+        mode=data.mode.value
     )
 
     if not wallet:
-        raise HTTPException(status_code=400, detail=f"Wallet not found for {data.currency} in LIVE mode")
+        raise HTTPException(status_code=400, detail=f"Wallet not found for {data.currency} in {data.mode.value.upper()} mode")
 
-    # Calculate charge using wallet's charge configuration
     transaction_charge = await walletService.get_payout_charge(wallet=wallet, amount=data.amount)
+    total_deducted = data.amount + transaction_charge
 
-    if wallet.balance < data.amount + transaction_charge:
+    if wallet.balance < total_deducted:
         raise HTTPException(status_code= status.HTTP_400_BAD_REQUEST, detail= "Insufficient balance")
-    
-    trans_status, message, httpstatus, txn_id = await koraService.payout(
-        session= session,
-        merchant= merchant,
-        acc_number= data.customer.account_number,
-        bank_code= data.customer.bank_code,
-        amount= data.amount,
-        email= merchant.email,
-        reference= await transactionService.generate_processor_reference(session= session),
-        mode = tokenEnums.TokenMode.LIVE.value,
-        narration= data.narration,
-        currency= data.currency
+
+    reference = data.reference or f"PAYOUT_{(await transactionService.generate_processor_reference(session=session)).upper()}"
+    recipient_email = data.customer.email or f"recipient-{reference.lower()}@payout.local"
+    customer, _ = await customerService.add_get_or_create_customer(
+        session=session,
+        email=recipient_email,
+        merchant=merchant,
+    )
+    if data.customer.name:
+        customer.name = data.customer.name
+
+    transaction, balance_before, balance_after = await transactionService.create_simulated_payout(
+        session=session,
+        merchant=merchant,
+        wallet=wallet,
+        amount=data.amount,
+        charge=transaction_charge,
+        reference=reference,
+        currency=data.currency,
+        mode=data.mode.value,
+        destination_account_number=data.customer.account_number,
+        destination_bank_code=data.customer.bank_code,
+        destination_bank_name=bank_obj.name,
+        customer=customer,
+        customer_name=data.customer.name,
+        narration=data.narration,
     )
     
     return JSONResponse(content= {
-        "status": trans_status,
-        "message": message
-    }, status_code= httpstatus)
+        "status": True,
+        "message": "Payout simulated successfully",
+        "reference": reference,
+        "data": {
+            "amount": data.amount,
+            "currency": data.currency,
+            "fee": transaction_charge,
+            "total_deducted": total_deducted,
+            "balance_before": balance_before,
+            "balance_after": balance_after,
+            "reference": reference,
+            "customer": {
+                "email": customer.email,
+                "name": customer.name or "Recipient",
+            },
+            "destination": {
+                "bank_code": data.customer.bank_code,
+                "bank_name": bank_obj.name,
+                "account_number": data.customer.account_number,
+            },
+        }
+    }, status_code= status.HTTP_200_OK)
     
 @transaction_router.post("/bulk-payout")
 async def bulk_payout(

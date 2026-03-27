@@ -13,7 +13,7 @@ import uuid
 from schemas.transactionSchema import TransactionResponse
 import json
 
-PROCESSOR_CHOICES = ['fltw', 'pstk', 'kora', 'isw']
+PROCESSOR_CHOICES = ['fltw', 'pstk', 'kora', 'isw', 'internal']
 PROCESSOR_CHARGE_PRIORITY = ['kora', 'pstk', 'fltw', 'isw']
 
 
@@ -138,6 +138,63 @@ async def create_transaction(session: AsyncSession, merchant: Merchant, processo
     )
 
     return await save_transaction(session=session, transaction=transaction)
+
+
+async def create_simulated_payout(
+    session: AsyncSession,
+    merchant: Merchant,
+    wallet,
+    amount: float,
+    charge: float,
+    reference: str,
+    currency: str,
+    mode: str,
+    destination_account_number: str,
+    destination_bank_code: str,
+    destination_bank_name: str,
+    customer: Customer | None = None,
+    customer_name: str | None = None,
+    narration: str | None = None,
+    metadata_payload: Union[List, Dict, None] = None,
+) -> tuple[Transaction, float, float]:
+    total_deducted = float(amount) + float(charge)
+    balance_before = float(wallet.balance)
+    if balance_before < total_deducted:
+        raise ValueError("Insufficient balance")
+
+    transaction = normalize_transaction_enums(
+        Transaction(
+            type=TransactionType.DEBIT,
+            processor=TransactionProcessor.INTERNAL,
+            merchant_id=merchant.id,
+            customer_id=customer.id if customer else None,
+            wallet_id=wallet.id,
+            currency=currency,
+            mode=mode,
+            amount=amount,
+            charge=charge,
+            processor_charge=0.0,
+            reference=reference,
+            processor_reference=await generate_processor_reference(session=session),
+            narration=narration,
+            metadata_payload=metadata_payload,
+            selected_gateway="internal",
+            status=TransactionStatus.SUCCESS,
+            details={
+                "account_number": destination_account_number,
+                "bank_code": destination_bank_code,
+                "bank": destination_bank_name,
+                "customer_name": customer_name or (customer.name if customer else "N/A"),
+            },
+        )
+    )
+
+    wallet.balance = balance_before - total_deducted
+    session.add(transaction)
+    await session.commit()
+    await session.refresh(transaction)
+    await session.refresh(wallet)
+    return transaction, balance_before, float(wallet.balance)
 
 async def get_transaction_by_id(session: AsyncSession, id: int) -> Transaction:
     stmt = select(Transaction).where(Transaction.id == id)

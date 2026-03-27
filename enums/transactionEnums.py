@@ -34,6 +34,7 @@ class TransactionProcessor(StrEnum):
     KORA = 'kora'
     PAYSTACK = 'pstk'
     INTERSWITCH = 'isw'
+    INTERNAL = 'internal'
 
     @classmethod
     def is_valid(cls, value: str) -> bool:

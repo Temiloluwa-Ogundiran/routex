@@ -1,18 +1,12 @@
-from fastapi import APIRouter, HTTPException, Depends, Security, Request, Response, status
+from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from services import merchantService, tokenService, transactionService, customerService, walletService, routingService
-from external_services import koraService, paystackService, flutterwaveService
-from external_services.adapters import get_adapter
-from schemas.merchantSchema import MerchantCreateRequest, MerchantResponse, MerchantDetailResponse, MerchantGetRequest
-from tortoise.exceptions import DoesNotExist
-import json
+from services import merchantService, tokenService, transactionService, customerService, walletService
 from fastapi.responses import JSONResponse
 from schemas.v1Schema import *
-from enums import transactionEnums, tokenEnums
+from enums import tokenEnums
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.session import get_async_session
 from lib import bank
-from database.models.Transaction import Transaction
 payout_router = APIRouter()
 security = HTTPBearer()  # this enables the "Authorize" button 
 
@@ -70,31 +64,6 @@ security = HTTPBearer()  # this enables the "Authorize" button
                 }
             }
         },
-        409: {
-            "description": "Conflict - invalid account",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "invalid_account": {
-                            "summary": "Invalid account conflict",
-                            "value": {
-                                "status": False,
-                                "message": "Invalid account.",
-                                "data": {
-                                    "amount": 5000,
-                                    "fee": 50,
-                                    "reference": "PAYOUT_12346",
-                                    "customer": {
-                                        "email": "user@example.com",
-                                        "name": "string"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         422: {
             "model": PayoutErrorResponse,
             "description": "Invalid request, e.g., amount less than minimum 200",
@@ -117,29 +86,27 @@ async def payout(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     session: AsyncSession = Depends(get_async_session)
 ):
-    token = credentials.credentials  # clean token string (no "Bearer " prefix)
+    token = credentials.credentials
     if payload.amount < 200:
         raise HTTPException(status_code= status.HTTP_422_UNPROCESSABLE_ENTITY, detail= "Amount must be greater than 200")
-    
-    merchant_id = token.split('_')[-1]
-    mode = token.split('_')[1]
-    
-    merchant = await merchantService.get_by_id_or_email(session= session, id=merchant_id)
-    bank_obj = bank.find_bank_by_code(code= payload.destination.bank_code)
-
-    if not bank_obj:
-        raise HTTPException(status_code=403, detail="Invalid bank code provided")
 
     if not await tokenService.verify_token(session= session, provided_token=token):
         raise HTTPException(status_code=403, detail="Invalid payment secret key")
-    
+
+    merchant_id = token.split('_')[-1]
+    mode = token.split('_')[1]
+
+    merchant = await merchantService.get_by_id_or_email(session= session, id=merchant_id)
     if not merchant:
         raise HTTPException(status_code=404, detail="Merchant not found")
-    
+
+    bank_obj = bank.find_bank_by_code(code= payload.destination.bank_code)
+    if not bank_obj:
+        raise HTTPException(status_code=403, detail="Invalid bank code provided")
+
     if await transactionService.get_transaction_by_merchant_and_reference(merchant= merchant, reference= payload.reference, session= session):
         raise HTTPException(status_code = 400, detail = "Transaction reference not unique for merchant")
 
-    # Get wallet for balance check and charge calculation
     wallet = await walletService.get_wallet(
         session=session,
         merchant_id=merchant.id,
@@ -150,53 +117,58 @@ async def payout(
     if not wallet:
         raise HTTPException(status_code=400, detail=f"Wallet not found for {payload.currency} in {mode} mode")
 
-    # Calculate charge using wallet's charge configuration
-    amount_charged = await walletService.get_payout_charge(wallet=wallet, amount=payload.amount)
+    payout_fee = await walletService.get_payout_charge(wallet=wallet, amount=payload.amount)
+    total_deducted = payout_fee + payload.amount
+    if wallet.balance < total_deducted:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient balance")
 
-    if wallet.balance < amount_charged + payload.amount:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient balance")    
-    decision = await routingService.build_routing_decision(
+    customer, _ = await customerService.add_get_or_create_customer(
         session=session,
-        operation="payout",
-        currency=str(payload.currency),
+        email=payload.customer.email,
+        merchant=merchant,
+    )
+
+    if payload.customer.name:
+        customer.name = payload.customer.name
+
+    _, balance_before, balance_after = await transactionService.create_simulated_payout(
+        session=session,
+        merchant=merchant,
+        wallet=wallet,
         amount=payload.amount,
-        merchant_id=merchant.id,
+        charge=payout_fee,
+        reference=payload.reference,
+        currency=payload.currency,
+        mode=mode,
+        destination_account_number=payload.destination.account_number,
+        destination_bank_code=payload.destination.bank_code,
+        destination_bank_name=bank_obj.name,
+        customer=customer,
+        customer_name=payload.customer.name,
+        narration=payload.narration,
+        metadata_payload=payload.metadata,
     )
-    adapter = get_adapter(decision.selected_gateway)
-    payout_status, message, status_code, txn_id = await adapter.initiate_payout(
-        session= session, merchant= merchant, acc_number= payload.destination.account_number, 
-        bank_code= payload.destination.bank_code, amount = payload.amount, email= payload.customer.email,
-        reference = payload.reference, currency = payload.currency, 
-        metadata= payload.metadata, narration= payload.narration, mode= mode
-    )
-
-    transaction: Transaction = await transactionService.get_transaction_by_id(session=session, id=txn_id)
-    audit, _ = await routingService.record_routing_result(
-        session=session,
-        transaction=transaction,
-        decision=decision,
-        operation="payout",
-        status="success" if payout_status and status_code == 200 else "failed",
-        gateway_reference=transaction.processor_reference,
-        error_message=None if payout_status and status_code == 200 else message,
-    )
-    
-    is_valid, customer_name = await koraService.resolve_account(acc_number=payload.destination.account_number, bank= bank_obj, currency= payload.currency)
 
     return JSONResponse(content= {
-        'status' : payout_status,
-        'message': message,
+        'status' : True,
+        'message': "Payout simulated successfully",
         'reference': payload.reference,
-        'selected_gateway': decision.selected_gateway,
-        'gateway_reference': transaction.processor_reference,
-        'routing': routingService.build_routing_metadata(audit.decision_id, decision),
         'data': {
             'amount': payload.amount,
-            'fee': amount_charged,
+            'currency': payload.currency,
+            'fee': payout_fee,
+            'total_deducted': total_deducted,
+            'balance_before': balance_before,
+            'balance_after': balance_after,
             'reference': payload.reference,
             'customer':{
                 'email': payload.customer.email,
-                'name': payload.customer.name if payload.customer.name else customer_name
-            }
+                'name': payload.customer.name or customer.name or "Recipient"
+            },
+            'destination': {
+                'bank_code': payload.destination.bank_code,
+                'bank_name': bank_obj.name,
+                'account_number': payload.destination.account_number,
+            },
         }
-    }, status_code= status_code)
+    }, status_code= status.HTTP_200_OK)

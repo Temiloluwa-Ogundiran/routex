@@ -13,16 +13,8 @@ class TestV1PayoutEndpoint:
     @patch('services.merchantService.get_by_id_or_email')
     @patch('services.walletService.get_wallet')
     @patch('services.walletService.get_payout_charge')
-    @patch('services.emailService.send_merchant_receipt_email')
-    @patch('services.emailService.send_customer_receipt_email')
-    @patch('external_services.koraService.resolve_account')
-    @patch('external_services.koraService.post_request')
     async def test_payout_success(
         self,
-        mock_post_request,
-        mock_resolve_account,
-        mock_send_customer_receipt,
-        mock_send_merchant_receipt,
         mock_get_payout_charge,
         mock_get_wallet,
         mock_get_merchant,
@@ -31,14 +23,12 @@ class TestV1PayoutEndpoint:
         test_merchant,
         test_wallet
     ):
-        """Test successful payout request"""
+        """Test successful payout simulation deducts merchant balance internally."""
         # Setup mocks
         mock_verify_token.return_value = True
         mock_get_merchant.return_value = test_merchant
         mock_get_wallet.return_value = test_wallet
         mock_get_payout_charge.return_value = 60.0
-        mock_resolve_account.return_value = (True, "Test User")
-        mock_post_request.return_value = ({"status": True}, 200)
 
         payout_data = {
             "reference": "TEST_REF_001",
@@ -63,8 +53,13 @@ class TestV1PayoutEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == True
-        assert "message" in data
-        assert data["selected_gateway"] == "kora"
+        assert data["message"] == "Payout simulated successfully"
+        assert data["reference"] == "TEST_REF_001"
+        assert "selected_gateway" not in data
+        assert "gateway_reference" not in data
+        assert data["data"]["balance_before"] == 10000.0
+        assert data["data"]["balance_after"] == 8940.0
+        assert data["data"]["total_deducted"] == 1060.0
 
     @patch('services.tokenService.verify_token')
     @patch('services.merchantService.get_by_id_or_email')

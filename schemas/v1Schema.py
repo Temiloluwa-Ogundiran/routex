@@ -60,23 +60,29 @@ class PayoutRequest(BaseModel):
 # --- Success response schema ---
 class PayoutResponse(BaseModel):
     status: bool = Field(..., example=True, description="Indicates if the payout was successful")
-    message: str = Field(..., example="Payout processed successfully", description="Human-readable message")
+    message: str = Field(..., example="Payout simulated successfully", description="Human-readable message")
     reference: Optional[str] = Field(None, example="PAYOUT_123456", description="Merchant-facing payout reference")
-    selected_gateway: Optional[str] = Field(None, example="kora", description="Gateway selected by the router")
-    gateway_reference: Optional[str] = Field(None, example="KORA_PROC_001", description="Gateway-facing reference for the routed payout")
-    routing: Optional[RoutingMetadata] = Field(None, description="Routing decision details for the payout")
     data: Dict[str, Any] = Field(
         ..., 
         example={
             "amount": 5000.0,
+            "currency": "NGN",
             "fee": 50.0,
+            "total_deducted": 5050.0,
+            "balance_before": 20000.0,
+            "balance_after": 14950.0,
             "reference": "PAYOUT_123456",
             "customer": {
                 "email": "customer@example.com",
                 "name": "John Doe"
+            },
+            "destination": {
+                "bank_code": "044",
+                "bank_name": "Access Bank",
+                "account_number": "0123456789"
             }
         },
-        description="Details of the payout including fees and customer information"
+        description="Details of the simulated payout, including the wallet deduction summary"
     )
 
 # --- Error response schema ---
