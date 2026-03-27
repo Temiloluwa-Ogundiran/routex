@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import AsyncMock, patch
 
 import httpx
@@ -101,6 +102,61 @@ def test_build_verify_query_prefers_interswitch_reference():
 
     assert "transactionreference=ISW_BILL_REF_004" in query
     assert "amount=250000" in query
+
+
+@pytest.mark.asyncio
+@patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+async def test_verify_nin_identity_uses_marketplace_defaults_and_payload(
+    mock_post,
+    monkeypatch,
+):
+    monkeypatch.setattr(interswitchService, "INTERSWITCH_CLIENT_ID", "CLIENT123")
+    monkeypatch.setattr(interswitchService, "INTERSWITCH_SECRET_KEY", "SECRET456")
+    monkeypatch.setattr(interswitchService, "INTERSWITCH_IDENTITY_VERIFY_URL", None)
+
+    mock_post.side_effect = [
+        _FakeHttpxResponse({"access_token": "test-access-token"}),
+        _FakeHttpxResponse(
+            {
+                "status": "VERIFIED",
+                "reference": "ISW|KYC|NIN|20260327|ABC123",
+                "firstName": "Ada",
+                "lastName": "Lovelace",
+            }
+        ),
+    ]
+
+    response = await interswitchService.verify_nin_identity(
+        nin="12345678901",
+        first_name="Ada",
+        last_name="Lovelace",
+        phone="+2348012345678",
+        birth_date=date(1990, 12, 10),
+        mode="test",
+    )
+
+    assert response["status"] == "VERIFIED"
+    token_call = mock_post.await_args_list[0]
+    assert (
+        token_call.args[0]
+        == "https://qa.interswitchng.com/passport/oauth/token"
+    )
+    assert token_call.kwargs["headers"]["Content-Type"] == "application/x-www-form-urlencoded"
+    assert token_call.kwargs["data"] == {
+        "scope": "profile",
+        "grant_type": "client_credentials",
+    }
+
+    verify_call = mock_post.await_args_list[1]
+    assert (
+        verify_call.args[0]
+        == "https://api-marketplace-routing.k8.isw.la/marketplace-routing/api/v1/verify/identity/nin"
+    )
+    assert verify_call.kwargs["json"] == {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "nin": "12345678901",
+    }
 
 
 @pytest.mark.asyncio

@@ -34,10 +34,13 @@ INTERSWITCH_QA_CHECKOUT_URL = "https://newwebpay.qa.interswitchng.com/collection
 INTERSWITCH_LIVE_CHECKOUT_URL = "https://newwebpay.interswitchng.com/collections/w/pay"
 INTERSWITCH_QA_TOKEN_URL = "https://passport.k8.isw.la/passport/oauth/token?grant_type=client_credentials"
 INTERSWITCH_LIVE_TOKEN_URL = "https://passport.interswitchng.com/passport/oauth/token?grant_type=client_credentials"
+INTERSWITCH_QA_IDENTITY_TOKEN_URL = "https://qa.interswitchng.com/passport/oauth/token"
+INTERSWITCH_LIVE_IDENTITY_TOKEN_URL = "https://passport.interswitchng.com/passport/oauth/token"
 INTERSWITCH_QA_PAYBILL_URL = "https://qa.interswitchng.com/paymentgateway/api/v1/paybill"
 INTERSWITCH_LIVE_PAYBILL_URL = "https://webpay.interswitchng.com/paymentgateway/api/v1/paybill"
 INTERSWITCH_QA_VERIFY_URL = "https://qa.interswitchng.com/collections/api/v1/gettransaction.json"
 INTERSWITCH_LIVE_VERIFY_URL = "https://webpay.interswitchng.com/collections/api/v1/gettransaction.json"
+INTERSWITCH_QA_IDENTITY_VERIFY_URL = "https://api-marketplace-routing.k8.isw.la/marketplace-routing/api/v1/verify/identity/nin"
 NGN_NUMERIC_CURRENCY = "566"
 
 
@@ -56,6 +59,10 @@ def has_full_credentials() -> bool:
         and INTERSWITCH_CLIENT_ID
         and INTERSWITCH_SECRET_KEY
     )
+
+
+def has_identity_credentials() -> bool:
+    return bool(INTERSWITCH_CLIENT_ID and INTERSWITCH_SECRET_KEY)
 
 
 def amount_to_minor(amount: float) -> int:
@@ -90,7 +97,15 @@ def get_identity_verify_url(mode: str) -> str | None:
     configured_url = (INTERSWITCH_IDENTITY_VERIFY_URL or "").strip()
     if configured_url:
         return configured_url
+    if mode == tokenEnums.TokenMode.TEST.value:
+        return INTERSWITCH_QA_IDENTITY_VERIFY_URL
     return None
+
+
+def get_identity_access_token_url(mode: str) -> str:
+    if mode == tokenEnums.TokenMode.LIVE.value:
+        return INTERSWITCH_LIVE_IDENTITY_TOKEN_URL
+    return INTERSWITCH_QA_IDENTITY_TOKEN_URL
 
 
 def get_checkout_bridge_url(processor_reference: str, server_base_url: str | None = None) -> str:
@@ -252,6 +267,38 @@ async def _request_access_token(mode: str) -> str:
     return access_token
 
 
+async def _request_identity_access_token(mode: str) -> str:
+    headers = {
+        "accept": "application/json",
+        "Authorization": _build_basic_authorization_header(),
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    payload = {
+        "scope": "profile",
+        "grant_type": "client_credentials",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.post(
+                get_identity_access_token_url(mode),
+                headers=headers,
+                data=payload,
+            )
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise ValueError(
+            f"Interswitch identity access token request failed: {exc.response.text}"
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise ValueError("Interswitch identity access token request failed.") from exc
+
+    response_payload = response.json()
+    access_token = response_payload.get("access_token")
+    if not access_token:
+        raise ValueError("Interswitch did not return an identity access token.")
+    return access_token
+
+
 async def _create_paybill_checkout(mode: str, access_token: str, payload: dict[str, str]) -> dict[str, Any]:
     headers = {
         "accept": "application/json",
@@ -343,7 +390,7 @@ async def verify_nin_identity(
     middle_name: str | None = None,
     email: str | None = None,
 ) -> dict[str, Any]:
-    if mode == tokenEnums.TokenMode.TEST.value and not get_identity_verify_url(mode):
+    if mode == tokenEnums.TokenMode.TEST.value and not has_identity_credentials():
         full_name = " ".join(part for part in (first_name, middle_name, last_name) if part).strip()
         reference = f"ISW|KYC|NIN|{datetime.now(timezone.utc).strftime('%Y%m%d')}|{nin[-4:]}"
         return {
@@ -366,28 +413,18 @@ async def verify_nin_identity(
             "nin_last4": nin[-4:],
         }
 
-    if not has_full_credentials():
+    if not has_identity_credentials():
         raise ValueError("Interswitch identity verification credentials are not configured.")
 
     identity_verify_url = get_identity_verify_url(mode)
     if not identity_verify_url:
         raise ValueError("Interswitch identity verification URL is not configured.")
 
-    access_token = await _request_access_token(mode)
+    access_token = await _request_identity_access_token(mode)
     payload = {
-        "type": "identity_verification",
-        "verificationRequests": [
-            {
-                "type": "NIN",
-                "identityNumber": nin,
-                "firstName": first_name,
-                "lastName": last_name,
-                "middleName": middle_name or "",
-                "phone": phone,
-                "birthDate": birth_date.isoformat(),
-                "email": email or "",
-            }
-        ],
+        "firstName": first_name,
+        "lastName": last_name,
+        "nin": nin,
     }
 
     headers = {
