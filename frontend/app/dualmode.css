@@ -975,6 +975,15 @@ body[data-rx-surface="public"] .auth-shell--otp .auth-shell__intro {
 body[data-rx-surface="public"] .auth-shell--otp #otp-code {
   letter-spacing: 0.45em;
   text-transform: uppercase;
+  color: var(--rx-ink);
+  -webkit-text-fill-color: var(--rx-ink);
+  caret-color: var(--rx-ink);
+  font-weight: 700;
+}
+
+body[data-rx-surface="public"] .auth-shell--otp #otp-code::placeholder {
+  color: rgba(9, 9, 11, 0.42);
+  -webkit-text-fill-color: rgba(9, 9, 11, 0.42);
 }
 
 body[data-rx-surface="public"] .payment-status-shell {
