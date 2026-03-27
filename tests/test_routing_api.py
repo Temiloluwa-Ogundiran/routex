@@ -20,20 +20,27 @@ def _merchant_headers(merchant_id: str) -> dict[str, str]:
 class TestRoutingApi:
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)
     @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)
-    @patch("external_services.flutterwaveService.post_request", new_callable=AsyncMock)
+    @patch("external_services.koraService.post_request", new_callable=AsyncMock)
+    @patch("external_services.koraService.celeryService.expire_transaction.apply_async")
     async def test_initiate_returns_selected_gateway_and_routing_summary(
         self,
+        mock_expire_transaction,
         mock_post_request,
         mock_get_merchant,
         mock_verify_token,
         client,
         async_session,
         test_merchant,
+        monkeypatch,
     ):
+        from external_services import koraService
+
+        del mock_expire_transaction
         mock_verify_token.return_value = True
         mock_get_merchant.return_value = test_merchant
+        monkeypatch.setattr(koraService, "SERVER_URL", "https://routexapi.example.com")
         mock_post_request.return_value = (
-            {"data": {"link": "https://checkout.example.com/fltw-session"}},
+            {"data": {"checkout_url": "https://checkout.example.com/kora-session"}},
             200,
         )
 
@@ -51,9 +58,9 @@ class TestRoutingApi:
 
         assert response.status_code == 200
         payload = response.json()
-        assert payload["selected_gateway"] == "fltw"
-        assert payload["routing"]["fallback_order"][0] == "fltw"
-        assert payload["checkout_url"] == "https://checkout.example.com/fltw-session"
+        assert payload["selected_gateway"] == "kora"
+        assert payload["routing"]["fallback_order"][0] == "kora"
+        assert payload["checkout_url"] == "https://checkout.example.com/kora-session"
         assert payload["gateway_reference"]
 
         transaction = await async_session.scalar(
@@ -63,9 +70,9 @@ class TestRoutingApi:
 
         assert mock_post_request.await_count == 1
         _, call_kwargs = mock_post_request.await_args
-        flutterwave_payload = json.loads(call_kwargs["data"])
-        assert flutterwave_payload["amount"] == 5000.0
-        assert flutterwave_payload["customer"]["email"] == "customer@test.com"
+        kora_payload = json.loads(call_kwargs["data"])
+        assert kora_payload["amount"] == 5000.0
+        assert kora_payload["customer"]["email"] == "customer@test.com"
 
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)
     @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)

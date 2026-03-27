@@ -59,6 +59,9 @@ DEFAULT_PROCESSOR_CATALOG = {
     },
 }
 
+KORA_GATEWAY_CODE = "kora"
+PREFERRED_GATEWAY_SCORE_MARGIN = 0.01
+
 
 def _validate_routing_request(currency: str, operation: str) -> None:
     if currency != "NGN":
@@ -115,6 +118,28 @@ def _score_processor(processor: Processor, snapshot) -> float:
         + (0.05 * max(0.0, 100.0 - (timeout_rate * 10.0))),
         2,
     )
+
+
+def _apply_gateway_precedence(score_breakdown: dict[str, float]) -> dict[str, float]:
+    if KORA_GATEWAY_CODE not in score_breakdown:
+        return score_breakdown
+
+    highest_other_score = max(
+        (
+            score
+            for gateway_code, score in score_breakdown.items()
+            if gateway_code != KORA_GATEWAY_CODE
+        ),
+        default=score_breakdown[KORA_GATEWAY_CODE],
+    )
+    score_breakdown[KORA_GATEWAY_CODE] = round(
+        max(
+            score_breakdown[KORA_GATEWAY_CODE],
+            highest_other_score + PREFERRED_GATEWAY_SCORE_MARGIN,
+        ),
+        2,
+    )
+    return score_breakdown
 
 
 def _requested_gateway_error(gateway_code: str, rejection_reason: str, operation: str) -> str:
@@ -199,6 +224,8 @@ async def build_routing_decision(
             continue
 
         score_breakdown[processor.code] = _score_processor(processor, snapshot)
+
+    score_breakdown = _apply_gateway_precedence(score_breakdown)
 
     if not score_breakdown:
         if rule_policy.matched_rule_count:
@@ -287,6 +314,8 @@ async def build_manual_routing_decision(
             continue
 
         score_breakdown[processor.code] = _score_processor(processor, snapshot)
+
+    score_breakdown = _apply_gateway_precedence(score_breakdown)
 
     requested_rejection = rejected_gateways.get(requested_gateway)
     if requested_rejection:

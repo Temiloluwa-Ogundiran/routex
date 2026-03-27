@@ -9,6 +9,86 @@ from services import routingService
 
 @pytest.mark.asyncio
 class TestRoutingService:
+    async def test_build_routing_decision_promotes_kora_to_top_score_when_eligible(
+        self,
+        async_session,
+    ):
+        processors = [
+            Processor(
+                code="pstk",
+                name="Paystack",
+                charge=1.5,
+                markup=0.0,
+                priority_weight=1.0,
+                supports_collections=True,
+                supports_payouts=True,
+                is_active=True,
+            ),
+            Processor(
+                code="fltw",
+                name="Flutterwave",
+                charge=1.4,
+                markup=0.0,
+                priority_weight=1.0,
+                supports_collections=True,
+                supports_payouts=True,
+                is_active=True,
+            ),
+            Processor(
+                code="kora",
+                name="Korapay",
+                charge=1.3,
+                markup=0.0,
+                priority_weight=1.0,
+                supports_collections=True,
+                supports_payouts=True,
+                is_active=True,
+            ),
+        ]
+
+        snapshots = [
+            GatewayHealthSnapshot(
+                gateway_code="pstk",
+                success_rate_5m=96.0,
+                success_rate_1h=94.0,
+                timeout_rate_5m=1.0,
+                p95_latency_ms=800.0,
+                circuit_state="closed",
+            ),
+            GatewayHealthSnapshot(
+                gateway_code="fltw",
+                success_rate_5m=99.0,
+                success_rate_1h=97.0,
+                timeout_rate_5m=0.5,
+                p95_latency_ms=700.0,
+                circuit_state="closed",
+            ),
+            GatewayHealthSnapshot(
+                gateway_code="kora",
+                success_rate_5m=85.0,
+                success_rate_1h=85.0,
+                timeout_rate_5m=0.0,
+                p95_latency_ms=1000.0,
+                circuit_state="closed",
+            ),
+        ]
+
+        async_session.add_all(processors + snapshots)
+        await async_session.commit()
+
+        decision = await routingService.build_routing_decision(
+            session=async_session,
+            operation="collection",
+            currency="NGN",
+            amount=5000,
+            merchant_id="m_123",
+        )
+
+        assert decision.selected_gateway == "kora"
+        assert decision.ranked_gateways[0] == "kora"
+        assert decision.score_breakdown["kora"] > decision.score_breakdown["fltw"]
+        assert decision.score_breakdown["kora"] > decision.score_breakdown["pstk"]
+
     async def test_builds_routing_decision_with_scores_and_rejections(
         self,
         async_session,
@@ -102,8 +182,8 @@ class TestRoutingService:
             merchant_id="m_123",
         )
 
-        assert decision.selected_gateway == "fltw"
-        assert decision.ranked_gateways == ["fltw", "pstk", "kora"]
+        assert decision.selected_gateway == "kora"
+        assert decision.ranked_gateways == ["kora", "fltw", "pstk"]
         assert set(decision.score_breakdown) == {"fltw", "pstk", "kora"}
         assert decision.rejected_gateways["isw"] == "processor_inactive"
 
@@ -280,9 +360,9 @@ class TestRoutingService:
             merchant_id="m_123",
         )
 
-        assert selected == "fltw"
-        assert ranked[0] == "fltw"
-        assert ranked == ["fltw", "pstk", "kora"]
+        assert selected == "kora"
+        assert ranked[0] == "kora"
+        assert ranked == ["kora", "fltw", "pstk"]
 
     async def test_returns_gateway_adapter_for_selected_processor(self):
         adapter = get_adapter("fltw")
