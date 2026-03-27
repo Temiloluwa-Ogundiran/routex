@@ -83,9 +83,24 @@ async def test_initialize_returns_provider_payment_url(
         select(Transaction).where(Transaction.reference == "ISW_INIT_001")
     )
     assert transaction is not None
-    assert paybill_call.kwargs["json"]["transactionReference"] == transaction.processor_reference
+    assert paybill_call.kwargs["json"]["transactionReference"] == transaction.reference
     assert transaction.processor == TransactionProcessor.INTERSWITCH.value
     assert transaction.status == TransactionStatus.PENDING.value
+    assert transaction.details["interswitch_reference"] == "ISW_BILL_REF_001"
+    assert transaction.details["interswitch_payment_url"] == checkout_url
+
+
+def test_build_verify_query_prefers_interswitch_reference():
+    transaction = Transaction(
+        amount=2500.0,
+        processor_reference="ISW_PROC_004",
+        details={"interswitch_reference": "ISW_BILL_REF_004"},
+    )
+
+    query = interswitchService.build_verify_query(transaction)
+
+    assert "transactionreference=ISW_BILL_REF_004" in query
+    assert "amount=250000" in query
 
 
 @pytest.mark.asyncio

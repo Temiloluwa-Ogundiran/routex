@@ -199,10 +199,15 @@ def build_bridge_html(form_action: str, form_fields: dict[str, str]) -> str:
 
 
 def build_verify_query(transaction: Transaction) -> str:
+    details = transaction.details if isinstance(transaction.details, dict) else {}
+    verify_reference = (
+        details.get("interswitch_reference")
+        or transaction.processor_reference
+    )
     return urlencode(
         {
             "merchantcode": INTERSWITCH_MERCHANT_CODE,
-            "transactionreference": transaction.processor_reference,
+            "transactionreference": verify_reference,
             "amount": amount_to_minor(transaction.amount),
         }
     )
@@ -325,7 +330,7 @@ async def initialize(
         "merchantCode": str(INTERSWITCH_MERCHANT_CODE),
         "payableCode": str(INTERSWITCH_PAY_ITEM_ID),
         "amount": str(amount_to_minor(transaction.amount)),
-        "transactionReference": str(transaction.processor_reference),
+        "transactionReference": str(transaction.reference),
         "redirectUrl": str(transaction.redirect_url),
         "customerId": customer.email,
         "currencyCode": NGN_NUMERIC_CURRENCY,
@@ -340,7 +345,7 @@ async def initialize(
     if not checkout_url:
         raise ValueError("Interswitch did not return a checkout URL.")
 
-    details = transaction.details if isinstance(transaction.details, dict) else {}
+    details = dict(transaction.details) if isinstance(transaction.details, dict) else {}
     details.update(
         {
             "interswitch_payment_url": checkout_url,

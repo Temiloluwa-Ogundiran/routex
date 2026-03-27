@@ -62,6 +62,58 @@ async def test_interswitch_return_redirects_to_status_page(
 
 @pytest.mark.asyncio
 @patch("external_services.interswitchService.get_request", new_callable=AsyncMock)
+async def test_interswitch_return_accepts_merchant_reference(
+    mock_get_request,
+    client,
+    async_session,
+    test_merchant,
+    test_customer,
+    monkeypatch,
+):
+    mock_get_request.return_value = (
+        {
+            "ResponseCode": "00",
+            "PaymentReference": "ISW_PAY_004",
+        },
+        200,
+    )
+    monkeypatch.setattr("external_services.interswitchService.INTERSWITCH_MERCHANT_CODE", "MX123")
+    monkeypatch.setattr("external_services.interswitchService.FRONTEND_BASE_URL", "https://routex.app")
+
+    transaction = Transaction(
+        merchant_id=test_merchant.id,
+        customer_id=test_customer.id,
+        amount=2500.0,
+        charge=0.0,
+        currency="NGN",
+        type=TransactionType.CREDIT.value,
+        status=TransactionStatus.PENDING.value,
+        mode="test",
+        processor=TransactionProcessor.INTERSWITCH.value,
+        selected_gateway="isw",
+        reference="ISW_RETURN_004",
+        processor_reference="ISW_PROC_004",
+        redirect_url="https://merchant.example.com/callback",
+        details={"interswitch_reference": "ISW_BILL_REF_004"},
+    )
+    async_session.add(transaction)
+    await async_session.commit()
+
+    response = await client.post(
+        "/api/v1/checkout/interswitch/return",
+        data={"transactionReference": "ISW_RETURN_004"},
+    )
+
+    assert response.status_code == 307
+    location = response.headers["location"]
+    assert location.startswith("https://merchant.example.com/callback?")
+    params = parse_qs(urlparse(location).query)
+    assert params["reference"] == ["ISW_RETURN_004"]
+    assert params["status"] == ["success"]
+
+
+@pytest.mark.asyncio
+@patch("external_services.interswitchService.get_request", new_callable=AsyncMock)
 async def test_interswitch_return_marks_pending_when_verify_unavailable(
     mock_get_request,
     client,

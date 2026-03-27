@@ -77,9 +77,9 @@ async def interswitch_checkout_return(
     if not processor_reference:
         raise HTTPException(status_code=400, detail="Transaction reference is required")
 
-    transaction = await transactionService.get_transaction_by_processor_reference(
+    transaction = await transactionService.get_transaction_by_any_reference(
         session=session,
-        processor_reference=str(processor_reference),
+        reference=str(processor_reference),
     )
     if not transaction or transaction.processor != TransactionProcessor.INTERSWITCH.value:
         raise HTTPException(status_code=404, detail="Transaction not found")
@@ -97,10 +97,14 @@ async def interswitch_checkout_return(
                 normalized_status,
             )
             transaction.status = normalized_status
-            transaction.details = {
-                "gateway": TransactionProcessor.INTERSWITCH.value,
-                "verify_response": verify_response,
-            }
+            details = dict(transaction.details) if isinstance(transaction.details, dict) else {}
+            details.update(
+                {
+                    "gateway": TransactionProcessor.INTERSWITCH.value,
+                    "verify_response": verify_response,
+                }
+            )
+            transaction.details = details
             session.add(transaction)
             await session.commit()
             await session.refresh(transaction)
