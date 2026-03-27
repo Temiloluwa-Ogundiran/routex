@@ -4,7 +4,12 @@ import Link from "next/link";
 import posthog from "posthog-js";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { docsHref, isExternalHref } from "../../lib/docs-url";
+import {
+  DOCS_LINK_REL,
+  DOCS_LINK_TARGET,
+  docsHref,
+  isExternalHref,
+} from "../../lib/docs-url";
 
 type SiteHeaderClientProps = {
   initialAuthHint: "guest" | "user" | "admin";
@@ -21,15 +26,6 @@ const BASE_NAV_ITEMS = [
   { label: "Product", href: "/#product" },
   { label: "Why RouteX", href: "/#route" },
   { label: "Docs", href: docsHref() },
-];
-
-const TICKER_ITEMS = [
-  "RouteX ships loud",
-  "Checkout ready",
-  "Signed webhooks",
-  "Manual override",
-  "Failover ready",
-  "One merchant contract",
 ];
 
 async function readJson(response: Response) {
@@ -100,7 +96,13 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
   function renderNavItem(item: { label: string; href: string }) {
     if (isExternalHref(item.href)) {
       return (
-        <a className="site-header__link" href={item.href} key={`${item.label}-${item.href}`}>
+        <a
+          className="site-header__link"
+          href={item.href}
+          key={`${item.label}-${item.href}`}
+          rel={DOCS_LINK_REL}
+          target={DOCS_LINK_TARGET}
+        >
           {item.label}
         </a>
       );
@@ -171,14 +173,6 @@ export function SiteHeaderClient({ initialAuthHint }: SiteHeaderClientProps) {
 
   return (
     <header className="site-header">
-      <div aria-hidden="true" className="site-header__ticker">
-        <div className="site-header__ticker-track">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, index) => (
-            <span key={`${item}-${index}`}>{item}</span>
-          ))}
-        </div>
-      </div>
-
       <div className="site-header__bar">
         <Link className="site-header__brand" href="/">
           <span aria-hidden="true" className="site-header__mark">

@@ -18,6 +18,8 @@ const rawDocsUrl = pickFirstNonEmptyString(
 );
 
 export const DOCS_URL = rawDocsUrl.replace(/\/+$/, "");
+export const DOCS_LINK_TARGET = "_blank";
+export const DOCS_LINK_REL = "noreferrer";
 
 export function docsHref(path = "") {
   const normalizedPath = path

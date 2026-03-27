@@ -5,14 +5,13 @@ test("public header renders the brutalist shell and routes guests into docs and 
 }) => {
   await page.goto("http://127.0.0.1:3000");
 
-  await expect(page.locator(".site-header__ticker")).toBeVisible();
   await expect(page.locator(".site-header__brand")).toContainText("RouteX");
   await expect(page.locator(".site-header__nav")).toContainText("Product");
   await expect(page.locator(".site-header__nav")).toContainText("Why RouteX");
   await expect(page.locator(".site-header__nav")).toContainText("Docs");
-
-  await page.locator(".site-header__nav").getByRole("link", { name: "Docs" }).click();
-  await expect(page).toHaveURL("http://127.0.0.1:3001/");
+  await expect(
+    page.locator(".site-header__nav").getByRole("link", { name: "Docs" }),
+  ).toHaveAttribute("target", "_blank");
 
   await page.goto("http://127.0.0.1:3000");
   await page.locator(".site-header").getByRole("link", { name: /get started/i }).click();
@@ -30,8 +29,10 @@ test("landing call-to-actions route into docs and signup", async ({ page }) => {
   await expect(page).toHaveURL(/\/signup$/);
 
   await page.goto("http://127.0.0.1:3000");
-  await page.getByRole("link", { name: "View Docs" }).first().click();
-  await expect(page).toHaveURL("http://127.0.0.1:3001/");
+  await expect(page.getByRole("link", { name: "View Docs" }).first()).toHaveAttribute(
+    "target",
+    "_blank",
+  );
 });
 
 test("signed-in users see product actions instead of guest auth ctas", async ({
@@ -64,6 +65,10 @@ test("signed-in users see product actions instead of guest auth ctas", async ({
   await expect(header.getByRole("link", { name: /get started/i })).toHaveCount(0);
   await expect(header.getByRole("link", { name: "Dashboard" })).toBeVisible();
   await expect(header.getByRole("link", { name: "Docs" })).toBeVisible();
+  await expect(header.getByRole("link", { name: "Docs" })).toHaveAttribute(
+    "target",
+    "_blank",
+  );
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 });
 
@@ -100,11 +105,12 @@ test("footer keeps only useful actions and can hand off an email into signup", a
   const footer = page.locator(".site-footer");
 
   await expect(footer).toContainText("RouteX");
-  await expect(footer.getByRole("link", { name: "Docs" })).toBeVisible();
+  await expect(footer.getByRole("link", { name: "Docs", exact: true })).toBeVisible();
   await expect(footer.getByRole("link", { name: /admin/i })).toHaveCount(0);
-
-  await footer.getByRole("link", { name: "Docs" }).click();
-  await expect(page).toHaveURL("http://127.0.0.1:3001/");
+  await expect(footer.getByRole("link", { name: "Docs", exact: true })).toHaveAttribute(
+    "target",
+    "_blank",
+  );
 
   await page.goto("http://127.0.0.1:3000");
   await footer.getByLabel("Work email").fill("builder@example.com");

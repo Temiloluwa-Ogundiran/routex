@@ -180,13 +180,17 @@ test("dashboard renders the live merchant overview", async ({ page }) => {
   await expect(page.getByText(/main menu/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /overview/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /transactions/i })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /ada stores workspace/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^ada stores$/i })).toBeVisible();
   await expect(page.getByText(/welcome back, ada obi/i)).toBeVisible();
   await expect(page.getByRole("link", { name: "Log In" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Start Testing" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "API docs" })).toBeVisible();
+  await expect(page.locator(".ops-topbar").getByRole("button", { name: "Sign out" })).toBeVisible();
+  await expect(page.locator(".ops-topbar").getByRole("link", { name: "API docs" })).toBeVisible();
+  await expect(
+    page.locator(".ops-topbar").getByRole("link", { name: "API docs" }),
+  ).toHaveAttribute("target", "_blank");
   await expect(page.getByRole("link", { name: "Sandbox" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /workspace details/i })).toHaveCount(0);
   await expect(page.getByText("NGN 280,000.00")).toBeVisible();
   await expect(page.getByRole("heading", { name: /wallet balances/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: /recent transactions/i })).toBeVisible();

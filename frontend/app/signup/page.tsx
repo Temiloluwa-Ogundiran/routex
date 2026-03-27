@@ -108,17 +108,13 @@ function SignupPageContent() {
   return (
     <AuthFormShell
       badge="Create workspace"
-      description="Create your team, verify your inbox, and start routing payments."
-      points={[
-        "Start in test mode with one merchant contract and signed callbacks.",
-        "Move from hosted checkout to payout control without rebuilding your payloads.",
-      ]}
+      description="Create your team, verify your email, and start taking payments."
       title="Open your RouteX workspace"
     >
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Workspace setup</p>
-          <h2>Set up your team</h2>
+          <h2>Create your account</h2>
         </div>
         <span className="playground-status-chip">OTP</span>
       </div>

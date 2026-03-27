@@ -22,12 +22,6 @@ export function OtpFormShell({
           <span aria-hidden="true" className="auth-shell__underline" />
           <p className="auth-shell__copy">{description}</p>
         </div>
-        <div aria-hidden="true" className="auth-shell__poster-grid">
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
       </section>
 
       <section className="auth-shell__form">

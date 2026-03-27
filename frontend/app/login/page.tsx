@@ -106,17 +106,13 @@ function LoginPageContent() {
   return (
     <AuthFormShell
       badge="Merchant access"
-      description="Use your email and password to receive your access code."
-      points={[
-        "Get into balances, keys, transactions, and payouts from one merchant lane.",
-        "Keep checkout routing, callback monitoring, and payout control in one workspace.",
-      ]}
+      description="Sign in with your email and password to get your code."
       title="Sign in to RouteX"
     >
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Merchant sign in</p>
-          <h2>Open your workspace</h2>
+          <h2>Open your dashboard</h2>
         </div>
         <span className="playground-status-chip">OTP</span>
       </div>

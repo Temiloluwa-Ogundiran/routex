@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import posthog from "posthog-js";
 
 import type { RouterDashboardData, RouterRule } from "../../lib/dashboard-api";
+import { DOCS_LINK_REL, DOCS_LINK_TARGET, docsHref } from "../../lib/docs-url";
 import { OpsShell } from "../layout/ops-shell";
 import { DashboardConsole } from "../dashboard/dashboard-console";
 import { PushButton } from "../ui/push-button";
@@ -13,6 +15,14 @@ type AdminDashboardState = {
   dashboard: RouterDashboardData;
   rules: RouterRule[];
 };
+
+async function signOutAdmin() {
+  posthog.reset();
+  await fetch("/api/admin/logout", {
+    method: "POST",
+  }).catch(() => null);
+  window.location.replace("/admin/login");
+}
 
 async function loadAdminDashboardState(): Promise<AdminDashboardState> {
   const [dashboardResponse, rulesResponse] = await Promise.all([
@@ -27,7 +37,7 @@ async function loadAdminDashboardState(): Promise<AdminDashboardState> {
   ]);
 
   if (dashboardResponse.status === 401 || rulesResponse.status === 401) {
-    window.location.href = "/admin/login";
+    window.location.replace("/admin/login");
     throw new Error("Admin authentication required.");
   }
 
@@ -124,6 +134,21 @@ export function AdminDashboardShell() {
         ]}
         subtitle="Router control"
         title="RouteX Admin"
+        actions={
+          <>
+            <PushButton onClick={() => void signOutAdmin()} variant="primary">
+              Sign out
+            </PushButton>
+            <a
+              className="push-button push-button--secondary"
+              href={docsHref()}
+              rel={DOCS_LINK_REL}
+              target={DOCS_LINK_TARGET}
+            >
+              API docs
+            </a>
+          </>
+        }
       >
         <section className="dashboard-hero">
           <div className="dashboard-hero__copy">
@@ -160,6 +185,21 @@ export function AdminDashboardShell() {
         ]}
         subtitle="Router control"
         title="RouteX Admin"
+        actions={
+          <>
+            <PushButton onClick={() => void signOutAdmin()} variant="primary">
+              Sign out
+            </PushButton>
+            <a
+              className="push-button push-button--secondary"
+              href={docsHref()}
+              rel={DOCS_LINK_REL}
+              target={DOCS_LINK_TARGET}
+            >
+              API docs
+            </a>
+          </>
+        }
       >
         <section className="dashboard-hero">
           <div className="dashboard-hero__copy">
@@ -200,6 +240,21 @@ export function AdminDashboardShell() {
       ]}
       subtitle="Router control"
       title="RouteX Admin"
+      actions={
+        <>
+          <PushButton onClick={() => void signOutAdmin()} variant="primary">
+            Sign out
+          </PushButton>
+          <a
+            className="push-button push-button--secondary"
+            href={docsHref()}
+            rel={DOCS_LINK_REL}
+            target={DOCS_LINK_TARGET}
+          >
+            API docs
+          </a>
+        </>
+      }
     >
       <DashboardConsole
         initialDashboard={adminState.dashboard}

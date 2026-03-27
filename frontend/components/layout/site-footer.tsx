@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { docsHref } from "../../lib/docs-url";
+import { DOCS_LINK_REL, DOCS_LINK_TARGET, docsHref } from "../../lib/docs-url";
 
 export function SiteFooter() {
   return (
@@ -12,8 +12,7 @@ export function SiteFooter() {
               <span>RouteX</span>
             </div>
             <p className="site-footer__copy">
-              Ship hosted collections, signed callbacks, and payout control
-              without turning your team into a PSP operations desk.
+              One place to accept payments, track results, and run payouts.
             </p>
           </div>
 
@@ -21,7 +20,9 @@ export function SiteFooter() {
             <p className="site-footer__eyebrow">Platform</p>
             <Link href="/#product">Product</Link>
             <Link href="/#route">Why RouteX</Link>
-            <a href={docsHref()}>Docs</a>
+            <a href={docsHref()} rel={DOCS_LINK_REL} target={DOCS_LINK_TARGET}>
+              Docs
+            </a>
           </div>
 
           <div className="site-footer__column">
@@ -35,7 +36,7 @@ export function SiteFooter() {
         <form action="/signup" className="site-footer__newsletter" method="get">
           <p className="site-footer__eyebrow">Next move</p>
           <p className="site-footer__copy">
-            Drop in a work email and move straight into a RouteX workspace.
+            Enter your email and open your RouteX workspace.
           </p>
           <div className="site-footer__newsletter-field">
             <label className="site-footer__newsletter-label" htmlFor="footer-email">
@@ -51,8 +52,13 @@ export function SiteFooter() {
             <button className="push-button push-button--primary" type="submit">
               Submit
             </button>
-            <a className="site-footer__text-link" href={docsHref()}>
-              Or jump into the API reference
+            <a
+              className="site-footer__text-link"
+              href={docsHref()}
+              rel={DOCS_LINK_REL}
+              target={DOCS_LINK_TARGET}
+            >
+              Or read the docs
             </a>
           </div>
         </form>

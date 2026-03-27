@@ -12,6 +12,7 @@ type OpsNavSection = {
 };
 
 type OpsShellProps = {
+  actions?: React.ReactNode;
   children: React.ReactNode;
   homeHref: string;
   initials: string;
@@ -32,6 +33,7 @@ function isActivePath(pathname: string, href: string) {
 }
 
 export function OpsShell({
+  actions,
   children,
   homeHref,
   initials,
@@ -91,9 +93,7 @@ export function OpsShell({
           </div>
 
           <div className="ops-topbar__utilities">
-            <div aria-hidden="true" className="ops-topbar__search">
-              Search...
-            </div>
+            {actions ? <div className="ops-topbar__actions">{actions}</div> : null}
             <span className="ops-topbar__avatar">{initials}</span>
           </div>
         </header>

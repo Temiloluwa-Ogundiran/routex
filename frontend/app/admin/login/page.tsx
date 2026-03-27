@@ -95,7 +95,7 @@ function AdminLoginPageContent() {
       <div className="auth-shell__card-header">
         <div>
           <p className="playground-panel__eyebrow">Admin</p>
-          <h2>Enter your admin credentials</h2>
+          <h2>Open the control room</h2>
         </div>
         <span className="playground-status-chip">Admin only</span>
       </div>

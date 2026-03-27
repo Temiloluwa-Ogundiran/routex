@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useEffectEvent, useState } from "react";
-import posthog from "posthog-js";
 
 import type {
   RouterDashboardData,
   RouterGatewayHealth,
   RouterRule,
 } from "../../lib/dashboard-api";
-import { docsHref } from "../../lib/docs-url";
 import { FailoverFeed } from "./failover-feed";
 import { GatewayControlPanel } from "./gateway-control-panel";
 import { GatewayHealthGrid } from "./gateway-health-grid";
@@ -16,7 +14,6 @@ import { RecentTransactions } from "./recent-transactions";
 import { RoutingRulesPanel } from "./routing-rules-panel";
 import { ScoreBreakdownCard } from "./score-breakdown-card";
 import { GeometricPanel } from "../ui/geometric-panel";
-import { PushButton } from "../ui/push-button";
 
 function StatCard({
   label,
@@ -68,14 +65,6 @@ function formatLastRefreshed(lastRefreshedAt: string | null) {
     minute: "2-digit",
     second: "2-digit",
   })}`;
-}
-
-async function signOutAdmin() {
-  posthog.reset();
-  await fetch("/api/admin/logout", {
-    method: "POST",
-  }).catch(() => null);
-  window.location.href = "/admin/login";
 }
 
 type DashboardConsoleProps = {
@@ -175,9 +164,6 @@ export function DashboardConsole({
           </div>
 
           <div className="dashboard-hero__actions">
-            <a className="push-button push-button--secondary" href={docsHref()}>
-              Open docs
-            </a>
             <button
               className="push-button push-button--primary"
               disabled={isRefreshing}
@@ -186,9 +172,6 @@ export function DashboardConsole({
             >
               Refresh Health Now
             </button>
-            <PushButton onClick={() => void signOutAdmin()} variant="secondary">
-              Sign out
-            </PushButton>
             <div className="dashboard-hero__refresh-meta">
               <p>{formatLastRefreshed(lastRefreshedAt)}</p>
               <span className="dashboard-status-pill dashboard-status-pill--accent">

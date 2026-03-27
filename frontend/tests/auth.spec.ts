@@ -18,9 +18,10 @@ test("login page renders the auth form", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText(/merchant access/i)).toBeVisible();
   await expect(
-    page.getByText(/use your email and password to receive your access code\./i),
+    page.getByText(/sign in with your email and password to get your code\./i),
   ).toBeVisible();
   await expect(page.getByText(/session|jwt|backend auth flow/i)).toHaveCount(0);
+  await expect(page.locator(".auth-shell__poster-grid")).toHaveCount(0);
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Password")).toBeVisible();
   await expect(page.getByRole("button", { name: /send code/i })).toBeVisible();
@@ -33,8 +34,9 @@ test("signup page renders the registration form", async ({ page }) => {
     page.getByRole("heading", { name: /open your routex workspace/i }),
   ).toBeVisible();
   await expect(
-    page.getByText(/create your team, verify your inbox, and start routing payments\./i),
+    page.getByText(/create your team, verify your email, and start taking payments\./i),
   ).toBeVisible();
+  await expect(page.locator(".auth-shell__poster-grid")).toHaveCount(0);
   await expect(page.getByLabel("Full name")).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Password")).toBeVisible();
@@ -46,8 +48,9 @@ test("verify otp page renders the otp form", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: /enter your code/i })).toBeVisible();
   await expect(
-    page.getByText(/drop the six-digit code from your inbox to unlock routex\./i),
+    page.getByText(/enter the six-digit code we sent to your email\./i),
   ).toBeVisible();
+  await expect(page.locator(".auth-shell__poster-grid")).toHaveCount(0);
   await expect(page.getByLabel("One-time code")).toBeVisible();
   await expect(page.getByRole("button", { name: /verify code/i })).toBeVisible();
 });

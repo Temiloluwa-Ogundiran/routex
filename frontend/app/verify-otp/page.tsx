@@ -93,7 +93,7 @@ function VerifyOtpPageContent() {
   return (
     <OtpFormShell
       badge="Verify access"
-      description="Drop the six-digit code from your inbox to unlock RouteX."
+      description="Enter the six-digit code we sent to your email."
       title="Enter your code"
     >
       <div className="auth-shell__card-header">

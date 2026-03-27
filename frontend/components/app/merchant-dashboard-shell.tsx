@@ -13,7 +13,7 @@ import {
   type MerchantDashboardResponse,
   type MerchantWorkspaceMerchant,
 } from "../../lib/app-dashboard";
-import { docsHref } from "../../lib/docs-url";
+import { DOCS_LINK_REL, DOCS_LINK_TARGET, docsHref } from "../../lib/docs-url";
 import { OpsShell } from "../layout/ops-shell";
 import { PushButton } from "../ui/push-button";
 
@@ -129,7 +129,7 @@ async function readDashboardData(
   }))) as MerchantDashboardResponse;
 
   if (response.status === 401) {
-    window.location.href = "/login";
+    window.location.replace("/login");
     return {
       status: false,
       message: "Please sign in again.",
@@ -435,7 +435,12 @@ export function MerchantDashboardShell() {
               <PushButton onClick={() => setRefreshKey((currentValue) => currentValue + 1)}>
                 Retry
               </PushButton>
-              <a className="push-button push-button--secondary" href={docsHref()}>
+              <a
+                className="push-button push-button--secondary"
+                href={docsHref()}
+                rel={DOCS_LINK_REL}
+                target={DOCS_LINK_TARGET}
+              >
                 Review docs
               </a>
             </div>
@@ -453,16 +458,27 @@ export function MerchantDashboardShell() {
         navSections={opsNavSections}
         subtitle="Merchant workspace"
         title="RouteX Ops"
+        actions={
+          <>
+            <PushButton onClick={() => void signOutUser()} variant="primary">
+              Sign out
+            </PushButton>
+            <a
+              className="push-button push-button--secondary"
+              href={docsHref()}
+              rel={DOCS_LINK_REL}
+              target={DOCS_LINK_TARGET}
+            >
+              API docs
+            </a>
+          </>
+        }
       >
         <section className="dashboard-hero">
           <div className="dashboard-hero__copy">
             <p className="section-badge">Merchant Workspace</p>
             <h1>Create your first merchant workspace</h1>
-            <p>
-              Your RouteX account is ready. Create a merchant workspace so you
-              can generate API keys, monitor revenue, manage wallets, and
-              launch collections and payouts.
-            </p>
+            <p>Your account is ready. Create a workspace to start taking payments.</p>
           </div>
 
           <form
@@ -510,7 +526,12 @@ export function MerchantDashboardShell() {
                   ? "Creating workspace..."
                   : "Create merchant workspace"}
               </PushButton>
-              <a className="push-button push-button--secondary" href={docsHref()}>
+              <a
+                className="push-button push-button--secondary"
+                href={docsHref()}
+                rel={DOCS_LINK_REL}
+                target={DOCS_LINK_TARGET}
+              >
                 Review API docs
               </a>
             </div>
@@ -527,43 +548,36 @@ export function MerchantDashboardShell() {
       navSections={opsNavSections}
       subtitle="Merchant workspace"
       title={selectedMerchant.name}
-    >
-      <section className="dashboard-hero" id="dashboard-overview">
-        <div className="dashboard-hero__copy">
-          <p className="section-badge">Merchant Workspace</p>
-          <h1>{selectedMerchant.name} workspace</h1>
-          <p>
-            Welcome back, {dashboard.user.name}. Manage balances, transactions,
-            payment links, and API access from one RouteX workspace.
-          </p>
-        </div>
-
-        <div className="dashboard-hero__actions dashboard-hero__actions--stretch">
-          <div className="dashboard-app-actions">
-            <a className="push-button push-button--secondary" href={docsHref()}>
-              API docs
-            </a>
-            <PushButton onClick={() => void signOutUser()} variant="primary">
-              Sign out
-            </PushButton>
-          </div>
-
-          <label className="dashboard-select-field">
-            <span className="dashboard-control-label">Merchant</span>
-            <select
-              className="dashboard-control-input"
-              onChange={(event) => handleMerchantChange(event.target.value)}
-              value={selectedMerchant.id}
-            >
-              {dashboard.merchants.map((merchant: MerchantWorkspaceMerchant) => (
-                <option key={merchant.id} value={merchant.id}>
-                  {merchant.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="dashboard-mode-toggle">
+      actions={
+        <>
+          <PushButton onClick={() => void signOutUser()} variant="primary">
+            Sign out
+          </PushButton>
+          <a
+            className="push-button push-button--secondary"
+            href={docsHref()}
+            rel={DOCS_LINK_REL}
+            target={DOCS_LINK_TARGET}
+          >
+            API docs
+          </a>
+          {dashboard.merchants.length > 1 ? (
+            <label className="dashboard-select-field dashboard-select-field--inline">
+              <span className="dashboard-control-label">Merchant</span>
+              <select
+                className="dashboard-control-input"
+                onChange={(event) => handleMerchantChange(event.target.value)}
+                value={selectedMerchant.id}
+              >
+                {dashboard.merchants.map((merchant: MerchantWorkspaceMerchant) => (
+                  <option key={merchant.id} value={merchant.id}>
+                    {merchant.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          <div className="dashboard-mode-toggle dashboard-mode-toggle--inline">
             <span className="dashboard-control-label">Mode</span>
             <div className="dashboard-mode-toggle__buttons">
               <button
@@ -582,28 +596,21 @@ export function MerchantDashboardShell() {
               </button>
             </div>
           </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="dashboard-card__topline">
-            <div>
-              <p className="dashboard-card__eyebrow">Merchant profile</p>
-              <h3>Workspace details</h3>
-            </div>
-            <span
-              className={`dashboard-status-pill ${
-                selectedMerchant.is_verified
-                  ? "dashboard-status-pill--closed"
-                  : "dashboard-status-pill--maintenance"
-              }`}
-            >
-              {selectedMerchant.is_verified ? "Live enabled" : "Verification pending"}
-            </span>
-          </div>
+        </>
+      }
+    >
+      <section className="dashboard-hero" id="dashboard-overview">
+        <div className="dashboard-hero__copy">
+          <p className="section-badge">Merchant Workspace</p>
+          <h1>{selectedMerchant.name}</h1>
+          <p>
+            Welcome back, {dashboard.user.name}. See revenue, balances, keys,
+            and payment activity in one place.
+          </p>
           <div className="dashboard-card__meta">
-            <span>Role: {selectedMerchant.role ?? "member"}</span>
-            <span>Status: {selectedMerchant.is_active ? "active" : "paused"}</span>
-            <span>Joined: {formatDate(selectedMerchant.joined_at)}</span>
+            <span>{selectedMerchant.is_verified ? "Live enabled" : "Verification pending"}</span>
+            <span>{selectedMerchant.is_active ? "Active" : "Paused"}</span>
+            <span>Joined {formatDate(selectedMerchant.joined_at)}</span>
           </div>
         </div>
 
@@ -797,7 +804,12 @@ export function MerchantDashboardShell() {
               <p className="dashboard-panel__eyebrow">Payment links</p>
               <h3>Payment links</h3>
             </div>
-            <a className="inline-link" href={docsHref("/collections")}>
+            <a
+              className="inline-link"
+              href={docsHref("/collections")}
+              rel={DOCS_LINK_REL}
+              target={DOCS_LINK_TARGET}
+            >
               Endpoint guide
             </a>
           </div>
@@ -822,7 +834,7 @@ export function MerchantDashboardShell() {
                   </div>
                   <p>
                     {paymentLink.amount
-                      ? `${formatCurrency(paymentLink.amount, paymentLink.currency)} • ${paymentLink.current_uses} uses`
+                      ? `${formatCurrency(paymentLink.amount, paymentLink.currency)} - ${paymentLink.current_uses} uses`
                       : `${paymentLink.current_uses} uses so far`}
                   </p>
                 </article>

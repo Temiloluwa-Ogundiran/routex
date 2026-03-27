@@ -106,6 +106,24 @@ test("admin login page renders the admin auth form", async ({ page }) => {
   await expect(page.getByRole("button", { name: /sign in as admin/i })).toBeVisible();
 });
 
+test("stale admin cookies do not loop the login page", async ({ page }) => {
+  await grantAdminSession(page);
+  await page.route("**/api/admin/me", async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "Admin authentication required." }),
+    });
+  });
+
+  await page.goto("http://127.0.0.1:3000/admin/login");
+
+  await expect(page).toHaveURL(/\/admin\/login(?:\?next=.*)?$/);
+  await expect(
+    page.getByRole("heading", { name: /sign in to routex admin/i }),
+  ).toBeVisible();
+});
+
 test("admin route shows the router control room when a session cookie exists", async ({
   page,
 }) => {

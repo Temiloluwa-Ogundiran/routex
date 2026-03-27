@@ -39,12 +39,6 @@ export function AuthFormShell({
             ))}
           </ul>
         ) : null}
-        <div aria-hidden="true" className="auth-shell__poster-grid">
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
       </section>
 
       <section className="auth-shell__form">
