@@ -91,7 +91,7 @@ The admin area shows:
 - routing decisions
 - platform visibility for operations
 
-## Judge notes
+## notes
 
 - RouteX is live, not just mock screens
 - The public docs are live and hosted separately
@@ -156,6 +156,17 @@ If you want to evaluate RouteX quickly:
 - Merchant dashboard
 - Admin control room
 - Hosted Mintlify docs
+
+## Team COntribution
+Temiloluwa Ogundiran
+- Backend Developer
+
+Kwaghuter Raphael
+-Frontend Developer
+
+
+
+
 
 ### Product architecture
 
