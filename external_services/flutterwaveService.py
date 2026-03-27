@@ -1,5 +1,5 @@
 from settings import FLTW_SECRET_KEY
-from services.httpRequestService import post_request
+from services.httpRequestService import get_request, post_request
 from settings import logging, FRONTEND_BASE_URL
 from enums.transactionEnums import *
 from services import transactionService, merchantService, customerService
@@ -12,10 +12,16 @@ from enums import tokenEnums
 from websocket.broadcast import broadcast
 
 BASE_URL = "https://api.flutterwave.com/v3/payments"
+VERIFY_URL_BASE = "https://api.flutterwave.com/v3/transactions"
 HEADERS = {
     'Authorization' : f'Bearer {FLTW_SECRET_KEY}',
     'Content-Type' : 'application/json'
 }
+
+
+async def verify_transaction(transaction_id: str | int) -> tuple[dict, int]:
+    url = f"{VERIFY_URL_BASE}/{transaction_id}/verify"
+    return await get_request(url=url, headers=HEADERS)
 
 async def initialize(session: AsyncSession, email:str, amount: float, merchant: Merchant, mode:str,
                      reference:str, currency: str = TransactionCurrency.NIGERIA.value, 

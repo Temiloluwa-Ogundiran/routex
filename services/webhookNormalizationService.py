@@ -4,6 +4,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from external_services import flutterwaveService
 import services.emailService as emailService
 import services.reconciliationService as reconciliationService
 import services.transactionService as transactionService
@@ -138,6 +139,65 @@ def normalize_event(gateway: str, payload: dict) -> NormalizedWebhookEvent:
         )
 
     raise ValueError(f"Unsupported webhook gateway: {gateway}")
+
+
+async def _recover_flutterwave_reference(
+    normalized_event: NormalizedWebhookEvent,
+    payload: dict,
+) -> NormalizedWebhookEvent:
+    data = payload.get("data", {})
+    transaction_id = data.get("id") or payload.get("id")
+    if transaction_id in (None, ""):
+        return normalized_event
+
+    try:
+        verify_payload, verify_status = await flutterwaveService.verify_transaction(transaction_id)
+    except Exception:
+        logger.exception(
+            "Flutterwave verify failed while recovering webhook reference: tx_id=%s",
+            transaction_id,
+        )
+        return normalized_event
+
+    if verify_status != 200:
+        logger.warning(
+            "Flutterwave verify returned non-200 while recovering webhook reference: tx_id=%s status=%s",
+            transaction_id,
+            verify_status,
+        )
+        return normalized_event
+
+    verify_data = verify_payload.get("data") if isinstance(verify_payload, dict) else {}
+    if not isinstance(verify_data, dict):
+        return normalized_event
+
+    metadata = verify_data.get("meta") if isinstance(verify_data.get("meta"), dict) else {}
+    recovered_reference = _pick_first_non_empty(
+        verify_data.get("tx_ref"),
+        verify_data.get("reference"),
+        metadata.get("routex_processor_reference"),
+        metadata.get("routex_reference"),
+    )
+    if recovered_reference:
+        normalized_event.processor_reference = recovered_reference
+        logger.info(
+            "Recovered Flutterwave webhook reference via verify: tx_id=%s ref=%s",
+            transaction_id,
+            recovered_reference,
+        )
+
+    verified_status = str(verify_data.get("status") or "").strip()
+    if verified_status:
+        normalized_event.status = _normalize_flutterwave_status(
+            normalized_event.event,
+            verified_status,
+        )
+
+    raw_fee = verify_data.get("app_fee")
+    if raw_fee not in (None, ""):
+        normalized_event.processor_fee = float(raw_fee or 0.0)
+
+    return normalized_event
 
 
 async def _get_latest_routing_attempt(
@@ -284,6 +344,16 @@ async def handle_event(
     session: AsyncSession,
 ) -> tuple[NormalizedWebhookEvent, Transaction | None]:
     normalized_event = normalize_event(gateway, payload)
+
+    if (
+        gateway == "fltw"
+        and normalized_event.status != "ignored"
+        and not normalized_event.processor_reference
+    ):
+        normalized_event = await _recover_flutterwave_reference(
+            normalized_event=normalized_event,
+            payload=payload,
+        )
 
     if normalized_event.status == "ignored" or not normalized_event.processor_reference:
         logger.warning(
