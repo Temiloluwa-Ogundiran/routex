@@ -34,7 +34,6 @@ RouteX fixes that by giving the merchant one payment layer instead of one gatewa
 - Sends one signed webhook update to the merchant
 - Gives merchants one dashboard for balances, transactions, keys, and operations
 - Gives admins one control room for gateway health and routing visibility
-- Supports optional NIN verification for merchants in the dashboard
 
 ## Why this matters
 
@@ -82,7 +81,6 @@ The merchant workspace shows:
 - API keys
 - recent transactions
 - payment links
-- optional NIN verification for live readiness
 
 ### 5. Admin control room
 
@@ -101,7 +99,6 @@ The admin area shows:
 - Multiple payment gateways are integrated
 - Webhook normalization is implemented
 - Routing decisions are based on live health and latency
-- In test mode, merchant NIN verification can be completed without blocking the product flow
 - Payouts are currently **simulated from merchant balance** for demo reliability
 
 That payout choice is intentional for the MVP:
@@ -166,7 +163,6 @@ If you want to evaluate RouteX quickly:
 - Single merchant webhook contract
 - Direct provider checkout handoff
 - Operational visibility for admins
-- Identity verification flow for merchants using Interswitch Identity Verification
 
 ## Built with
 

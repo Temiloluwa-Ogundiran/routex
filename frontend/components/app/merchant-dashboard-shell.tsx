@@ -17,17 +17,6 @@ import { OpsShell } from "../layout/ops-shell";
 import { PushButton } from "../ui/push-button";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
-type MerchantNinVerificationResponse = {
-  status: boolean;
-  message?: string;
-  detail?: string;
-  nin_status?: string | null;
-  nin_last4?: string | null;
-  nin_reference?: string | null;
-  nin_verified_name?: string | null;
-  nin_submitted_at?: string | null;
-  nin_verified_at?: string | null;
-};
 
 function formatCurrency(amount: number, currency = "NGN") {
   const formattedAmount = new Intl.NumberFormat("en-NG", {
@@ -101,17 +90,6 @@ function getGatewayDisplayName(gatewayCode: string | null | undefined) {
       return "Interswitch";
     default:
       return "Automatic";
-  }
-}
-
-function getNinStatusLabel(status: string | null | undefined) {
-  switch ((status ?? "").trim().toLowerCase()) {
-    case "verified":
-      return "Verified";
-    case "pending":
-      return "Pending";
-    default:
-      return "Optional";
   }
 }
 
@@ -224,15 +202,6 @@ export function MerchantDashboardShell() {
     error: null,
   });
   const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
-  const [ninVerificationState, setNinVerificationState] = useState<{
-    submitting: boolean;
-    message: string | null;
-    error: string | null;
-  }>({
-    submitting: false,
-    message: null,
-    error: null,
-  });
 
   useEffect(() => {
     let cancelled = false;
@@ -324,15 +293,6 @@ export function MerchantDashboardShell() {
               searchParams,
             ),
             label: "API Keys",
-          },
-          {
-            href: buildDashboardSectionUrl(
-              selectedMerchantId,
-              mode,
-              "dashboard-nin-verification",
-              searchParams,
-            ),
-            label: "NIN verification",
           },
         ],
       },
@@ -435,117 +395,6 @@ export function MerchantDashboardShell() {
           : currentLabel,
       );
     }, 1800);
-  }
-
-  async function handleVerifyNin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!selectedMerchant) {
-      return;
-    }
-
-    const formData = new FormData(event.currentTarget);
-    const nin = String(formData.get("nin") ?? "").trim();
-    const firstName = String(formData.get("first_name") ?? "").trim();
-    const lastName = String(formData.get("last_name") ?? "").trim();
-    const middleName = String(formData.get("middle_name") ?? "").trim();
-    const phone = String(formData.get("phone") ?? "").trim();
-    const birthDate = String(formData.get("birth_date") ?? "").trim();
-
-    if (
-      nin.length !== 11 ||
-      !firstName ||
-      !lastName ||
-      !phone ||
-      !birthDate
-    ) {
-      setNinVerificationState({
-        submitting: false,
-        error: "Add a valid NIN, name, phone number, and date of birth.",
-        message: null,
-      });
-      return;
-    }
-
-    setNinVerificationState({
-      submitting: true,
-      error: null,
-      message: null,
-    });
-
-    const response = await fetch("/api/app/merchant/verify-nin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        merchant_id: selectedMerchant.id,
-        mode,
-        nin,
-        first_name: firstName,
-        last_name: lastName,
-        middle_name: middleName || null,
-        phone,
-        birth_date: birthDate,
-      }),
-    });
-
-    const responseBody = (await response.json().catch(() => ({
-      detail: "We could not verify this NIN right now.",
-      status: false,
-    }))) as MerchantNinVerificationResponse & {
-      detail?: string;
-      message?: string;
-    };
-
-    if (!response.ok) {
-      setNinVerificationState({
-        submitting: false,
-        error:
-          responseBody.detail ??
-          responseBody.message ??
-          "We could not verify this NIN right now.",
-        message: null,
-      });
-      return;
-    }
-
-    setDashboard((currentDashboard) => {
-      if (!currentDashboard || !currentDashboard.selected_merchant) {
-        return currentDashboard;
-      }
-
-      const nextMerchant = {
-        ...currentDashboard.selected_merchant,
-        nin_status: responseBody.nin_status ?? currentDashboard.selected_merchant.nin_status,
-        nin_last4: responseBody.nin_last4 ?? currentDashboard.selected_merchant.nin_last4,
-        nin_reference:
-          responseBody.nin_reference ?? currentDashboard.selected_merchant.nin_reference,
-        nin_verified_name:
-          responseBody.nin_verified_name ??
-          currentDashboard.selected_merchant.nin_verified_name,
-        nin_submitted_at:
-          responseBody.nin_submitted_at ??
-          currentDashboard.selected_merchant.nin_submitted_at,
-        nin_verified_at:
-          responseBody.nin_verified_at ??
-          currentDashboard.selected_merchant.nin_verified_at,
-      };
-
-      return {
-        ...currentDashboard,
-        selected_merchant: nextMerchant,
-        merchants: currentDashboard.merchants.map((merchant) =>
-          merchant.id === nextMerchant.id ? nextMerchant : merchant,
-        ),
-      };
-    });
-
-    setNinVerificationState({
-      submitting: false,
-      error: null,
-      message: responseBody.message ?? "NIN verification saved.",
-    });
   }
 
   if (loadState === "loading" || loadState === "idle") {
@@ -1012,115 +861,6 @@ export function MerchantDashboardShell() {
               </p>
             )}
           </div>
-        </article>
-
-        <article className="dashboard-panel" id="dashboard-nin-verification">
-          <div className="dashboard-panel__header">
-            <div>
-              <p className="dashboard-panel__eyebrow">Identity check</p>
-              <h3>Verify your NIN</h3>
-            </div>
-            <span className="dashboard-status-pill dashboard-status-pill--maintenance">
-              {getNinStatusLabel(selectedMerchant.nin_status)}
-            </span>
-          </div>
-          <p className="dashboard-panel__note">
-            Optional for test mode. It helps you preview the live verification flow before launch.
-          </p>
-          <div className="dashboard-card__meta dashboard-card__meta--stack">
-            <span>
-              Status: {getNinStatusLabel(selectedMerchant.nin_status)}
-            </span>
-            <span>
-              {selectedMerchant.nin_verified_name
-                ? `Name: ${selectedMerchant.nin_verified_name}`
-                : "No verified name yet"}
-            </span>
-            <span>
-              {selectedMerchant.nin_last4
-                ? `NIN ending ${selectedMerchant.nin_last4}`
-                : "NIN not submitted yet"}
-            </span>
-          </div>
-          <form
-            className="dashboard-control-form dashboard-control-card dashboard-nin-form"
-            onSubmit={(event) => void handleVerifyNin(event)}
-          >
-            <label className="auth-field">
-              <span className="dashboard-control-label">NIN</span>
-              <input
-                className="dashboard-control-input"
-                inputMode="numeric"
-                maxLength={11}
-                name="nin"
-                placeholder="12345678901"
-                required
-                type="text"
-              />
-            </label>
-            <label className="auth-field">
-              <span className="dashboard-control-label">First name</span>
-              <input
-                className="dashboard-control-input"
-                defaultValue={dashboard.user.name.split(" ")[0] ?? ""}
-                name="first_name"
-                placeholder="Ada"
-                required
-                type="text"
-              />
-            </label>
-            <label className="auth-field">
-              <span className="dashboard-control-label">Last name</span>
-              <input
-                className="dashboard-control-input"
-                defaultValue={dashboard.user.name.split(" ").slice(1).join(" ")}
-                name="last_name"
-                placeholder="Obi"
-                required
-                type="text"
-              />
-            </label>
-            <label className="auth-field">
-              <span className="dashboard-control-label">Middle name</span>
-              <input
-                className="dashboard-control-input"
-                name="middle_name"
-                placeholder="Optional"
-                type="text"
-              />
-            </label>
-            <label className="auth-field">
-              <span className="dashboard-control-label">Phone</span>
-              <input
-                className="dashboard-control-input"
-                defaultValue="+234"
-                name="phone"
-                placeholder="+2348012345678"
-                required
-                type="tel"
-              />
-            </label>
-            <label className="auth-field">
-              <span className="dashboard-control-label">Date of birth</span>
-              <input
-                className="dashboard-control-input"
-                name="birth_date"
-                required
-                type="date"
-              />
-            </label>
-            <div className="dashboard-control-actions">
-              <PushButton disabled={ninVerificationState.submitting} type="submit">
-                {ninVerificationState.submitting ? "Saving..." : "Submit NIN"}
-              </PushButton>
-            </div>
-            {ninVerificationState.error ? (
-              <p className="dashboard-control-feedback">{ninVerificationState.error}</p>
-            ) : null}
-            {ninVerificationState.message ? (
-              <p className="dashboard-control-feedback">{ninVerificationState.message}</p>
-            ) : null}
-          </form>
         </article>
       </section>
     </OpsShell>
