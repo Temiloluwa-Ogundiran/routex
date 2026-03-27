@@ -12,7 +12,9 @@ from pydantic import BaseModel
 from enums import transactionEnums, LinkEnums
 from enums.transactionEnums import TransactionCurrency
 from database.models.Transaction import Transaction
-from external_services import koraService, basqetService
+from external_services import basqetService
+from external_services.adapters import get_adapter
+from services import routingService
 
 link_router = APIRouter(prefix="/links", tags=["payment_links"])
 
@@ -138,24 +140,7 @@ async def init_checkout(
             id= link.merchant_id
         )
         customer, _= await customerService.add_get_or_create_customer(session= session, email= body.customer_email, merchant= merchant)
-
-        tx: Transaction = await transactionService.create_transaction(
-            session=session,
-            link=link,
-            merchant= merchant,
-            amount=amount,
-            currency=body.currency,
-            customer= customer,
-            processor= transactionEnums.TransactionProcessor.KORA,
-            reference= await transactionService.generate_processor_reference(session= session),
-            mode= link.mode,
-            type = transactionEnums.TransactionType.CREDIT,
-            narration= body.narration
-        )
-        if body.channel == transactionEnums.TransactionChannel.CARD:
-            data = await koraService.charge_with_card(session=session, merchant = merchant, amount= amount, tx= tx, customer_email= body.customer_email, link = link)
-
-        elif body.channel == transactionEnums.TransactionChannel.CRYPTO:
+        if body.channel == transactionEnums.TransactionChannel.CRYPTO:
             #TODO: Crypto channel
             if body.currency in [TransactionCurrency.NIGERIA, TransactionCurrency.GHANA, TransactionCurrency.KENYA]:
                 raise HTTPException(
@@ -169,12 +154,63 @@ async def init_checkout(
             )
             return data
 
+        if link.gateway_code:
+            decision = await routingService.build_manual_routing_decision(
+                session=session,
+                operation="collection",
+                currency=str(body.currency),
+                amount=amount,
+                merchant_id=merchant.id,
+                gateway_code=link.gateway_code,
+                channel=body.channel,
+            )
         else:
-            data = await koraService.charge_bank_transfer(
-                session=session, merchant= merchant, tx= tx, customer_email= body.customer_email
+            decision = await routingService.build_routing_decision(
+                session=session,
+                operation="collection",
+                currency=str(body.currency),
+                amount=amount,
+                merchant_id=merchant.id,
+                channel=body.channel,
             )
 
-        return data
+        adapter = get_adapter(decision.selected_gateway)
+        transaction_reference = f"plink_{await transactionService.generate_processor_reference(session=session)}"
+        response, response_status, charge_url = await adapter.initialize_collection(
+            session=session,
+            email=body.customer_email,
+            amount=amount,
+            merchant=merchant,
+            currency=str(body.currency),
+            reference=transaction_reference,
+            redirect_url=link.redirect_url,
+            notification_url=merchant.live_webhook_url if link.mode == LinkEnums.LinkMode.LIVE else merchant.test_webhook_url,
+            metadata={"payment_link_reference": link.reference},
+            narration=body.narration,
+            mode=link.mode,
+        )
+
+        transaction = await transactionService.get_transaction_by_merchant_and_reference(
+            session=session,
+            merchant=merchant,
+            reference=transaction_reference,
+        )
+        if transaction:
+            transaction.payment_link = link
+            transaction.selected_gateway = decision.selected_gateway
+            transaction.redirect_url = link.redirect_url
+            await transactionService.save_transaction(session=session, transaction=transaction)
+
+        data = {
+            "status": response_status == 200,
+            "message": response.get("message", "Checkout created successfully"),
+            "reference": transaction_reference,
+            "checkout_url": charge_url,
+            "selected_gateway": decision.selected_gateway,
+        }
+        if transaction:
+            data["gateway_reference"] = transaction.processor_reference
+        return JSONResponse(content=data, status_code=response_status)
 
     except Exception as e:
        raise HTTPException(status_code= status.HTTP_400_BAD_REQUEST, detail= f"{e}")
@@ -236,6 +272,7 @@ async def update_link(
             title=request.title,
             amount=request.amount,
             max_uses=request.max_uses,
+            gateway_code=request.gateway_code,
             description=request.description,
             redirect_url=str(request.redirect_url) if request.redirect_url else None,
             expires_at=request.expires_at,

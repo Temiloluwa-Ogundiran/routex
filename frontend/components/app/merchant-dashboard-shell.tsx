@@ -12,6 +12,7 @@ import {
   type MerchantDashboardData,
   type MerchantDashboardResponse,
   type MerchantWorkspaceMerchant,
+  type MerchantWorkspacePaymentLink,
 } from "../../lib/app-dashboard";
 import { DOCS_LINK_REL, DOCS_LINK_TARGET, docsHref } from "../../lib/docs-url";
 import { OpsShell } from "../layout/ops-shell";
@@ -77,6 +78,21 @@ function getInitials(value: string | null | undefined) {
   }
 
   return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+}
+
+function getGatewayDisplayName(gatewayCode: string | null | undefined) {
+  switch ((gatewayCode ?? "").trim().toLowerCase()) {
+    case "kora":
+      return "Kora";
+    case "pstk":
+      return "Paystack";
+    case "fltw":
+      return "Flutterwave";
+    case "isw":
+      return "Interswitch";
+    default:
+      return "Automatic";
+  }
 }
 
 function buildDashboardUrl(
@@ -188,6 +204,17 @@ export function MerchantDashboardShell() {
     error: null,
   });
   const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
+  const [paymentLinkState, setPaymentLinkState] = useState<{
+    open: boolean;
+    submitting: boolean;
+    message: string | null;
+    error: string | null;
+  }>({
+    open: false,
+    submitting: false,
+    message: null,
+    error: null,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -390,6 +417,105 @@ export function MerchantDashboardShell() {
           : currentLabel,
       );
     }, 1800);
+  }
+
+  async function handleCreatePaymentLink(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedMerchant) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const title = String(formData.get("title") ?? "").trim();
+    const amountValue = Number(String(formData.get("amount") ?? ""));
+    const gatewayCode = String(formData.get("gateway_code") ?? "")
+      .trim()
+      .toLowerCase();
+
+    if (!title) {
+      setPaymentLinkState((currentState) => ({
+        ...currentState,
+        error: "Add a short title for the payment link.",
+        message: null,
+      }));
+      return;
+    }
+
+    if (!Number.isFinite(amountValue) || amountValue <= 0) {
+      setPaymentLinkState((currentState) => ({
+        ...currentState,
+        error: "Enter a valid amount greater than zero.",
+        message: null,
+      }));
+      return;
+    }
+
+    setPaymentLinkState((currentState) => ({
+      ...currentState,
+      submitting: true,
+      error: null,
+      message: null,
+    }));
+
+    const response = await fetch("/api/app/payment-links", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        merchant_id: selectedMerchant.id,
+        title,
+        description: gatewayCode
+          ? `Pinned to ${getGatewayDisplayName(gatewayCode)}`
+          : null,
+        amount_type: "static",
+        mode,
+        type: "recurring",
+        currency: "NGN",
+        amount: amountValue,
+        gateway_code: gatewayCode || null,
+      }),
+    });
+
+    const responseBody = (await response.json().catch(() => ({
+      detail: "We could not create the payment link.",
+    }))) as MerchantWorkspacePaymentLink & {
+      detail?: string;
+      message?: string;
+    };
+
+    if (!response.ok) {
+      setPaymentLinkState((currentState) => ({
+        ...currentState,
+        submitting: false,
+        error:
+          responseBody.detail ??
+          responseBody.message ??
+          "We could not create the payment link.",
+        message: null,
+      }));
+      return;
+    }
+
+    setDashboard((currentDashboard) => {
+      if (!currentDashboard) {
+        return currentDashboard;
+      }
+
+      return {
+        ...currentDashboard,
+        payment_links: [responseBody, ...currentDashboard.payment_links],
+      };
+    });
+
+    event.currentTarget.reset();
+    setPaymentLinkState({
+      open: false,
+      submitting: false,
+      error: null,
+      message: "Payment link created successfully.",
+    });
   }
 
   if (loadState === "loading" || loadState === "idle") {
@@ -816,15 +942,82 @@ export function MerchantDashboardShell() {
               <p className="dashboard-panel__eyebrow">Payment links</p>
               <h3>Payment links</h3>
             </div>
-            <a
-              className="inline-link"
-              href={docsHref("/collections")}
-              rel={DOCS_LINK_REL}
-              target={DOCS_LINK_TARGET}
-            >
-              Endpoint guide
-            </a>
+            <div className="dashboard-app-actions">
+              <button
+                className="dashboard-inline-button"
+                onClick={() =>
+                  setPaymentLinkState((currentState) => ({
+                    ...currentState,
+                    open: !currentState.open,
+                    error: null,
+                    message: null,
+                  }))
+                }
+                type="button"
+              >
+                {paymentLinkState.open ? "Close form" : "Create link"}
+              </button>
+              <a
+                className="inline-link"
+                href={docsHref("/collections")}
+                rel={DOCS_LINK_REL}
+                target={DOCS_LINK_TARGET}
+              >
+                Endpoint guide
+              </a>
+            </div>
           </div>
+          {paymentLinkState.open ? (
+            <form
+              className="dashboard-control-form dashboard-control-card dashboard-payment-link-form"
+              onSubmit={(event) => void handleCreatePaymentLink(event)}
+            >
+              <label className="auth-field">
+                <span className="dashboard-control-label">Title</span>
+                <input
+                  className="dashboard-control-input"
+                  name="title"
+                  placeholder="Deposit"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="auth-field">
+                <span className="dashboard-control-label">Amount</span>
+                <input
+                  className="dashboard-control-input"
+                  inputMode="decimal"
+                  min="1"
+                  name="amount"
+                  placeholder="2500"
+                  required
+                  step="0.01"
+                  type="number"
+                />
+              </label>
+              <label className="auth-field">
+                <span className="dashboard-control-label">Gateway</span>
+                <select className="dashboard-control-input" name="gateway_code">
+                  <option value="">Automatic</option>
+                  <option value="kora">Kora</option>
+                  <option value="pstk">Paystack</option>
+                  <option value="fltw">Flutterwave</option>
+                  <option value="isw">Interswitch</option>
+                </select>
+              </label>
+              <div className="dashboard-control-actions">
+                <PushButton disabled={paymentLinkState.submitting} type="submit">
+                  {paymentLinkState.submitting ? "Saving..." : "Save payment link"}
+                </PushButton>
+              </div>
+              {paymentLinkState.error ? (
+                <p className="dashboard-control-feedback">{paymentLinkState.error}</p>
+              ) : null}
+            </form>
+          ) : null}
+          {paymentLinkState.message ? (
+            <p className="dashboard-control-feedback">{paymentLinkState.message}</p>
+          ) : null}
           <div className="dashboard-feed">
             {dashboard.payment_links.length > 0 ? (
               dashboard.payment_links.map((paymentLink) => (
@@ -849,6 +1042,10 @@ export function MerchantDashboardShell() {
                       ? `${formatCurrency(paymentLink.amount, paymentLink.currency)} - ${paymentLink.current_uses} uses`
                       : `${paymentLink.current_uses} uses so far`}
                   </p>
+                  <div className="dashboard-card__meta">
+                    <span>{getGatewayDisplayName(paymentLink.gateway_code)}</span>
+                    <span>{paymentLink.mode}</span>
+                  </div>
                 </article>
               ))
             ) : (

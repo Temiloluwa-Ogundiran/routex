@@ -107,6 +107,7 @@ export type MerchantWorkspacePaymentLink = {
   mode: string;
   type: string;
   currency: string;
+  gateway_code?: string | null;
   amount: number | null;
   max_uses: number | null;
   current_uses: number;

@@ -6,6 +6,7 @@ from enums.BulkPayoutEnums import BulkPayoutStatus, BulkPayoutMode
 from database.models.base import Base
 from enums.LinkEnums import *
 from enums.transactionEnums import TransactionCurrency
+from enums.transactionEnums import TransactionProcessor
 from settings import SERVER_URL, FRONTEND_BASE_URL
 from enums.transactionEnums import TransactionStatus
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -20,6 +21,7 @@ class PaymentLink(Base):
     title = Column(String(255), nullable=False)  
     description = Column(Text, nullable=True)
     currency = Column(String(10), nullable = False)
+    gateway_code = Column(String(10), nullable=True)
     amount_type = Column(String(20), nullable=False)  
     amount = Column(Numeric(12, 2), nullable=True)  # only for static links
 

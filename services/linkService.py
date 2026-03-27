@@ -15,6 +15,7 @@ from schemas.linkSchema import PaymentLinkCreateRequest
 from enums import LinkEnums
 from datetime import datetime, timezone
 from enums.transactionEnums import TransactionStatus
+from enums.transactionEnums import TransactionProcessor
 from schemas.linkSchema import PaymentLinkResponse
 
 # DOMAIN_URL = "https://yourpay.com/pay"  # Change to your front-end or payment processor base URL
@@ -64,6 +65,18 @@ def to_naive_utc(dt: datetime | None) -> datetime | None:
     return dt.astimezone(timezone.utc).replace(tzinfo=None)
 
 
+def normalize_gateway_code(gateway_code: str | None) -> str | None:
+    if not gateway_code:
+        return None
+
+    normalized = gateway_code.strip().lower()
+    if not normalized:
+        return None
+    if not TransactionProcessor.is_valid(normalized):
+        raise ValueError("Invalid gateway code")
+    return normalized
+
+
 # -----------------------------
 # CREATE / READ / UPDATE / DELETE
 # -----------------------------
@@ -83,6 +96,8 @@ async def create_payment_link(
         data.amount = None  # dynamic links don't enforce a fixed amount
     if data.mode == LinkEnums.LinkMode.LIVE and not merchant.is_verified:
         raise ValueError("Unverified merchant cannot generate live payment links")
+
+    gateway_code = normalize_gateway_code(data.gateway_code)
     
     link = PaymentLink(
         id=await generate_link_id(session),
@@ -93,6 +108,7 @@ async def create_payment_link(
         mode=data.mode,
         type=data.type,
         currency=data.currency,
+        gateway_code=gateway_code,
         amount=data.amount,
         max_uses=data.max_uses,
         description=data.description,
@@ -138,6 +154,7 @@ async def update_payment_link(
     title: Optional[str] = None,
     amount: Optional[float] = None,
     max_uses: Optional[int] = None,
+    gateway_code: Optional[str] = None,
     description: Optional[str] = None,
     redirect_url: Optional[str] = None,
     expires_at: Optional[datetime] = None,
@@ -155,6 +172,8 @@ async def update_payment_link(
         if max_uses < link.current_uses:
             raise ValueError(f"Max uses cannot be less than the current number of uses: {link.current_uses}")
         link.max_uses = max_uses
+    if gateway_code is not None:
+        link.gateway_code = normalize_gateway_code(gateway_code)
     if description:
         link.description = description
     if redirect_url:
@@ -321,6 +340,7 @@ async def get_payment_link_response(session: AsyncSession, link_id: str) -> Paym
         mode=link.mode,
         type=link.type,
         currency=link.currency,
+        gateway_code=link.gateway_code,
         amount=float(link.amount) if link.amount is not None else None,
         max_uses=link.max_uses,
         current_uses=current_uses,

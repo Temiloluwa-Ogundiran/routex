@@ -17,6 +17,11 @@ class PaymentLinkBase(BaseModel):
     mode: LinkEnums.LinkMode = Field(..., example="test")
     type: LinkEnums.LinkType = Field(..., example="recurring")
     currency: TransactionCurrency = Field(..., example= TransactionCurrency.NIGERIA.value)
+    gateway_code: Optional[str] = Field(
+        default=None,
+        examples=["kora"],
+        description="Optional gateway override for this payment link. Leave empty to auto-route at checkout.",
+    )
     amount: Optional[float] = Field(None, example=1000.0)
     max_uses: Optional[int] = Field(None, example=10)
     redirect_url: Optional[str] = Field(None, example="https://example.com/thank-you")
@@ -36,6 +41,7 @@ class PaymentLinkUpdateRequest(BaseModel):
     description: Optional[str] = None
     amount: Optional[float] = None
     max_uses: Optional[int] = None
+    gateway_code: Optional[str] = None
     redirect_url: Optional[str] = None
     expires_at: Optional[datetime.datetime] = None
     metadata: Optional[str] = None
@@ -56,6 +62,7 @@ class PaymentLinkResponse(BaseModel):
     mode: LinkEnums.LinkMode
     type: LinkEnums.LinkType
     currency: TransactionCurrency
+    gateway_code: Optional[str]
     amount: Optional[float]
     max_uses: Optional[int]
     current_uses: int

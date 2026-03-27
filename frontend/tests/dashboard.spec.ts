@@ -521,3 +521,163 @@ test("dashboard transaction detail redirects back to the user dashboard", async 
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("heading", { name: /create your first merchant workspace/i })).toBeVisible();
 });
+
+test("merchant can create a payment link with a pinned gateway from the dashboard", async ({
+  page,
+}) => {
+  await grantUserSession(page);
+  await page.route("**/api/app/dashboard**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: true,
+        data: {
+          user: {
+            id: "user_123",
+            name: "Ada Obi",
+            email: "ada@example.com",
+            is_verified: true,
+          },
+          merchants: [
+            {
+              id: "agg-ab123",
+              name: "Ada Stores",
+              email: "merchant@example.com",
+              is_verified: true,
+              is_active: true,
+              joined_at: "2026-03-24T10:00:00.000Z",
+              test_balance: 120500,
+              live_balance: 840000,
+              percentage_charge: 1.5,
+              flat_charge: 0,
+              role: "owner",
+            },
+          ],
+          selected_merchant: {
+            id: "agg-ab123",
+            name: "Ada Stores",
+            email: "merchant@example.com",
+            is_verified: true,
+            is_active: true,
+            joined_at: "2026-03-24T10:00:00.000Z",
+            test_balance: 120500,
+            live_balance: 840000,
+            percentage_charge: 1.5,
+            flat_charge: 0,
+            role: "owner",
+          },
+          mode: "test",
+          period: "month",
+          summary: {
+            mode: "test",
+            period: "month",
+            revenue_metrics: {
+              total_revenue: 280000,
+              total_transactions: 18,
+              total_charges: 4200,
+              net_revenue: 275800,
+              average_transaction_value: 15555.56,
+              success_rate: 94.4,
+            },
+            transaction_breakdown: {
+              successful: 17,
+              pending: 1,
+              failed: 0,
+              total: 18,
+            },
+            top_currency: {
+              currency: "NGN",
+              total_revenue: 280000,
+              transaction_count: 18,
+              total_charges: 4200,
+              net_revenue: 275800,
+              average_transaction_value: 15555.56,
+            },
+            wallet_count: 1,
+            total_balance: 120500,
+            pending_payouts: 2,
+            pending_payout_amount: 0,
+          },
+          wallets: [],
+          transactions: {
+            transactions: [],
+            total_items: 0,
+            total_pages: 0,
+            current_page: 1,
+            page_size: 6,
+            filters: {
+              wallet_id: null,
+              currency: null,
+              transaction_type: null,
+            },
+          },
+          payment_links: [],
+          api_tokens: {
+            merchant_id: "agg-ab123",
+            live: {
+              secret: "aggsk_live_123456789_agg-ab123",
+              public: "aggpk_live_123456789_agg-ab123",
+            },
+            test: {
+              secret: "aggsk_test_123456789_agg-ab123",
+              public: "aggpk_test_123456789_agg-ab123",
+            },
+          },
+          warnings: [],
+        },
+      }),
+    });
+  });
+
+  await page.route("**/api/app/payment-links", async (route) => {
+    const request = route.request();
+    const payload = JSON.parse(request.postData() ?? "{}");
+    expect(payload).toMatchObject({
+      merchant_id: "agg-ab123",
+      title: "Deposit",
+      amount: 2500,
+      mode: "test",
+      gateway_code: "pstk",
+    });
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "plink_1",
+        reference: "LINK_2001",
+        title: "Deposit",
+        merchant_id: "agg-ab123",
+        url: "https://pay.example.com/LINK_2001",
+        description: "Pinned to Paystack",
+        amount_type: "static",
+        mode: "test",
+        type: "recurring",
+        currency: "NGN",
+        gateway_code: "pstk",
+        amount: 2500,
+        max_uses: null,
+        current_uses: 0,
+        redirect_url: null,
+        expires_at: null,
+        _metadata: null,
+        is_active: true,
+        created_at: "2026-03-27T12:00:00.000Z",
+        updated_at: "2026-03-27T12:00:00.000Z",
+      }),
+    });
+  });
+
+  await page.goto("http://127.0.0.1:3000/dashboard");
+
+  await page.getByRole("button", { name: /create link/i }).click();
+  await page.getByLabel(/title/i).fill("Deposit");
+  await page.getByLabel(/amount/i).fill("2500");
+  await page.getByLabel(/gateway/i).selectOption("pstk");
+  await page.getByRole("button", { name: /save payment link/i }).click();
+
+  const createdLinkCard = page.locator(".dashboard-feed__item").first();
+  await expect(createdLinkCard).toContainText("Deposit");
+  await expect(createdLinkCard).toContainText("Paystack");
+});
