@@ -1,86 +1,217 @@
 # RouteX
 
-RouteX is a smart multi-payment router built for merchants and payment teams that need higher payment success rates without managing separate gateway integrations. One integration gives access to collections, payouts, verification, routing intelligence, failover visibility, and an admin control room that explains every routing decision.
+**RouteX is a payment orchestration layer that helps merchants accept payments through one integration while RouteX routes each transaction through the best available gateway.**
 
-Live frontend: [routex.xoroai.cloud](https://routex.xoroai.cloud)
+Instead of depending on a single provider and losing revenue during downtime, merchants connect once, initiate a payment once, and let RouteX handle gateway selection, failover, verification, webhooks, and operational visibility.
+
+## Live Product
+
+- Frontend: [routex.xoroai.cloud](https://routex.xoroai.cloud)
+- Docs: [docs.routex.xoroai.cloud](https://docs.routex.xoroai.cloud)
+- API: [routexapi.xoroai.cloud](https://routexapi.xoroai.cloud)
 
 ## The Problem
 
-Businesses in Nigeria regularly lose revenue when a single payment gateway slows down, times out, or goes offline. Most teams respond by hard-coding one provider, manually switching during incidents, or maintaining multiple brittle integrations. That creates failed payments, operational overhead, and poor visibility when something goes wrong.
+Online businesses in Nigeria often rely on a single payment gateway.
+
+When that gateway slows down, fails, or degrades, the business feels it immediately:
+
+- failed checkouts
+- lost revenue
+- manual gateway switching
+- poor visibility into what went wrong
+- extra engineering work to maintain multiple provider integrations
+
+Most teams either hard-code one provider or build fragile gateway-by-gateway logic themselves.
 
 ## Our Solution
 
-RouteX introduces a unified payment layer that sits between merchants and multiple gateways. For every transaction, it evaluates the available providers, selects the healthiest eligible route, records why that decision was made, and exposes the outcome through both merchant-facing and admin-facing interfaces.
+RouteX gives merchants one unified payment layer.
 
-Instead of forcing teams to choose one gateway and hope it stays healthy, RouteX makes routing an active system:
+A merchant sends one request to RouteX, and RouteX:
 
-- one API for collections, payouts, and verification
-- explainable routing across `Paystack`, `Flutterwave`, `Korapay`, and `Interswitch`
-- health-aware failover and gateway prioritization
-- webhook normalization across providers
-- merchant dashboard for balances, transactions, payment links, and API keys
-- admin control room for health, rules, failovers, and transaction observability
+1. evaluates the available gateways
+2. chooses the healthiest eligible route
+3. returns a hosted checkout link
+4. tracks the transaction lifecycle
+5. verifies the final result
+6. dispatches a normalized webhook back to the merchant
 
-## Why RouteX Stands Out
+The result is a simpler integration for merchants and a more resilient payment flow for end users.
 
-- It is not just a payment form. It is an orchestration layer with routing logic, decision audit trails, and failover controls.
-- It is not just backend infrastructure. It includes a polished public landing page, live docs, API testing, merchant workflows, and an operator control room.
-- It is not a static demo. The frontend is wired to the backend, auth is live, dashboards are live, docs are live, and provider integrations follow real test-mode behavior.
+## What RouteX Does
 
-## What We Built For This MVP
+- unified collections API
+- unified payout API
+- transaction verification API
+- dynamic routing across multiple gateways
+- health-aware gateway selection
+- direct gateway checkout handoff
+- normalized merchant webhooks
+- merchant dashboard for balances, transactions, and API keys
+- admin control room for gateway health, routing visibility, and operations
 
-This hackathon submission is focused on a strong, test-mode-first product that is fast to demonstrate and technically credible.
+## Supported Gateways
 
-- Unified collections API
-- Unified payout API
-- Verification API
-- OTP-based authentication with email delivery through Resend
-- Public API docs and landing-page tester
-- Merchant workspace at `/dashboard`
-- Separate admin control room at `/admin`
-- Interswitch hosted checkout bridge and return flow
-- Signed webhook handling and normalized transaction updates
-- Optional PostHog frontend analytics
+RouteX currently integrates with:
 
-## Demo Story
+- Paystack
+- Flutterwave
+- Korapay
+- Interswitch
 
-RouteX is built to demonstrate a complete payment operations story in a few minutes:
+## Why This Product Is Strong
 
-1. A merchant signs in once and gets a unified workspace.
-2. A payment is initiated through one API instead of a gateway-specific integration.
-3. RouteX selects the best gateway based on health and routing rules.
-4. If a provider is degraded, traffic can move and failovers are visible.
-5. The admin control room shows why the route was chosen and what happened afterward.
-6. Webhooks, verification, and return flows keep the transaction lifecycle consistent.
+### 1. One integration, many gateways
 
-## Scope
+Merchants do not need to build and maintain separate checkout flows for every provider.
 
-This submission is intentionally **test mode only**. The product is shaped for MVP credibility, live demo clarity, and clean extensibility into a full production orchestration platform.
+### 2. Better reliability
 
-## Team Contributions
+RouteX can choose a healthier route instead of forcing all traffic through one gateway.
+
+### 3. Operational clarity
+
+Every routed transaction has a visible gateway decision, reference trail, and final status.
+
+### 4. Cleaner merchant experience
+
+Merchants get a single dashboard, one set of API keys, one webhook contract, and one verification flow.
+
+### 5. Real product, not a static demo
+
+This submission includes a live frontend, live backend, live docs, merchant auth, admin tools, gateway integrations, background workers, and webhook handling.
+
+## How It Works
+
+### Collections
+
+The merchant calls `POST /api/v1/initiate` with:
+
+- amount
+- customer
+- reference
+- optional `gateway_code`
+- optional `redirect_url`
+- optional `notification_url`
+
+If `gateway_code` is omitted, RouteX routes automatically.
+
+If `gateway_code` is provided, RouteX respects the merchant override when that gateway is eligible.
+
+RouteX then returns a checkout link for the selected gateway.
+
+### Verification
+
+The merchant calls the verification endpoint once and gets a normalized response, regardless of the underlying provider.
+
+### Webhooks
+
+Providers call RouteX first.
+
+RouteX verifies and normalizes the event, updates the transaction state, and then sends a signed merchant webhook to the merchant’s `notification_url`.
+
+### Admin Operations
+
+The admin control room shows:
+
+- gateway health
+- latency
+- routing outcomes
+- transaction visibility
+- failover posture
+
+## Product Surfaces
+
+### Public site
+
+The public site explains the product, drives signups, and links to the hosted developer docs.
+
+### Developer docs
+
+The docs focus only on the core MVP endpoints external developers should use:
+
+- initiate collection
+- verify transaction
+- payout
+- webhook handling
+
+### Merchant workspace
+
+The merchant dashboard provides:
+
+- transaction overview
+- balances
+- payment links
+- API key access
+- mode switching
+
+### Admin control room
+
+The admin area is built for platform operations and routing visibility.
+
+## MVP Scope
+
+This hackathon version is intentionally focused:
+
+- Nigeria-first
+- NGN-first
+- test-mode oriented
+- fast to demo
+- structured for production expansion
+
+## Architecture
+
+### Backend
+
+- FastAPI
+- PostgreSQL
+- Redis
+- Celery workers and beat
+
+### Frontend
+
+- Next.js App Router
+
+### Product Infrastructure
+
+- gateway adapters for Paystack, Flutterwave, Korapay, and Interswitch
+- webhook normalization layer
+- routing engine based on live gateway health and latency
+- OTP authentication with email delivery
+- hosted developer docs with API playground
+
+## Why RouteX Matters
+
+Payments are too important to leave to a single provider.
+
+RouteX turns payment routing into a product instead of a hidden workaround. It gives merchants higher resilience, clearer visibility, and a simpler integration model, all through one clean platform.
+
+## Team
+
 ### Temiloluwa Ogundiran
 
-- Backend architecture and API implementation
-- Routing engine, gateway adapters, webhook normalization, and persistence
-- Collections and payout orchestration across supported gateways
-- Interswitch integration, hosted checkout bridge, verification, and return flow
-- Celery workers, health refresh jobs, and deployment/container configuration
-- Backend testing, provider integration research, and webhook setup validation
+- backend architecture
+- API design and gateway integrations
+- routing engine
+- webhook normalization
+- workers and deployment
 
 ### Kwaghuter Raphael
 
-- Frontend architecture and neo-brutalist design implementation
-- Landing page, docs experience, and live API tester
-- Merchant auth flows, OTP UX, and dashboard experience
-- Admin dashboard UX, routing observability pages, and control interfaces
-- Frontend-backend proxy integration, navigation, and route wiring
-- Frontend analytics integration, end-to-end testing, and submission presentation polish
+- frontend architecture
+- product UI and dashboards
+- auth flows
+- docs experience
+- presentation polish
 
 ## Built With
 
-- **Backend:** FastAPI, PostgreSQL, Redis, Celery
-- **Frontend:** Next.js App Router
-- **Gateways:** Paystack, Flutterwave, Korapay, Interswitch
-- **Email:** Resend
-- **Analytics:** PostHog
-- **Deployment:** Docker Compose
+- FastAPI
+- PostgreSQL
+- Redis
+- Celery
+- Next.js
+- Resend
+- PostHog
+- Docker Compose
