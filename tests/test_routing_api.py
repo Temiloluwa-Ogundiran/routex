@@ -70,8 +70,12 @@ class TestRoutingApi:
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)
     @patch("services.merchantService.get_by_id_or_email", new_callable=AsyncMock)
     @patch("services.routingService.build_routing_decision", new_callable=AsyncMock)
+    @patch("external_services.interswitchService._create_paybill_checkout", new_callable=AsyncMock)
+    @patch("external_services.interswitchService._request_access_token", new_callable=AsyncMock)
     async def test_initiate_can_return_interswitch_bridge_checkout_url(
         self,
+        mock_request_access_token,
+        mock_create_paybill_checkout,
         mock_build_routing_decision,
         mock_get_merchant,
         mock_verify_token,
@@ -90,7 +94,15 @@ class TestRoutingApi:
         )
         monkeypatch.setattr(interswitchService, "INTERSWITCH_MERCHANT_CODE", "MX123")
         monkeypatch.setattr(interswitchService, "INTERSWITCH_PAY_ITEM_ID", "9405967")
+        monkeypatch.setattr(interswitchService, "INTERSWITCH_CLIENT_ID", "CLIENT123")
+        monkeypatch.setattr(interswitchService, "INTERSWITCH_SECRET_KEY", "SECRET456")
         monkeypatch.setattr(interswitchService, "FRONTEND_BASE_URL", "https://routex.dev")
+        mock_request_access_token.return_value = "test-access-token"
+        mock_create_paybill_checkout.return_value = {
+            "reference": "ISW_BILL_REF_001",
+            "paymentUrl": "https://newwebpay.qa.interswitchng.com/pay/ISW_BILL_REF_001",
+            "code": "200",
+        }
 
         response = await client.post(
             "/api/v1/initiate",
@@ -107,7 +119,7 @@ class TestRoutingApi:
         assert response.status_code == 200
         payload = response.json()
         assert payload["selected_gateway"] == "isw"
-        assert payload["checkout_url"].startswith("http://test/api/v1/checkout/interswitch/")
+        assert payload["checkout_url"] == "https://newwebpay.qa.interswitchng.com/pay/ISW_BILL_REF_001"
         assert payload["routing"]["fallback_order"][0] == "isw"
 
     @patch("services.tokenService.verify_token", new_callable=AsyncMock)

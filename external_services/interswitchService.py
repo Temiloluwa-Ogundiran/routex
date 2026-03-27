@@ -1,7 +1,10 @@
+import base64
 from html import escape
 import json
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+
+import httpx
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,6 +30,10 @@ from settings import (
 
 INTERSWITCH_QA_CHECKOUT_URL = "https://newwebpay.qa.interswitchng.com/collections/w/pay"
 INTERSWITCH_LIVE_CHECKOUT_URL = "https://newwebpay.interswitchng.com/collections/w/pay"
+INTERSWITCH_QA_TOKEN_URL = "https://passport.k8.isw.la/passport/oauth/token?grant_type=client_credentials"
+INTERSWITCH_LIVE_TOKEN_URL = "https://passport.interswitchng.com/passport/oauth/token?grant_type=client_credentials"
+INTERSWITCH_QA_PAYBILL_URL = "https://qa.interswitchng.com/paymentgateway/api/v1/paybill"
+INTERSWITCH_LIVE_PAYBILL_URL = "https://webpay.interswitchng.com/paymentgateway/api/v1/paybill"
 INTERSWITCH_QA_VERIFY_URL = "https://qa.interswitchng.com/collections/api/v1/gettransaction.json"
 INTERSWITCH_LIVE_VERIFY_URL = "https://webpay.interswitchng.com/collections/api/v1/gettransaction.json"
 NGN_NUMERIC_CURRENCY = "566"
@@ -63,6 +70,18 @@ def get_verify_url(mode: str) -> str:
     if mode == tokenEnums.TokenMode.LIVE.value:
         return INTERSWITCH_LIVE_VERIFY_URL
     return INTERSWITCH_QA_VERIFY_URL
+
+
+def get_access_token_url(mode: str) -> str:
+    if mode == tokenEnums.TokenMode.LIVE.value:
+        return INTERSWITCH_LIVE_TOKEN_URL
+    return INTERSWITCH_QA_TOKEN_URL
+
+
+def get_paybill_url(mode: str) -> str:
+    if mode == tokenEnums.TokenMode.LIVE.value:
+        return INTERSWITCH_LIVE_PAYBILL_URL
+    return INTERSWITCH_QA_PAYBILL_URL
 
 
 def get_checkout_bridge_url(processor_reference: str, server_base_url: str | None = None) -> str:
@@ -103,6 +122,26 @@ def get_payment_status_url(
     if next_url:
         params["next"] = next_url
     return f"{base_url}/pay/status?{urlencode(params)}"
+
+
+def get_post_payment_redirect_url(
+    redirect_url: str,
+    reference: str,
+    status: str,
+    selected_gateway: str,
+    gateway_reference: str,
+) -> str:
+    parsed_url = urlparse(redirect_url)
+    existing_query = dict(parse_qsl(parsed_url.query, keep_blank_values=True))
+    existing_query.update(
+        {
+            "reference": reference,
+            "status": status,
+            "selected_gateway": selected_gateway,
+            "gateway_reference": gateway_reference,
+        }
+    )
+    return urlunparse(parsed_url._replace(query=urlencode(existing_query)))
 
 
 def _get_transaction_server_base_url(transaction: Transaction) -> str | None:
@@ -169,6 +208,73 @@ def build_verify_query(transaction: Transaction) -> str:
     )
 
 
+def _build_basic_authorization_header() -> str:
+    credentials = f"{INTERSWITCH_CLIENT_ID}:{INTERSWITCH_SECRET_KEY}"
+    encoded_credentials = base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
+    return f"Basic {encoded_credentials}"
+
+
+async def _request_access_token(mode: str) -> str:
+    headers = {
+        "accept": "application/json",
+        "Authorization": _build_basic_authorization_header(),
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.post(get_access_token_url(mode), headers=headers)
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise ValueError(
+            f"Interswitch access token request failed: {exc.response.text}"
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise ValueError("Interswitch access token request failed.") from exc
+
+    payload = response.json()
+    access_token = payload.get("access_token")
+    if not access_token:
+        raise ValueError("Interswitch did not return an access token.")
+    return access_token
+
+
+async def _create_paybill_checkout(mode: str, access_token: str, payload: dict[str, str]) -> dict[str, Any]:
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.post(
+                get_paybill_url(mode),
+                json=payload,
+                headers=headers,
+            )
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise ValueError(
+            f"Interswitch paybill request failed: {exc.response.text}"
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise ValueError("Interswitch paybill request failed.") from exc
+    return response.json()
+
+
+def extract_payment_url(response_data: dict[str, Any]) -> str | None:
+    nested_data = response_data.get("data") if isinstance(response_data.get("data"), dict) else {}
+    return (
+        response_data.get("paymentUrl")
+        or response_data.get("payment_url")
+        or response_data.get("checkout_url")
+        or response_data.get("url")
+        or nested_data.get("paymentUrl")
+        or nested_data.get("payment_url")
+        or nested_data.get("checkout_url")
+        or nested_data.get("url")
+    )
+
+
 async def initialize(
     session: AsyncSession,
     email: str,
@@ -185,7 +291,7 @@ async def initialize(
 ) -> tuple[dict[str, Any], int, str | None]:
     if currency != TransactionCurrency.NIGERIA.value:
         raise ValueError("Interswitch collections currently support NGN only.")
-    if not has_required_checkout_config():
+    if not has_full_credentials():
         raise ValueError("Interswitch integration credentials are not configured.")
 
     customer, _ = await customerService.add_get_or_create_customer(
@@ -214,23 +320,40 @@ async def initialize(
     }
     transaction = await transactionService.save_transaction(session=session, transaction=transaction)
 
-    checkout_url = get_checkout_bridge_url(
-        processor_reference=transaction.processor_reference,
-        server_base_url=server_base_url,
+    access_token = await _request_access_token(mode)
+    paybill_payload = {
+        "merchantCode": str(INTERSWITCH_MERCHANT_CODE),
+        "payableCode": str(INTERSWITCH_PAY_ITEM_ID),
+        "amount": str(amount_to_minor(transaction.amount)),
+        "transactionReference": str(transaction.processor_reference),
+        "redirectUrl": str(transaction.redirect_url),
+        "customerId": customer.email,
+        "currencyCode": NGN_NUMERIC_CURRENCY,
+        "customerEmail": customer.email,
+    }
+    response_data = await _create_paybill_checkout(
+        mode=mode,
+        access_token=access_token,
+        payload=paybill_payload,
     )
-    form_fields = build_checkout_form_fields(
-        transaction=transaction,
-        customer_email=customer.email,
-        server_base_url=server_base_url,
+    checkout_url = extract_payment_url(response_data)
+    if not checkout_url:
+        raise ValueError("Interswitch did not return a checkout URL.")
+
+    details = transaction.details if isinstance(transaction.details, dict) else {}
+    details.update(
+        {
+            "interswitch_payment_url": checkout_url,
+            "interswitch_reference": response_data.get("reference"),
+        }
     )
+    transaction.details = details
+    await transactionService.save_transaction(session=session, transaction=transaction)
+
     response_data = {
         "status": True,
         "message": "Charge created successfully",
-        "data": {
-            "checkout_url": checkout_url,
-            "form_action": get_hosted_checkout_url(mode),
-            "form_fields": form_fields,
-        },
+        "data": response_data,
     }
     return response_data, 200, checkout_url
 

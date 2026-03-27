@@ -1,5 +1,6 @@
 from celery import Celery, group, chord
 from asgiref.sync import async_to_sync
+from kombu import Queue
 from settings import REDIS_URL
 import requests
 from external_services import koraService
@@ -33,6 +34,12 @@ celery_app = Celery(
     backend=REDIS_URL,
 )
 
+celery_app.conf.task_queues = (
+    Queue("default"),
+    Queue("expiry_queue"),
+    Queue("payout_queue"),
+    Queue("webhook_queue"),
+)
 celery_app.conf.task_routes = {
     "services.celeryService.expire_transaction": {"queue": "expiry_queue"},
     "services.celeryService.process_bulk_payout_batch": {"queue": "payout_queue"},

@@ -1,3 +1,6 @@
+from unittest.mock import AsyncMock, patch
+
+import httpx
 import pytest
 from sqlalchemy import select
 
@@ -7,15 +10,45 @@ from external_services import interswitchService
 from services import transactionService
 
 
+class _FakeHttpxResponse:
+    def __init__(self, payload: dict, status_code: int = 200):
+        self._payload = payload
+        self.status_code = status_code
+
+    def json(self):
+        return self._payload
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            request = httpx.Request("POST", "https://qa.interswitchng.com/paymentgateway/api/v1/paybill")
+            response = httpx.Response(self.status_code, request=request)
+            raise httpx.HTTPStatusError("request failed", request=request, response=response)
+
+
 @pytest.mark.asyncio
-async def test_initialize_returns_bridge_checkout_url(
+@patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+async def test_initialize_returns_provider_payment_url(
+    mock_post,
     async_session,
     test_merchant,
     monkeypatch,
 ):
     monkeypatch.setattr(interswitchService, "INTERSWITCH_MERCHANT_CODE", "MX123")
     monkeypatch.setattr(interswitchService, "INTERSWITCH_PAY_ITEM_ID", "9405967")
+    monkeypatch.setattr(interswitchService, "INTERSWITCH_CLIENT_ID", "CLIENT123")
+    monkeypatch.setattr(interswitchService, "INTERSWITCH_SECRET_KEY", "SECRET456")
     monkeypatch.setattr(interswitchService, "FRONTEND_BASE_URL", "https://routex.dev")
+
+    mock_post.side_effect = [
+        _FakeHttpxResponse({"access_token": "test-access-token"}),
+        _FakeHttpxResponse(
+            {
+                "reference": "ISW_BILL_REF_001",
+                "paymentUrl": "https://newwebpay.qa.interswitchng.com/pay/ISW_BILL_REF_001",
+                "code": "200",
+            }
+        ),
+    ]
 
     response_data, status, checkout_url = await interswitchService.initialize(
         session=async_session,
@@ -26,25 +59,31 @@ async def test_initialize_returns_bridge_checkout_url(
         reference="ISW_INIT_001",
         currency="NGN",
         redirect_url="https://merchant.example.com/callback",
-        server_base_url="http://test",
     )
 
     assert status == 200
-    assert checkout_url is not None
-    assert checkout_url.startswith("http://test/api/v1/checkout/interswitch/")
-    assert response_data["data"]["form_fields"]["merchant_code"] == "MX123"
-    assert response_data["data"]["form_fields"]["pay_item_id"] == "9405967"
-    assert response_data["data"]["form_fields"]["currency"] == "566"
-    assert response_data["data"]["form_fields"]["amount"] == "500000"
-    assert (
-        response_data["data"]["form_fields"]["site_redirect_url"]
-        == "http://test/api/v1/checkout/interswitch/return"
-    )
+    assert checkout_url == "https://newwebpay.qa.interswitchng.com/pay/ISW_BILL_REF_001"
+    assert response_data["data"]["paymentUrl"] == checkout_url
+
+    token_call = mock_post.await_args_list[0]
+    assert token_call.kwargs["headers"]["Content-Type"] == "application/x-www-form-urlencoded"
+    assert token_call.kwargs["headers"]["Authorization"].startswith("Basic ")
+
+    paybill_call = mock_post.await_args_list[1]
+    assert paybill_call.kwargs["headers"]["Authorization"] == "Bearer test-access-token"
+    assert paybill_call.kwargs["json"]["merchantCode"] == "MX123"
+    assert paybill_call.kwargs["json"]["payableCode"] == "9405967"
+    assert paybill_call.kwargs["json"]["amount"] == "500000"
+    assert paybill_call.kwargs["json"]["redirectUrl"] == "https://merchant.example.com/callback"
+    assert paybill_call.kwargs["json"]["customerId"] == "customer@test.com"
+    assert paybill_call.kwargs["json"]["customerEmail"] == "customer@test.com"
+    assert paybill_call.kwargs["json"]["currencyCode"] == "566"
 
     transaction = await async_session.scalar(
         select(Transaction).where(Transaction.reference == "ISW_INIT_001")
     )
     assert transaction is not None
+    assert paybill_call.kwargs["json"]["transactionReference"] == transaction.processor_reference
     assert transaction.processor == TransactionProcessor.INTERSWITCH.value
     assert transaction.status == TransactionStatus.PENDING.value
 

@@ -52,13 +52,12 @@ async def test_interswitch_return_redirects_to_status_page(
 
     assert response.status_code == 307
     location = response.headers["location"]
-    assert location.startswith("https://routex.app/pay/status?")
+    assert location.startswith("https://merchant.example.com/callback?")
     params = parse_qs(urlparse(location).query)
     assert params["reference"] == ["ISW_RETURN_001"]
     assert params["status"] == ["success"]
     assert params["selected_gateway"] == ["isw"]
     assert params["gateway_reference"] == ["ISW_PROC_001"]
-    assert params["next"] == ["https://merchant.example.com/callback"]
 
 
 @pytest.mark.asyncio

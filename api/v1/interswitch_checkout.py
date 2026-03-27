@@ -116,4 +116,14 @@ async def interswitch_checkout_return(
         gateway_reference=transaction.processor_reference,
         next_url=transaction.redirect_url,
     )
+    if transaction.redirect_url:
+        merchant_redirect_url = interswitchService.get_post_payment_redirect_url(
+            redirect_url=transaction.redirect_url,
+            reference=transaction.reference,
+            status=normalized_status,
+            selected_gateway=transaction.selected_gateway or TransactionProcessor.INTERSWITCH.value,
+            gateway_reference=transaction.processor_reference,
+        )
+        return RedirectResponse(url=merchant_redirect_url, status_code=307)
+
     return RedirectResponse(url=status_page_url, status_code=307)
