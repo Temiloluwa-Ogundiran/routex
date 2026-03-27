@@ -6,11 +6,11 @@ export function HeroSection() {
   return (
     <section className="poster-hero" id="product">
       <div className="poster-hero__content">
-        <span className="poster-badge">Built for modern teams</span>
-        <h1 className="poster-hero__title">Accept payments without the mess.</h1>
+        <span className="poster-badge">Built for real businesses</span>
+        <h1 className="poster-hero__title">Take payments. Stay in control.</h1>
         <span aria-hidden="true" className="poster-hero__underline" />
         <p className="poster-hero__copy">
-          One checkout, one dashboard, and one simple way to track every payment.
+          One checkout, one dashboard, and clear updates when money moves.
         </p>
         <div className="poster-hero__actions">
           <Link className="push-button push-button--primary" href="/signup">
@@ -32,7 +32,7 @@ export function HeroSection() {
           </div>
           <div className="poster-proof">
             <strong>One checkout</strong>
-            <span>Customers pick how they want to pay.</span>
+            <span>Your customer chooses how to pay.</span>
           </div>
         </div>
       </div>

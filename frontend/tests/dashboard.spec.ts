@@ -184,7 +184,12 @@ test("dashboard renders the live merchant overview", async ({ page }) => {
   await expect(page.getByText(/welcome back, ada obi/i)).toBeVisible();
   await expect(page.getByRole("link", { name: "Log In" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Start Testing" })).toHaveCount(0);
-  await expect(page.locator(".ops-topbar").getByRole("button", { name: "Sign out" })).toBeVisible();
+  const accountMenuButton = page
+    .locator(".ops-topbar")
+    .getByRole("button", { name: /open account menu/i });
+  await expect(accountMenuButton).toBeVisible();
+  await accountMenuButton.click();
+  await expect(page.locator(".ops-account-menu__panel").getByRole("button", { name: "Sign out" })).toBeVisible();
   await expect(page.locator(".ops-topbar").getByRole("link", { name: "API docs" })).toBeVisible();
   await expect(
     page.locator(".ops-topbar").getByRole("link", { name: "API docs" }),
@@ -316,17 +321,24 @@ test("merchant sidebar keeps the selected merchant and mode in the url", async (
   const overviewLink = page
     .locator(".ops-sidebar")
     .getByRole("link", { name: "Overview" });
-  const settingsLink = page
-    .locator(".ops-sidebar__footer")
-    .getByRole("link", { name: "Settings" });
+  const walletsLink = page
+    .locator(".ops-sidebar")
+    .getByRole("link", { name: "Wallets" });
+  const transactionsLink = page
+    .locator(".ops-sidebar")
+    .getByRole("link", { name: "Transactions" });
 
   await expect(overviewLink).toHaveAttribute(
     "href",
     "/dashboard?merchantId=agg-ab123&mode=live",
   );
-  await expect(settingsLink).toHaveAttribute(
+  await expect(walletsLink).toHaveAttribute(
     "href",
-    "/dashboard?merchantId=agg-ab123&mode=live",
+    "/dashboard?merchantId=agg-ab123&mode=live#dashboard-wallets",
+  );
+  await expect(transactionsLink).toHaveAttribute(
+    "href",
+    "/dashboard?merchantId=agg-ab123&mode=live#dashboard-transactions",
   );
 
   await overviewLink.click();

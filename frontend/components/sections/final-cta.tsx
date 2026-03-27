@@ -6,9 +6,9 @@ export function FinalCta() {
     <section className="acid-final-cta" id="docs">
       <div className="acid-final-cta__panel">
         <p className="feature-block__eyebrow">Start here</p>
-        <h2 className="acid-final-cta__title">Ready to start?</h2>
+        <h2 className="acid-final-cta__title">Start in minutes.</h2>
         <p className="acid-final-cta__copy">
-          Open a workspace, test a payment, and move live when you are ready.
+          Create your workspace, test a payment, then go live when you are ready.
         </p>
         <div className="acid-final-cta__actions">
           <Link className="push-button push-button--primary" href="/signup">

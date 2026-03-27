@@ -3,7 +3,7 @@ export function BrowserMockup() {
     <section aria-label="RouteX launch card" className="acid-showcase">
       <article className="acid-showcase__deal">
         <span>Smart control</span>
-        <strong>Choose a gateway only when it matters.</strong>
+        <strong>Pick a gateway only when you need to.</strong>
       </article>
 
       <article className="acid-showcase__frame">

@@ -396,7 +396,7 @@ export function MerchantDashboardShell() {
     return (
       <OpsShell
         homeHref={dashboardHomeHref}
-        initials={getInitials(dashboard?.user.name)}
+        initials={getInitials(selectedMerchant?.name ?? dashboard?.user.name)}
         navSections={opsNavSections}
         subtitle="Merchant workspace"
         title="RouteX Ops"
@@ -419,7 +419,7 @@ export function MerchantDashboardShell() {
     return (
       <OpsShell
         homeHref={dashboardHomeHref}
-        initials="RX"
+        initials={getInitials(selectedMerchant?.name ?? dashboard?.user.name)}
         navSections={opsNavSections}
         subtitle="Merchant workspace"
         title="RouteX Ops"
@@ -458,11 +458,17 @@ export function MerchantDashboardShell() {
         navSections={opsNavSections}
         subtitle="Merchant workspace"
         title="RouteX Ops"
+        accountMenu={
+          <button
+            className="ops-account-menu__button"
+            onClick={() => void signOutUser()}
+            type="button"
+          >
+            Sign out
+          </button>
+        }
         actions={
           <>
-            <PushButton onClick={() => void signOutUser()} variant="primary">
-              Sign out
-            </PushButton>
             <a
               className="push-button push-button--secondary"
               href={docsHref()}
@@ -544,23 +550,21 @@ export function MerchantDashboardShell() {
   return (
     <OpsShell
       homeHref={dashboardHomeHref}
-      initials={getInitials(dashboard.user.name)}
+      initials={getInitials(selectedMerchant.name)}
       navSections={opsNavSections}
       subtitle="Merchant workspace"
       title={selectedMerchant.name}
+      accountMenu={
+        <button
+          className="ops-account-menu__button"
+          onClick={() => void signOutUser()}
+          type="button"
+        >
+          Sign out
+        </button>
+      }
       actions={
         <>
-          <PushButton onClick={() => void signOutUser()} variant="primary">
-            Sign out
-          </PushButton>
-          <a
-            className="push-button push-button--secondary"
-            href={docsHref()}
-            rel={DOCS_LINK_REL}
-            target={DOCS_LINK_TARGET}
-          >
-            API docs
-          </a>
           {dashboard.merchants.length > 1 ? (
             <label className="dashboard-select-field dashboard-select-field--inline">
               <span className="dashboard-control-label">Merchant</span>
@@ -596,6 +600,14 @@ export function MerchantDashboardShell() {
               </button>
             </div>
           </div>
+          <a
+            className="push-button push-button--secondary"
+            href={docsHref()}
+            rel={DOCS_LINK_REL}
+            target={DOCS_LINK_TARGET}
+          >
+            API docs
+          </a>
         </>
       }
     >

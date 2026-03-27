@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 type OpsNavSection = {
   label: string;
@@ -13,6 +14,7 @@ type OpsNavSection = {
 
 type OpsShellProps = {
   actions?: React.ReactNode;
+  accountMenu?: React.ReactNode;
   children: React.ReactNode;
   homeHref: string;
   initials: string;
@@ -34,6 +36,7 @@ function isActivePath(pathname: string, href: string) {
 
 export function OpsShell({
   actions,
+  accountMenu,
   children,
   homeHref,
   initials,
@@ -42,6 +45,38 @@ export function OpsShell({
   title,
 }: OpsShellProps) {
   const pathname = usePathname();
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isAccountMenuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setIsAccountMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsAccountMenuOpen(false);
+      }
+    }
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isAccountMenuOpen]);
+
+  useEffect(() => {
+    setIsAccountMenuOpen(false);
+  }, [pathname]);
 
   return (
     <div className="ops-shell">
@@ -77,12 +112,6 @@ export function OpsShell({
             </section>
           ))}
         </div>
-
-        <div className="ops-sidebar__footer">
-          <Link className="ops-sidebar__link" href={homeHref}>
-            Settings
-          </Link>
-        </div>
       </aside>
 
       <div className="ops-main">
@@ -94,7 +123,32 @@ export function OpsShell({
 
           <div className="ops-topbar__utilities">
             {actions ? <div className="ops-topbar__actions">{actions}</div> : null}
-            <span className="ops-topbar__avatar">{initials}</span>
+            <div className="ops-account-menu" ref={accountMenuRef}>
+              <button
+                aria-expanded={isAccountMenuOpen}
+                aria-haspopup={accountMenu ? "menu" : undefined}
+                aria-label="Open account menu"
+                className="ops-topbar__avatar ops-account-menu__trigger"
+                onClick={() => {
+                  if (!accountMenu) {
+                    return;
+                  }
+                  setIsAccountMenuOpen((currentState) => !currentState);
+                }}
+                type="button"
+              >
+                {initials}
+              </button>
+
+              {accountMenu && isAccountMenuOpen ? (
+                <div
+                  className="ops-account-menu__panel"
+                  role="menu"
+                >
+                  {accountMenu}
+                </div>
+              ) : null}
+            </div>
           </div>
         </header>
 

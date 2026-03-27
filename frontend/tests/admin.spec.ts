@@ -30,7 +30,7 @@ async function mockAdminDashboard(page: Page) {
             is_active: true,
             supports_collections: true,
             supports_payouts: false,
-            priority_weight: 1.2,
+            priority_weight: 1.0,
             success_rate_5m: 96.2,
             success_rate_1h: 94.8,
             timeout_rate_5m: 1.1,
@@ -135,10 +135,22 @@ test("admin route shows the router control room when a session cookie exists", a
   await expect(page.getByText(/main menu/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /gateway health/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /routing rules/i })).toBeVisible();
+  const accountMenuButton = page
+    .locator(".ops-topbar")
+    .getByRole("button", { name: /open account menu/i });
+  await expect(accountMenuButton).toBeVisible();
+  await accountMenuButton.click();
+  await expect(
+    page.locator(".ops-account-menu__panel").getByRole("button", { name: /sign out/i }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".ops-topbar").getByRole("link", { name: /api docs/i }),
+  ).toHaveAttribute("target", "_blank");
   await expect(
     page.getByRole("heading", { name: /watch routex move traffic before conversion drops/i }),
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Gateway Health" })).toBeVisible();
+  await expect(page.getByText("Live").first()).toBeVisible();
   await expect(page.getByText("ROUTEX-ADMIN-1001")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Latency Shield Rule" }),

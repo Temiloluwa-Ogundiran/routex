@@ -66,11 +66,15 @@ def dispatch(transaction: Transaction, event: EventType, token: Token) -> None:
         "X-AGGREGATOR-SIGNATURE": signature,
     }
 
-    send_webhook_task.delay(
-        url=transaction.notification_url,
-        payload_str=payload_str,
-        headers=headers,
-        event_type=event.value,
+    send_webhook_task.apply_async(
+        kwargs={
+            "url": transaction.notification_url,
+            "payload_str": payload_str,
+            "headers": headers,
+            "event_type": event.value,
+        },
+        queue="webhook_queue",
+        routing_key="webhook_queue",
     )
     logger.info(
         "Webhook queued: ref=%s event=%s url=%s",

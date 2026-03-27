@@ -5,6 +5,29 @@ type GatewayHealthGridProps = {
 };
 
 export function GatewayHealthGrid({ gateways }: GatewayHealthGridProps) {
+  function getDisplayState(circuitState: string) {
+    const normalizedState = circuitState.trim().toLowerCase();
+
+    if (normalizedState === "closed") {
+      return {
+        className: "live",
+        label: "Live",
+      };
+    }
+
+    if (normalizedState === "open") {
+      return {
+        className: "paused",
+        label: "Paused",
+      };
+    }
+
+    return {
+      className: normalizedState,
+      label: normalizedState.charAt(0).toUpperCase() + normalizedState.slice(1),
+    };
+  }
+
   return (
     <section className="dashboard-section" id="dashboard-gateways">
       <div className="section-heading section-heading--split">
@@ -17,48 +40,54 @@ export function GatewayHealthGrid({ gateways }: GatewayHealthGridProps) {
 
       <div className="dashboard-card-grid">
         {gateways.map((gateway) => (
-          <article
-            aria-label={`Gateway health for ${gateway.gateway_name}`}
-            className="dashboard-card"
-            key={gateway.gateway_code}
-          >
-            <div className="dashboard-card__topline">
-              <div>
-                <p className="dashboard-card__eyebrow">{gateway.gateway_code}</p>
-                <h3>{gateway.gateway_name}</h3>
-              </div>
-              <span
-                className={`dashboard-status-pill dashboard-status-pill--${gateway.circuit_state.toLowerCase()}`}
+          (() => {
+            const displayState = getDisplayState(gateway.circuit_state);
+
+            return (
+              <article
+                aria-label={`Gateway health for ${gateway.gateway_name}`}
+                className="dashboard-card"
+                key={gateway.gateway_code}
               >
-                {gateway.circuit_state}
-              </span>
-            </div>
+                <div className="dashboard-card__topline">
+                  <div>
+                    <p className="dashboard-card__eyebrow">{gateway.gateway_code}</p>
+                    <h3>{gateway.gateway_name}</h3>
+                  </div>
+                  <span
+                    className={`dashboard-status-pill dashboard-status-pill--${displayState.className}`}
+                  >
+                    {displayState.label}
+                  </span>
+                </div>
 
-            <dl className="dashboard-stat-list">
-              <div>
-                <dt>Success 5m</dt>
-                <dd>{gateway.success_rate_5m.toFixed(1)}%</dd>
-              </div>
-              <div>
-                <dt>Latency</dt>
-                <dd>{Math.round(gateway.p95_latency_ms)}ms</dd>
-              </div>
-              <div>
-                <dt>Timeouts</dt>
-                <dd>{gateway.timeout_rate_5m.toFixed(1)}%</dd>
-              </div>
-              <div>
-                <dt>Success 1h</dt>
-                <dd>{gateway.success_rate_1h.toFixed(1)}%</dd>
-              </div>
-            </dl>
+                <dl className="dashboard-stat-list">
+                  <div>
+                    <dt>Success 5m</dt>
+                    <dd>{gateway.success_rate_5m.toFixed(1)}%</dd>
+                  </div>
+                  <div>
+                    <dt>Latency</dt>
+                    <dd>{Math.round(gateway.p95_latency_ms)}ms</dd>
+                  </div>
+                  <div>
+                    <dt>Timeouts</dt>
+                    <dd>{gateway.timeout_rate_5m.toFixed(1)}%</dd>
+                  </div>
+                  <div>
+                    <dt>Success 1h</dt>
+                    <dd>{gateway.success_rate_1h.toFixed(1)}%</dd>
+                  </div>
+                </dl>
 
-            <div className="dashboard-card__meta">
-              <span>{gateway.supports_collections ? "Collections" : "No collections"}</span>
-              <span>{gateway.supports_payouts ? "Payouts" : "No payouts"}</span>
-              <span>{gateway.is_active ? "Active" : "Paused"}</span>
-            </div>
-          </article>
+                <div className="dashboard-card__meta">
+                  <span>{gateway.supports_collections ? "Collections" : "No collections"}</span>
+                  <span>{gateway.supports_payouts ? "Payouts" : "No payouts"}</span>
+                  <span>{gateway.is_active ? "Active" : "Paused"}</span>
+                </div>
+              </article>
+            );
+          })()
         ))}
       </div>
     </section>

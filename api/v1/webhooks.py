@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import json
 import hmac
 import hashlib
+import logging
 import os
 from settings import KORA_SECRET, PAYSTACK_SECRET, FLTW_SECRET_KEY, FLTW_SECRET_HASH, BASQET_LIVE_SECRET, BASQET_SECRET, INTERSWITCH_SECRET_KEY
 from services import transactionService, merchantService, tokenService, bulkpayoutService, walletService, emailService, webhookService
@@ -20,10 +21,61 @@ from websocket.broadcast import broadcast
 
 webhook_router = APIRouter()
 webhook_util_router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def _get_interswitch_secret() -> str | None:
     return os.getenv("INTERSWITCH_SECRET_KEY") or INTERSWITCH_SECRET_KEY
+
+
+async def _dispatch_merchant_webhook(
+    session: AsyncSession,
+    transaction: Transaction | None,
+    normalized_event,
+) -> None:
+    if not transaction:
+        logger.warning(
+            "Skipping merchant webhook dispatch: gateway=%s event=%s reason=no_transaction",
+            normalized_event.gateway,
+            normalized_event.event,
+        )
+        return
+
+    if not transaction.notification_url:
+        logger.info(
+            "Skipping merchant webhook dispatch: ref=%s reason=no_notification_url",
+            transaction.reference,
+        )
+        return
+
+    if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
+        outgoing_event = eventEnums.EventType.CHARGE_SUCCESS
+    elif normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
+        outgoing_event = eventEnums.EventType.CHARGE_FAILED
+    else:
+        logger.info(
+            "Skipping merchant webhook dispatch: ref=%s status=%s",
+            transaction.reference,
+            normalized_event.status,
+        )
+        return
+
+    token_obj = await tokenService.get_token_obj(
+        session=session,
+        merchant=transaction.merchant,
+        mode=transaction.mode,
+    )
+    webhookService.dispatch(
+        transaction=transaction,
+        event=outgoing_event,
+        token=token_obj,
+    )
+    logger.info(
+        "Merchant webhook queued: gateway=%s ref=%s event=%s",
+        normalized_event.gateway,
+        transaction.reference,
+        outgoing_event.value,
+    )
 
 
 async def _handle_interswitch_webhook(
@@ -58,24 +110,11 @@ async def _handle_interswitch_webhook(
         session=session,
     )
 
-    if transaction and transaction.notification_url:
-        token_obj = await tokenService.get_token_obj(
-            session=session,
-            merchant=transaction.merchant,
-            mode=transaction.mode,
-        )
-        if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
-            webhookService.dispatch(
-                transaction=transaction,
-                event=eventEnums.EventType.CHARGE_SUCCESS,
-                token=token_obj,
-            )
-        elif normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
-            webhookService.dispatch(
-                transaction=transaction,
-                event=eventEnums.EventType.CHARGE_FAILED,
-                token=token_obj,
-            )
+    await _dispatch_merchant_webhook(
+        session=session,
+        transaction=transaction,
+        normalized_event=normalized_event,
+    )
 
     return Response(status_code=200)
 
@@ -176,12 +215,6 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
     if not hmac.compare_digest(sig_header, expected_sig):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid signature")
 
-    # Handle Event
-    event = payload_dict.get("event")
-    print("✅ Kora webhook received!")
-    print("Event:", event)
-    print("Payload:", payload_dict)
-
     normalized_event, transaction = await webhookNormalizationService.handle_event(
         gateway="kora",
         payload=payload_dict,
@@ -258,12 +291,6 @@ async def kora_webhook(request: Request, session: AsyncSession = Depends(get_asy
     if not hmac.compare_digest(sig_header, expected_sig):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid signature")
 
-    # Handle Event
-    event = payload_dict.get("event")
-    print("✅ Kora webhook received!")
-    print("Event:", event)
-    print("Payload:", payload_dict)
-
     normalized_event, transaction = await webhookNormalizationService.handle_event(
         gateway="kora",
         payload=payload_dict,
@@ -338,12 +365,11 @@ async def paystack_webhook(request: Request, session: AsyncSession = Depends(get
         payload=payload,
         session=session,
     )
-    if transaction and transaction.notification_url:
-        token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
-        if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
-            webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_SUCCESS, token=token_obj)
-        elif normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
-            webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_FAILED, token=token_obj)
+    await _dispatch_merchant_webhook(
+        session=session,
+        transaction=transaction,
+        normalized_event=normalized_event,
+    )
 
     return {"status": "success"}
 
@@ -362,12 +388,11 @@ async def flutterwave_webhook(request: Request, session: AsyncSession = Depends(
         session=session,
     )
 
-    if transaction and transaction.notification_url:
-        token_obj = await tokenService.get_token_obj(session= session, merchant= transaction.merchant, mode= transaction.mode)
-        if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:
-            webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_SUCCESS, token=token_obj)
-        elif normalized_event.status == transactionEnums.TransactionStatus.FAILED.value:
-            webhookService.dispatch(transaction=transaction, event=eventEnums.EventType.CHARGE_FAILED, token=token_obj)
+    await _dispatch_merchant_webhook(
+        session=session,
+        transaction=transaction,
+        normalized_event=normalized_event,
+    )
 
     return {"status": "success"}
 

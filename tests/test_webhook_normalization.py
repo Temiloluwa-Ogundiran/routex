@@ -143,6 +143,81 @@ class TestWebhookNormalization:
 
     @patch("services.emailService.send_customer_receipt_email")
     @patch("services.emailService.send_merchant_receipt_email")
+    async def test_flutterwave_type_payload_with_reference_fallback_marks_success(
+        self,
+        mock_send_merchant_receipt,
+        mock_send_customer_receipt,
+        async_session,
+        test_merchant,
+        test_wallet,
+        test_customer,
+    ):
+        del mock_send_merchant_receipt
+        del mock_send_customer_receipt
+
+        import services.webhookNormalizationService as webhookNormalizationService
+
+        transaction = Transaction(
+            merchant_id=test_merchant.id,
+            customer_id=test_customer.id,
+            wallet_id=test_wallet.id,
+            amount=2200.0,
+            currency="NGN",
+            type=TransactionType.CREDIT.value,
+            status=TransactionStatus.PENDING.value,
+            mode="test",
+            processor="fltw",
+            selected_gateway="fltw",
+            reference="WEBHOOK_FLTW_TYPE_001",
+            processor_reference="PROC_FLTW_TYPE_001",
+        )
+        async_session.add(transaction)
+        await async_session.commit()
+        await async_session.refresh(transaction)
+
+        async_session.add(
+            RoutingAttempt(
+                transaction_id=transaction.id,
+                attempt_no=1,
+                gateway_code="fltw",
+                operation="collection",
+                status="pending",
+                gateway_reference=transaction.processor_reference,
+            )
+        )
+        await async_session.commit()
+
+        starting_balance = test_wallet.balance
+        payload = {
+            "type": "charge.completed",
+            "data": {
+                "reference": transaction.processor_reference,
+                "status": "succeeded",
+                "app_fee": 15.0,
+            },
+        }
+
+        normalized_event, updated_transaction = await webhookNormalizationService.handle_event(
+            "fltw",
+            payload,
+            async_session,
+        )
+        await async_session.refresh(transaction)
+        await async_session.refresh(test_wallet)
+
+        attempt = await async_session.scalar(
+            select(RoutingAttempt).where(RoutingAttempt.transaction_id == transaction.id)
+        )
+
+        assert normalized_event.event == "charge.completed"
+        assert normalized_event.status == TransactionStatus.SUCCESS.value
+        assert updated_transaction is not None
+        assert transaction.status == TransactionStatus.SUCCESS.value
+        assert test_wallet.balance > starting_balance
+        assert attempt.status == TransactionStatus.SUCCESS.value
+
+    @patch("services.emailService.send_customer_receipt_email")
+    @patch("services.emailService.send_merchant_receipt_email")
     async def test_interswitch_completed_success_credits_wallet(
         self,
         mock_send_merchant_receipt,

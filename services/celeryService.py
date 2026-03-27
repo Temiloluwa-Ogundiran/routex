@@ -35,19 +35,37 @@ celery_app = Celery(
 )
 
 celery_app.conf.task_queues = (
-    Queue("default"),
-    Queue("expiry_queue"),
-    Queue("payout_queue"),
-    Queue("webhook_queue"),
+    Queue("default", routing_key="default"),
+    Queue("expiry_queue", routing_key="expiry_queue"),
+    Queue("payout_queue", routing_key="payout_queue"),
+    Queue("webhook_queue", routing_key="webhook_queue"),
 )
+celery_app.conf.task_default_exchange = "routex"
+celery_app.conf.task_default_exchange_type = "direct"
 celery_app.conf.task_routes = {
-    "services.celeryService.expire_transaction": {"queue": "expiry_queue"},
-    "services.celeryService.process_bulk_payout_batch": {"queue": "payout_queue"},
-    "services.celeryService.schedule_bulk_payouts": {"queue": "payout_queue"},
-    "services.celeryService.refresh_gateway_health_snapshots_task": {"queue": "default"},
-    "services.celeryService.send_webhook_task": {"queue": "webhook_queue"},
+    "services.celeryService.expire_transaction": {
+        "queue": "expiry_queue",
+        "routing_key": "expiry_queue",
+    },
+    "services.celeryService.process_bulk_payout_batch": {
+        "queue": "payout_queue",
+        "routing_key": "payout_queue",
+    },
+    "services.celeryService.schedule_bulk_payouts": {
+        "queue": "payout_queue",
+        "routing_key": "payout_queue",
+    },
+    "services.celeryService.refresh_gateway_health_snapshots_task": {
+        "queue": "default",
+        "routing_key": "default",
+    },
+    "services.celeryService.send_webhook_task": {
+        "queue": "webhook_queue",
+        "routing_key": "webhook_queue",
+    },
 }
 celery_app.conf.task_default_queue = "default"
+celery_app.conf.task_default_routing_key = "default"
 celery_app.conf.beat_schedule = {
     "refresh-gateway-health-snapshots": {
         "task": "services.celeryService.refresh_gateway_health_snapshots_task",

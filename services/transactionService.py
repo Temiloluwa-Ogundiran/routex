@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
 from database.models.Transaction import Transaction
@@ -183,6 +183,39 @@ async def get_transaction_by_processor_reference(session: AsyncSession, processo
     )
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def get_latest_transaction_by_reference(
+    session: AsyncSession,
+    reference: str,
+) -> Optional[Transaction]:
+    stmt = (
+        select(Transaction)
+        .options(selectinload(Transaction.merchant), selectinload(Transaction.customer))
+        .where(Transaction.reference == reference)
+        .order_by(Transaction.created_at.desc())
+    )
+    result = await session.execute(stmt)
+    return result.scalars().first()
+
+
+async def get_transaction_by_any_reference(
+    session: AsyncSession,
+    reference: str,
+) -> Optional[Transaction]:
+    stmt = (
+        select(Transaction)
+        .options(selectinload(Transaction.merchant), selectinload(Transaction.customer))
+        .where(
+            or_(
+                Transaction.processor_reference == reference,
+                Transaction.reference == reference,
+            )
+        )
+        .order_by(Transaction.created_at.desc())
+    )
+    result = await session.execute(stmt)
+    return result.scalars().first()
 
 async def get_transaction_by_reference_and_datetime(session: AsyncSession, reference: str, datetime_str: str) -> Optional[Transaction]:
     """

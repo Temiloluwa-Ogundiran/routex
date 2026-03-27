@@ -12,7 +12,6 @@ export function AuthFormShell({
   badge,
   children,
   description,
-  points,
   title,
 }: AuthFormShellProps) {
   return (
@@ -24,21 +23,6 @@ export function AuthFormShell({
           <span aria-hidden="true" className="auth-shell__underline" />
           <p className="auth-shell__copy">{description}</p>
         </div>
-        {points && points.length > 0 ? (
-          <ul className="icon-list auth-shell__points">
-            {points.map((point) => (
-              <li key={point}>
-                <span
-                  aria-hidden="true"
-                  className="icon-list__mark icon-list__mark--solution"
-                >
-                  +
-                </span>
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
       </section>
 
       <section className="auth-shell__form">

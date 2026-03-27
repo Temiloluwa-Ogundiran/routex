@@ -11,7 +11,18 @@ import pytz
 app = FastAPI()
 load_dotenv()
 PREFIX = 'agg'
-logging.basicConfig(level=logging.INFO)
+LOG_LEVEL = getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO)
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="%(levelname)s %(name)s %(message)s",
+)
+for noisy_logger_name in (
+    "sqlalchemy.engine",
+    "uvicorn.access",
+    "httpx",
+    "httpcore",
+):
+    logging.getLogger(noisy_logger_name).setLevel(logging.WARNING)
 DB_URL = os.getenv('DB_URL')
 AGG_SECRET = os.getenv('AGG_SECRET')
 # Set Nigerian Timezone (WAT)

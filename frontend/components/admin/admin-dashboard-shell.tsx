@@ -134,11 +134,17 @@ export function AdminDashboardShell() {
         ]}
         subtitle="Router control"
         title="RouteX Admin"
+        accountMenu={
+          <button
+            className="ops-account-menu__button"
+            onClick={() => void signOutAdmin()}
+            type="button"
+          >
+            Sign out
+          </button>
+        }
         actions={
           <>
-            <PushButton onClick={() => void signOutAdmin()} variant="primary">
-              Sign out
-            </PushButton>
             <a
               className="push-button push-button--secondary"
               href={docsHref()}
@@ -185,11 +191,17 @@ export function AdminDashboardShell() {
         ]}
         subtitle="Router control"
         title="RouteX Admin"
+        accountMenu={
+          <button
+            className="ops-account-menu__button"
+            onClick={() => void signOutAdmin()}
+            type="button"
+          >
+            Sign out
+          </button>
+        }
         actions={
           <>
-            <PushButton onClick={() => void signOutAdmin()} variant="primary">
-              Sign out
-            </PushButton>
             <a
               className="push-button push-button--secondary"
               href={docsHref()}
@@ -240,11 +252,17 @@ export function AdminDashboardShell() {
       ]}
       subtitle="Router control"
       title="RouteX Admin"
+      accountMenu={
+        <button
+          className="ops-account-menu__button"
+          onClick={() => void signOutAdmin()}
+          type="button"
+        >
+          Sign out
+        </button>
+      }
       actions={
         <>
-          <PushButton onClick={() => void signOutAdmin()} variant="primary">
-            Sign out
-          </PushButton>
           <a
             className="push-button push-button--secondary"
             href={docsHref()}

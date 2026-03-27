@@ -44,6 +44,14 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
         "redirect_url": redirect_url or FRONTEND_BASE_URL,
         "tx_ref": transaction.processor_reference,
     }
+    payload_metadata = dict(metadata or {})
+    payload_metadata.update(
+        {
+            "routex_reference": transaction.reference,
+            "routex_processor_reference": transaction.processor_reference,
+        }
+    )
+    data["meta"] = payload_metadata
 
     if redirect_url:
         # data['redirect_url'] = redirect_url
@@ -51,8 +59,7 @@ async def initialize(session: AsyncSession, email:str, amount: float, merchant: 
     if notification_url:
         transaction.notification_url = notification_url
     
-    if metadata:
-        transaction.metadata_payload = json.dumps(metadata)
+    transaction.metadata_payload = payload_metadata
 
     if mode == tokenEnums.TokenMode.LIVE.value:
         #TODO: SWITCH TO LIVE HEADER

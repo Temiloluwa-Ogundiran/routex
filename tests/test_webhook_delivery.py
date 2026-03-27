@@ -93,10 +93,10 @@ class TestWebhookDelivery:
         assert mock_dispatch.call_args.kwargs["transaction"].id == transaction.id
         assert mock_dispatch.call_args.kwargs["event"] == EventType.CHARGE_SUCCESS
 
-    @patch("services.celeryService.send_webhook_task.delay")
+    @patch("services.celeryService.send_webhook_task.apply_async")
     async def test_webhook_dispatch_queues_celery_delivery_with_aggregator_signature_only(
         self,
-        mock_delay,
+        mock_apply_async,
         async_session,
         test_merchant,
         test_customer,
@@ -139,13 +139,16 @@ class TestWebhookDelivery:
             token=token_obj,
         )
 
-        mock_delay.assert_called_once()
-        kwargs = mock_delay.call_args.kwargs
-        assert kwargs["url"] == "https://merchant.example.com/webhook"
-        assert kwargs["event_type"] == EventType.CHARGE_SUCCESS.value
-        assert set(kwargs["headers"]) == {"Content-Type", "X-AGGREGATOR-SIGNATURE"}
+        mock_apply_async.assert_called_once()
+        kwargs = mock_apply_async.call_args.kwargs
+        assert kwargs["queue"] == "webhook_queue"
+        assert kwargs["routing_key"] == "webhook_queue"
+        task_kwargs = kwargs["kwargs"]
+        assert task_kwargs["url"] == "https://merchant.example.com/webhook"
+        assert task_kwargs["event_type"] == EventType.CHARGE_SUCCESS.value
+        assert set(task_kwargs["headers"]) == {"Content-Type", "X-AGGREGATOR-SIGNATURE"}
 
-        payload = json.loads(kwargs["payload_str"])
+        payload = json.loads(task_kwargs["payload_str"])
         assert payload["event"] == EventType.CHARGE_SUCCESS.value
         assert payload["reference"] == "WEBHOOK_QUEUE_001"
         assert payload["data"]["customer"]["email"] == test_customer.email

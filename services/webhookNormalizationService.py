@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +13,8 @@ from database.models.Transaction import Transaction
 from enums import tokenEnums, transactionEnums
 from database.models.Merchant import Merchant
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass(slots=True)
 class NormalizedWebhookEvent:
@@ -21,6 +24,31 @@ class NormalizedWebhookEvent:
     operation: str
     status: str
     processor_fee: float = 0.0
+
+
+def _pick_first_non_empty(*values):
+    for value in values:
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def _normalize_flutterwave_status(raw_event: str, raw_status: str) -> str:
+    normalized_status = raw_status.strip().lower()
+    normalized_event = raw_event.strip().lower()
+
+    success_values = {"successful", "success", "succeeded", "completed"}
+    pending_values = {"pending", "processing", "queued", "initiated"}
+    failed_values = {"failed", "failure", "cancelled", "canceled", "error", "declined"}
+
+    if normalized_status in success_values or normalized_event.endswith(".completed"):
+        return transactionEnums.TransactionStatus.SUCCESS.value
+    if normalized_status in pending_values or normalized_event.endswith(".updated"):
+        return transactionEnums.TransactionStatus.PENDING.value
+    if normalized_status in failed_values or normalized_event.endswith(".failed"):
+        return transactionEnums.TransactionStatus.FAILED.value
+
+    return "ignored"
 
 
 def normalize_event(gateway: str, payload: dict) -> NormalizedWebhookEvent:
@@ -65,16 +93,22 @@ def normalize_event(gateway: str, payload: dict) -> NormalizedWebhookEvent:
         )
 
     if gateway == "fltw":
-        status_value = str(data.get("status", "")).lower()
-        normalized_status = (
-            transactionEnums.TransactionStatus.SUCCESS.value
-            if status_value == "successful"
-            else transactionEnums.TransactionStatus.FAILED.value
+        raw_event = str(payload.get("event") or payload.get("type") or "").strip()
+        status_value = str(data.get("status") or payload.get("status") or "").strip()
+        normalized_status = _normalize_flutterwave_status(raw_event, status_value)
+        metadata = data.get("meta") if isinstance(data.get("meta"), dict) else {}
+        processor_reference = _pick_first_non_empty(
+            data.get("tx_ref"),
+            payload.get("tx_ref"),
+            data.get("reference"),
+            payload.get("reference"),
+            metadata.get("routex_processor_reference"),
+            metadata.get("routex_reference"),
         )
         return NormalizedWebhookEvent(
             gateway=gateway,
-            event=payload.get("event", f"charge.{status_value or 'failed'}"),
-            processor_reference=data.get("tx_ref") or data.get("reference"),
+            event=raw_event or f"charge.{status_value.lower() or 'updated'}",
+            processor_reference=processor_reference,
             operation="collection",
             status=normalized_status,
             processor_fee=float(data.get("app_fee") or 0.0),
@@ -252,13 +286,26 @@ async def handle_event(
     normalized_event = normalize_event(gateway, payload)
 
     if normalized_event.status == "ignored" or not normalized_event.processor_reference:
+        logger.warning(
+            "Ignoring webhook event: gateway=%s event=%s ref=%s status=%s",
+            gateway,
+            normalized_event.event,
+            normalized_event.processor_reference,
+            normalized_event.status,
+        )
         return normalized_event, None
 
-    transaction = await transactionService.get_transaction_by_processor_reference(
-        processor_reference=normalized_event.processor_reference,
+    transaction = await transactionService.get_transaction_by_any_reference(
         session=session,
+        reference=normalized_event.processor_reference,
     )
     if not transaction:
+        logger.warning(
+            "No transaction matched webhook: gateway=%s event=%s ref=%s",
+            gateway,
+            normalized_event.event,
+            normalized_event.processor_reference,
+        )
         return normalized_event, None
 
     if normalized_event.status == transactionEnums.TransactionStatus.SUCCESS.value:

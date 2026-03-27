@@ -1,7 +1,7 @@
 const MARQUEE_COPY = [
   "Fast checkout",
-  "Live payouts",
-  "Clear webhooks",
+  "Clear updates",
+  "Easy payouts",
   "Smart routing",
 ];
 
@@ -18,9 +18,9 @@ export function FeatureGrid() {
 
       <div className="feature-block__header">
         <p className="feature-block__eyebrow">Why teams choose RouteX</p>
-        <h2 className="feature-block__title">Everything you need. Nothing you don&apos;t.</h2>
+        <h2 className="feature-block__title">Simple to start. Strong when you grow.</h2>
         <p className="feature-block__summary">
-          Keep checkout, payouts, and payment updates in one clean system.
+          Take payments, send payouts, and follow every result in one place.
         </p>
       </div>
 
@@ -28,24 +28,22 @@ export function FeatureGrid() {
         <article className="poster-panel poster-panel--ink poster-panel--hero">
           <span aria-hidden="true" className="poster-panel__gridline" />
           <p className="poster-panel__eyebrow">Hosted collections</p>
-          <h3 className="poster-panel__title">
-            One checkout link. Customers choose how they pay.
-          </h3>
+          <h3 className="poster-panel__title">One payment link. More ways to pay.</h3>
           <p className="poster-panel__copy">
-            Start one payment and let RouteX return the checkout link for the customer.
+            Start one payment and RouteX returns the checkout page for your customer.
           </p>
           <div className="poster-panel__pillars">
             <div className="poster-pillar">
               <strong>Smart routing</strong>
-              <span>Send one request and RouteX picks the best path.</span>
+              <span>RouteX picks the best gateway in real time.</span>
             </div>
             <div className="poster-pillar">
-              <strong>Webhook updates</strong>
-              <span>Your app gets one clear payment update.</span>
+              <strong>Signed updates</strong>
+              <span>Your app gets one clear webhook when the status changes.</span>
             </div>
             <div className="poster-pillar">
               <strong>Manual control</strong>
-              <span>Pick a gateway only when you really need to.</span>
+              <span>Choose a gateway yourself when you need to.</span>
             </div>
           </div>
         </article>
@@ -53,9 +51,9 @@ export function FeatureGrid() {
         <div className="poster-panel__stack">
           <article className="poster-panel">
             <p className="poster-panel__eyebrow">Payment updates</p>
-            <h3 className="poster-panel__title">Know what happened, fast.</h3>
+            <h3 className="poster-panel__title">Know what happened.</h3>
             <p className="poster-panel__copy">
-              RouteX confirms the provider result, then sends your app a simple signed webhook.
+              RouteX checks the provider result, then sends your app one signed update.
             </p>
             <span className="poster-panel__meta">Header: X-AGGREGATOR-SIGNATURE</span>
           </article>
@@ -64,7 +62,7 @@ export function FeatureGrid() {
             <p className="poster-panel__eyebrow">Payouts</p>
             <h3 className="poster-panel__title">Run payouts from one place.</h3>
             <p className="poster-panel__copy">
-              Keep balances, payment links, transactions, and payouts in one dashboard.
+              Keep balances, payment links, transactions, and payouts in one clean dashboard.
             </p>
           </article>
         </div>
@@ -77,10 +75,10 @@ export function FeatureGrid() {
             className="feature-block__title feature-block__title--compact"
             id="built-to-ship-hard"
           >
-            Run payments from one clean stack.
+            Everything you need to get paid.
           </h2>
           <p className="feature-block__summary feature-block__summary--dark">
-            Simple enough for fast teams. Strong enough for live money movement.
+            Easy to understand. Ready for live money.
           </p>
         </div>
 

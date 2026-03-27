@@ -5,7 +5,7 @@ import settings
 DATABASE_URL = settings.DB_URL
 
 # Create async engine
-engine = create_async_engine(DATABASE_URL, echo=True, pool_pre_ping=True)
+engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 
 # Create async sessionmaker
 async_session = async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
