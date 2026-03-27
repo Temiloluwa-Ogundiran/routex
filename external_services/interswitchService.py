@@ -1,6 +1,7 @@
 import base64
 from html import escape
 import json
+from datetime import date, datetime, timezone
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
@@ -22,6 +23,7 @@ from services.httpRequestService import get_request
 from settings import (
     FRONTEND_BASE_URL,
     INTERSWITCH_CLIENT_ID,
+    INTERSWITCH_IDENTITY_VERIFY_URL,
     INTERSWITCH_MERCHANT_CODE,
     INTERSWITCH_PAY_ITEM_ID,
     INTERSWITCH_SECRET_KEY,
@@ -82,6 +84,13 @@ def get_paybill_url(mode: str) -> str:
     if mode == tokenEnums.TokenMode.LIVE.value:
         return INTERSWITCH_LIVE_PAYBILL_URL
     return INTERSWITCH_QA_PAYBILL_URL
+
+
+def get_identity_verify_url(mode: str) -> str | None:
+    configured_url = (INTERSWITCH_IDENTITY_VERIFY_URL or "").strip()
+    if configured_url:
+        return configured_url
+    return None
 
 
 def get_checkout_bridge_url(processor_reference: str, server_base_url: str | None = None) -> str:
@@ -264,6 +273,151 @@ async def _create_paybill_checkout(mode: str, access_token: str, payload: dict[s
     except httpx.HTTPError as exc:
         raise ValueError("Interswitch paybill request failed.") from exc
     return response.json()
+
+
+def _coerce_verification_items(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    direct_items = payload.get("verificationResponses")
+    if isinstance(direct_items, list):
+        return [item for item in direct_items if isinstance(item, dict)]
+
+    nested_payload = payload.get("data")
+    if isinstance(nested_payload, dict):
+        nested_items = nested_payload.get("verificationResponses")
+        if isinstance(nested_items, list):
+            return [item for item in nested_items if isinstance(item, dict)]
+
+    return []
+
+
+def _normalize_identity_response(
+    payload: dict[str, Any],
+    *,
+    nin: str,
+    first_name: str,
+    last_name: str,
+    middle_name: str | None,
+) -> dict[str, Any]:
+    verification_items = _coerce_verification_items(payload)
+    verification_item = verification_items[0] if verification_items else {}
+    status = str(
+        verification_item.get("status")
+        or payload.get("status")
+        or payload.get("verificationStatus")
+        or "PENDING"
+    ).upper()
+
+    full_name = " ".join(
+        part
+        for part in (
+            verification_item.get("firstName") or first_name,
+            verification_item.get("middleName") or middle_name,
+            verification_item.get("lastName") or last_name,
+        )
+        if part
+    ).strip()
+
+    reference = str(
+        verification_item.get("reference")
+        or payload.get("reference")
+        or payload.get("requestReference")
+        or f"ISW|KYC|NIN|{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+    )
+
+    return {
+        "status": status,
+        "reference": reference,
+        "full_name": full_name,
+        "provider_response": payload,
+        "nin_last4": nin[-4:],
+    }
+
+
+async def verify_nin_identity(
+    *,
+    nin: str,
+    first_name: str,
+    last_name: str,
+    phone: str,
+    birth_date: date,
+    mode: str,
+    middle_name: str | None = None,
+    email: str | None = None,
+) -> dict[str, Any]:
+    if mode == tokenEnums.TokenMode.TEST.value and not get_identity_verify_url(mode):
+        full_name = " ".join(part for part in (first_name, middle_name, last_name) if part).strip()
+        reference = f"ISW|KYC|NIN|{datetime.now(timezone.utc).strftime('%Y%m%d')}|{nin[-4:]}"
+        return {
+            "status": "VERIFIED",
+            "reference": reference,
+            "full_name": full_name,
+            "provider_response": {
+                "simulated": True,
+                "verificationResponses": [
+                    {
+                        "type": "NIN",
+                        "status": "VERIFIED",
+                        "identityNumber": nin,
+                        "firstName": first_name,
+                        "middleName": middle_name,
+                        "lastName": last_name,
+                    }
+                ],
+            },
+            "nin_last4": nin[-4:],
+        }
+
+    if not has_full_credentials():
+        raise ValueError("Interswitch identity verification credentials are not configured.")
+
+    identity_verify_url = get_identity_verify_url(mode)
+    if not identity_verify_url:
+        raise ValueError("Interswitch identity verification URL is not configured.")
+
+    access_token = await _request_access_token(mode)
+    payload = {
+        "type": "identity_verification",
+        "verificationRequests": [
+            {
+                "type": "NIN",
+                "identityNumber": nin,
+                "firstName": first_name,
+                "lastName": last_name,
+                "middleName": middle_name or "",
+                "phone": phone,
+                "birthDate": birth_date.isoformat(),
+                "email": email or "",
+            }
+        ],
+    }
+
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.post(
+                identity_verify_url,
+                json=payload,
+                headers=headers,
+            )
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise ValueError(
+            f"Interswitch identity verification request failed: {exc.response.text}"
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise ValueError("Interswitch identity verification request failed.") from exc
+
+    response_payload = response.json()
+    return _normalize_identity_response(
+        response_payload,
+        nin=nin,
+        first_name=first_name,
+        last_name=last_name,
+        middle_name=middle_name,
+    )
 
 
 def extract_payment_url(response_data: dict[str, Any]) -> str | None:

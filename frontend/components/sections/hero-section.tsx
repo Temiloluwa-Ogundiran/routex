@@ -10,7 +10,7 @@ export function HeroSection() {
         <h1 className="poster-hero__title">Take payments. Stay in control.</h1>
         <span aria-hidden="true" className="poster-hero__underline" />
         <p className="poster-hero__copy">
-          One checkout, one dashboard, and clear updates when money moves.
+          Give customers one checkout and keep every payment update in one dashboard.
         </p>
         <div className="poster-hero__actions">
           <Link className="push-button push-button--primary" href="/signup">
@@ -28,11 +28,11 @@ export function HeroSection() {
         <div className="poster-hero__proof">
           <div className="poster-proof">
             <strong>4 gateways</strong>
-            <span>Flutterwave, Paystack, Kora, Interswitch</span>
+            <span>Flutterwave, Paystack, Kora, and Interswitch</span>
           </div>
           <div className="poster-proof">
-            <strong>One checkout</strong>
-            <span>Your customer chooses how to pay.</span>
+            <strong>1 simple setup</strong>
+            <span>Connect once and start collecting.</span>
           </div>
         </div>
       </div>

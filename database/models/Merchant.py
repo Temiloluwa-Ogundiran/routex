@@ -30,6 +30,12 @@ class Merchant(Base):
     live_balance = Column(Float, default=0.0)
     live_webhook_url = Column(Text, nullable= True)
     test_webhook_url = Column(Text, nullable= True)
+    nin_status = Column(String(20), nullable=True)
+    nin_last4 = Column(String(4), nullable=True)
+    nin_reference = Column(String(120), nullable=True)
+    nin_verified_name = Column(String(150), nullable=True)
+    nin_submitted_at = Column(DateTime(timezone=True), nullable=True)
+    nin_verified_at = Column(DateTime(timezone=True), nullable=True)
     customers = relationship(
         "Customer",  # Model name of the related class
         secondary="customer_merchant",  # Association table

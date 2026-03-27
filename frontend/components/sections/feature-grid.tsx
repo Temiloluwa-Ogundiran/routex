@@ -18,9 +18,9 @@ export function FeatureGrid() {
 
       <div className="feature-block__header">
         <p className="feature-block__eyebrow">Why teams choose RouteX</p>
-        <h2 className="feature-block__title">Simple to start. Strong when you grow.</h2>
+        <h2 className="feature-block__title">Simple to start. Easy to trust.</h2>
         <p className="feature-block__summary">
-          Take payments, send payouts, and follow every result in one place.
+          Accept payments, track what happened, and manage your balance from one place.
         </p>
       </div>
 
@@ -28,22 +28,22 @@ export function FeatureGrid() {
         <article className="poster-panel poster-panel--ink poster-panel--hero">
           <span aria-hidden="true" className="poster-panel__gridline" />
           <p className="poster-panel__eyebrow">Hosted collections</p>
-          <h3 className="poster-panel__title">One payment link. More ways to pay.</h3>
+          <h3 className="poster-panel__title">One checkout. More ways to pay.</h3>
           <p className="poster-panel__copy">
-            Start one payment and RouteX returns the checkout page for your customer.
+            Start one payment and send your customer straight to checkout.
           </p>
           <div className="poster-panel__pillars">
             <div className="poster-pillar">
-              <strong>Smart routing</strong>
-              <span>RouteX picks the best gateway in real time.</span>
+              <strong>Best route</strong>
+              <span>RouteX picks the healthiest gateway for the job.</span>
             </div>
             <div className="poster-pillar">
-              <strong>Signed updates</strong>
-              <span>Your app gets one clear webhook when the status changes.</span>
+              <strong>Clear update</strong>
+              <span>Your app gets one signed webhook after the result is confirmed.</span>
             </div>
             <div className="poster-pillar">
-              <strong>Manual control</strong>
-              <span>Choose a gateway yourself when you need to.</span>
+              <strong>Your choice</strong>
+              <span>Pick a gateway yourself when you want full control.</span>
             </div>
           </div>
         </article>
@@ -51,9 +51,9 @@ export function FeatureGrid() {
         <div className="poster-panel__stack">
           <article className="poster-panel poster-panel--acid">
             <p className="poster-panel__eyebrow">Payouts</p>
-            <h3 className="poster-panel__title">Run payouts from one place.</h3>
+            <h3 className="poster-panel__title">Manage payouts from one place.</h3>
             <p className="poster-panel__copy">
-              Keep balances, payment links, transactions, and payouts in one clean dashboard.
+              Review balances, transactions, and outgoing payments in one clean workspace.
             </p>
           </article>
         </div>
@@ -66,30 +66,30 @@ export function FeatureGrid() {
             className="feature-block__title feature-block__title--compact"
             id="built-to-ship-hard"
           >
-            Everything you need to get paid.
+            What RouteX helps you do.
           </h2>
           <p className="feature-block__summary feature-block__summary--dark">
-            Easy to understand. Ready for live money.
+            Simple enough for any business team to understand.
           </p>
         </div>
 
         <div className="benefit-grid">
           <article className="benefit-card">
             <span className="benefit-card__icon">01</span>
-            <h3>Hosted collections</h3>
-            <p>Share one checkout link instead of building one flow per provider.</p>
+            <h3>Collect money</h3>
+            <p>Use one checkout instead of building one flow for every gateway.</p>
           </article>
 
           <article className="benefit-card">
             <span className="benefit-card__icon">02</span>
-            <h3>Clear updates</h3>
-            <p>Get a signed payment update after RouteX confirms the transaction.</p>
+            <h3>Stay updated</h3>
+            <p>Know when a payment succeeds, fails, or is still pending.</p>
           </article>
 
           <article className="benefit-card">
             <span className="benefit-card__icon">03</span>
-            <h3>Payout control</h3>
-            <p>Handle outgoing payments, balances, and history from one dashboard.</p>
+            <h3>Control your balance</h3>
+            <p>Manage payouts, balances, and history from one dashboard.</p>
           </article>
         </div>
       </section>

@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound
@@ -124,3 +126,27 @@ async def get_merchant_periodic_revenue(session: AsyncSession,  merchant: Mercha
         for row in results
     ]
     return revenue_breakdown
+
+
+async def save_merchant_nin_verification(
+    session: AsyncSession,
+    merchant: Merchant,
+    *,
+    nin_last4: str,
+    nin_reference: str,
+    nin_verified_name: str,
+    nin_status: str,
+) -> Merchant:
+    submitted_at = datetime.now(timezone.utc)
+    merchant.nin_last4 = nin_last4
+    merchant.nin_reference = nin_reference
+    merchant.nin_verified_name = nin_verified_name
+    merchant.nin_status = nin_status.lower()
+    merchant.nin_submitted_at = submitted_at
+    merchant.nin_verified_at = (
+        submitted_at if nin_status.lower() == "verified" else None
+    )
+    session.add(merchant)
+    await session.commit()
+    await session.refresh(merchant)
+    return merchant

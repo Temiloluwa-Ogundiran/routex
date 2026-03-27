@@ -1,8 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends, Security, Request, Response, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from services import merchantService, tokenService, userService
-from external_services import koraService
-from schemas.merchantSchema import MerchantCreateRequest, MerchantResponse, MerchantDetailResponse, MerchantGetRequest
+from external_services import interswitchService, koraService
+from schemas.merchantSchema import (
+    MerchantCreateRequest,
+    MerchantDetailResponse,
+    MerchantGetRequest,
+    MerchantNinVerificationRequest,
+    MerchantNinVerificationResponse,
+    MerchantResponse,
+)
 from tortoise.exceptions import DoesNotExist
 import json
 from fastapi.responses import JSONResponse
@@ -99,3 +106,54 @@ async def get_merchant_periodic_revenue(
         "revenue_breakdown": revenue_breakdown,
         "total_revenue": await merchantService.get_merchant_revenue(session= session, merchant= merchant, mode= mode)
     }
+
+
+@merchant_router.post("/merchant/verify-nin", response_model=MerchantNinVerificationResponse)
+async def verify_merchant_nin(
+    request: MerchantNinVerificationRequest,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(userService.get_current_user),
+):
+    merchant = await merchantService.get_by_id_or_email(id=request.merchant_id, session=session)
+    if not merchant:
+        raise HTTPException(status_code=404, detail="Merchant not found")
+
+    if not await userService.user_in_merchant(user=user, merchant=merchant, session=session):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="user not allowed to verify merchant identity",
+        )
+
+    try:
+        verification_result = await interswitchService.verify_nin_identity(
+            nin=request.nin,
+            first_name=request.first_name,
+            last_name=request.last_name,
+            middle_name=request.middle_name,
+            phone=request.phone,
+            birth_date=request.birth_date,
+            email=merchant.email,
+            mode=(request.mode or tokenEnums.TokenMode.TEST.value),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    merchant = await merchantService.save_merchant_nin_verification(
+        session=session,
+        merchant=merchant,
+        nin_last4=verification_result.get("nin_last4") or request.nin[-4:],
+        nin_reference=verification_result["reference"],
+        nin_verified_name=verification_result["full_name"],
+        nin_status=verification_result["status"],
+    )
+
+    return MerchantNinVerificationResponse(
+        status=True,
+        message="NIN verification saved.",
+        nin_status=merchant.nin_status or "verified",
+        nin_last4=merchant.nin_last4 or request.nin[-4:],
+        nin_reference=merchant.nin_reference or verification_result["reference"],
+        nin_verified_name=merchant.nin_verified_name or verification_result["full_name"],
+        nin_submitted_at=merchant.nin_submitted_at,
+        nin_verified_at=merchant.nin_verified_at,
+    )

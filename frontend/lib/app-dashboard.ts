@@ -17,6 +17,12 @@ export type MerchantWorkspaceMerchant = {
   percentage_charge: number;
   flat_charge: number;
   role?: string | null;
+  nin_status?: string | null;
+  nin_last4?: string | null;
+  nin_reference?: string | null;
+  nin_verified_name?: string | null;
+  nin_submitted_at?: string | null;
+  nin_verified_at?: string | null;
 };
 
 export type MerchantWorkspaceSummary = {

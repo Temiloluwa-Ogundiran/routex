@@ -1,7 +1,6 @@
 "use client";
 
 import type { FormEvent } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { startTransition, useEffect, useMemo, useState } from "react";
@@ -12,13 +11,23 @@ import {
   type MerchantDashboardData,
   type MerchantDashboardResponse,
   type MerchantWorkspaceMerchant,
-  type MerchantWorkspacePaymentLink,
 } from "../../lib/app-dashboard";
 import { DOCS_LINK_REL, DOCS_LINK_TARGET, docsHref } from "../../lib/docs-url";
 import { OpsShell } from "../layout/ops-shell";
 import { PushButton } from "../ui/push-button";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
+type MerchantNinVerificationResponse = {
+  status: boolean;
+  message?: string;
+  detail?: string;
+  nin_status?: string | null;
+  nin_last4?: string | null;
+  nin_reference?: string | null;
+  nin_verified_name?: string | null;
+  nin_submitted_at?: string | null;
+  nin_verified_at?: string | null;
+};
 
 function formatCurrency(amount: number, currency = "NGN") {
   const formattedAmount = new Intl.NumberFormat("en-NG", {
@@ -92,6 +101,17 @@ function getGatewayDisplayName(gatewayCode: string | null | undefined) {
       return "Interswitch";
     default:
       return "Automatic";
+  }
+}
+
+function getNinStatusLabel(status: string | null | undefined) {
+  switch ((status ?? "").trim().toLowerCase()) {
+    case "verified":
+      return "Verified";
+    case "pending":
+      return "Pending";
+    default:
+      return "Optional";
   }
 }
 
@@ -204,13 +224,11 @@ export function MerchantDashboardShell() {
     error: null,
   });
   const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
-  const [paymentLinkState, setPaymentLinkState] = useState<{
-    open: boolean;
+  const [ninVerificationState, setNinVerificationState] = useState<{
     submitting: boolean;
     message: string | null;
     error: string | null;
   }>({
-    open: false,
     submitting: false,
     message: null,
     error: null,
@@ -311,10 +329,10 @@ export function MerchantDashboardShell() {
             href: buildDashboardSectionUrl(
               selectedMerchantId,
               mode,
-              "dashboard-payment-links",
+              "dashboard-nin-verification",
               searchParams,
             ),
-            label: "Payment Links",
+            label: "NIN verification",
           },
         ],
       },
@@ -419,7 +437,7 @@ export function MerchantDashboardShell() {
     }, 1800);
   }
 
-  async function handleCreatePaymentLink(event: FormEvent<HTMLFormElement>) {
+  async function handleVerifyNin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!selectedMerchant) {
@@ -427,94 +445,106 @@ export function MerchantDashboardShell() {
     }
 
     const formData = new FormData(event.currentTarget);
-    const title = String(formData.get("title") ?? "").trim();
-    const amountValue = Number(String(formData.get("amount") ?? ""));
-    const gatewayCode = String(formData.get("gateway_code") ?? "")
-      .trim()
-      .toLowerCase();
+    const nin = String(formData.get("nin") ?? "").trim();
+    const firstName = String(formData.get("first_name") ?? "").trim();
+    const lastName = String(formData.get("last_name") ?? "").trim();
+    const middleName = String(formData.get("middle_name") ?? "").trim();
+    const phone = String(formData.get("phone") ?? "").trim();
+    const birthDate = String(formData.get("birth_date") ?? "").trim();
 
-    if (!title) {
-      setPaymentLinkState((currentState) => ({
-        ...currentState,
-        error: "Add a short title for the payment link.",
+    if (
+      nin.length !== 11 ||
+      !firstName ||
+      !lastName ||
+      !phone ||
+      !birthDate
+    ) {
+      setNinVerificationState({
+        submitting: false,
+        error: "Add a valid NIN, name, phone number, and date of birth.",
         message: null,
-      }));
+      });
       return;
     }
 
-    if (!Number.isFinite(amountValue) || amountValue <= 0) {
-      setPaymentLinkState((currentState) => ({
-        ...currentState,
-        error: "Enter a valid amount greater than zero.",
-        message: null,
-      }));
-      return;
-    }
-
-    setPaymentLinkState((currentState) => ({
-      ...currentState,
+    setNinVerificationState({
       submitting: true,
       error: null,
       message: null,
-    }));
+    });
 
-    const response = await fetch("/api/app/payment-links", {
+    const response = await fetch("/api/app/merchant/verify-nin", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         merchant_id: selectedMerchant.id,
-        title,
-        description: gatewayCode
-          ? `Pinned to ${getGatewayDisplayName(gatewayCode)}`
-          : null,
-        amount_type: "static",
         mode,
-        type: "recurring",
-        currency: "NGN",
-        amount: amountValue,
-        gateway_code: gatewayCode || null,
+        nin,
+        first_name: firstName,
+        last_name: lastName,
+        middle_name: middleName || null,
+        phone,
+        birth_date: birthDate,
       }),
     });
 
     const responseBody = (await response.json().catch(() => ({
-      detail: "We could not create the payment link.",
-    }))) as MerchantWorkspacePaymentLink & {
+      detail: "We could not verify this NIN right now.",
+      status: false,
+    }))) as MerchantNinVerificationResponse & {
       detail?: string;
       message?: string;
     };
 
     if (!response.ok) {
-      setPaymentLinkState((currentState) => ({
-        ...currentState,
+      setNinVerificationState({
         submitting: false,
         error:
           responseBody.detail ??
           responseBody.message ??
-          "We could not create the payment link.",
+          "We could not verify this NIN right now.",
         message: null,
-      }));
+      });
       return;
     }
 
     setDashboard((currentDashboard) => {
-      if (!currentDashboard) {
+      if (!currentDashboard || !currentDashboard.selected_merchant) {
         return currentDashboard;
       }
 
+      const nextMerchant = {
+        ...currentDashboard.selected_merchant,
+        nin_status: responseBody.nin_status ?? currentDashboard.selected_merchant.nin_status,
+        nin_last4: responseBody.nin_last4 ?? currentDashboard.selected_merchant.nin_last4,
+        nin_reference:
+          responseBody.nin_reference ?? currentDashboard.selected_merchant.nin_reference,
+        nin_verified_name:
+          responseBody.nin_verified_name ??
+          currentDashboard.selected_merchant.nin_verified_name,
+        nin_submitted_at:
+          responseBody.nin_submitted_at ??
+          currentDashboard.selected_merchant.nin_submitted_at,
+        nin_verified_at:
+          responseBody.nin_verified_at ??
+          currentDashboard.selected_merchant.nin_verified_at,
+      };
+
       return {
         ...currentDashboard,
-        payment_links: [responseBody, ...currentDashboard.payment_links],
+        selected_merchant: nextMerchant,
+        merchants: currentDashboard.merchants.map((merchant) =>
+          merchant.id === nextMerchant.id ? nextMerchant : merchant,
+        ),
       };
     });
 
-    event.currentTarget.reset();
-    setPaymentLinkState({
-      open: false,
+    setNinVerificationState({
       submitting: false,
       error: null,
-      message: "Payment link created successfully.",
+      message: responseBody.message ?? "NIN verification saved.",
     });
   }
 
@@ -531,10 +561,7 @@ export function MerchantDashboardShell() {
           <div className="dashboard-hero__copy">
             <p className="section-badge">Merchant Workspace</p>
             <h1>Loading your RouteX workspace</h1>
-            <p>
-              We are pulling your merchant profile, balances, transactions, and
-              API keys.
-            </p>
+            <p>Getting your balances, transactions, and keys ready.</p>
           </div>
         </section>
       </OpsShell>
@@ -554,9 +581,7 @@ export function MerchantDashboardShell() {
           <div className="dashboard-hero__copy">
             <p className="section-badge">Merchant Workspace</p>
             <h1>We couldn&apos;t load your merchant workspace</h1>
-            <p>
-              {errorMessage ?? "Please check your backend connection and try again."}
-            </p>
+            <p>{errorMessage ?? "Please try again in a moment."}</p>
             <div className="dashboard-hero__actions">
               <PushButton onClick={() => setRefreshKey((currentValue) => currentValue + 1)}>
                 Retry
@@ -610,7 +635,7 @@ export function MerchantDashboardShell() {
           <div className="dashboard-hero__copy">
             <p className="section-badge">Merchant Workspace</p>
             <h1>Create your first merchant workspace</h1>
-            <p>Your account is ready. Create a workspace to start taking payments.</p>
+            <p>Your account is ready. Add a workspace to start taking payments.</p>
           </div>
 
           <form
@@ -741,10 +766,7 @@ export function MerchantDashboardShell() {
         <div className="dashboard-hero__copy">
           <p className="section-badge">Merchant Workspace</p>
           <h1>{selectedMerchant.name}</h1>
-          <p>
-            Welcome back, {dashboard.user.name}. See revenue, balances, keys,
-            and payment activity in one place.
-          </p>
+          <p>See your balance, recent payments, and API keys in one place.</p>
           <div className="dashboard-card__meta">
             <span>{selectedMerchant.is_verified ? "Live enabled" : "Verification pending"}</span>
             <span>{selectedMerchant.is_active ? "Active" : "Paused"}</span>
@@ -880,7 +902,7 @@ export function MerchantDashboardShell() {
             </div>
           </div>
           <p className="dashboard-copy-feedback">
-            {copiedLabel ?? "Copy your keys here, then move into the docs when you are ready to build."}
+            {copiedLabel ?? "Copy the key you need when you are ready to connect."}
           </p>
         </article>
       </section>
@@ -942,82 +964,18 @@ export function MerchantDashboardShell() {
               <p className="dashboard-panel__eyebrow">Payment links</p>
               <h3>Payment links</h3>
             </div>
-            <div className="dashboard-app-actions">
-              <button
-                className="dashboard-inline-button"
-                onClick={() =>
-                  setPaymentLinkState((currentState) => ({
-                    ...currentState,
-                    open: !currentState.open,
-                    error: null,
-                    message: null,
-                  }))
-                }
-                type="button"
-              >
-                {paymentLinkState.open ? "Close form" : "Create link"}
-              </button>
-              <a
-                className="inline-link"
-                href={docsHref("/collections")}
-                rel={DOCS_LINK_REL}
-                target={DOCS_LINK_TARGET}
-              >
-                Endpoint guide
-              </a>
-            </div>
-          </div>
-          {paymentLinkState.open ? (
-            <form
-              className="dashboard-control-form dashboard-control-card dashboard-payment-link-form"
-              onSubmit={(event) => void handleCreatePaymentLink(event)}
+            <a
+              className="inline-link"
+              href={docsHref("/collections")}
+              rel={DOCS_LINK_REL}
+              target={DOCS_LINK_TARGET}
             >
-              <label className="auth-field">
-                <span className="dashboard-control-label">Title</span>
-                <input
-                  className="dashboard-control-input"
-                  name="title"
-                  placeholder="Deposit"
-                  required
-                  type="text"
-                />
-              </label>
-              <label className="auth-field">
-                <span className="dashboard-control-label">Amount</span>
-                <input
-                  className="dashboard-control-input"
-                  inputMode="decimal"
-                  min="1"
-                  name="amount"
-                  placeholder="2500"
-                  required
-                  step="0.01"
-                  type="number"
-                />
-              </label>
-              <label className="auth-field">
-                <span className="dashboard-control-label">Gateway</span>
-                <select className="dashboard-control-input" name="gateway_code">
-                  <option value="">Automatic</option>
-                  <option value="kora">Kora</option>
-                  <option value="pstk">Paystack</option>
-                  <option value="fltw">Flutterwave</option>
-                  <option value="isw">Interswitch</option>
-                </select>
-              </label>
-              <div className="dashboard-control-actions">
-                <PushButton disabled={paymentLinkState.submitting} type="submit">
-                  {paymentLinkState.submitting ? "Saving..." : "Save payment link"}
-                </PushButton>
-              </div>
-              {paymentLinkState.error ? (
-                <p className="dashboard-control-feedback">{paymentLinkState.error}</p>
-              ) : null}
-            </form>
-          ) : null}
-          {paymentLinkState.message ? (
-            <p className="dashboard-control-feedback">{paymentLinkState.message}</p>
-          ) : null}
+              Endpoint guide
+            </a>
+          </div>
+          <p className="dashboard-panel__note">
+            View the links already attached to this workspace. New links are created through the API.
+          </p>
           <div className="dashboard-feed">
             {dashboard.payment_links.length > 0 ? (
               dashboard.payment_links.map((paymentLink) => (
@@ -1050,54 +1008,119 @@ export function MerchantDashboardShell() {
               ))
             ) : (
               <p className="dashboard-feed__empty">
-                You have not created any payment links yet.
+                No payment links yet.
               </p>
             )}
           </div>
         </article>
 
-        <article className="dashboard-panel">
+        <article className="dashboard-panel" id="dashboard-nin-verification">
           <div className="dashboard-panel__header">
             <div>
-              <p className="dashboard-panel__eyebrow">Performance snapshot</p>
-              <h3>Mode summary</h3>
+              <p className="dashboard-panel__eyebrow">Identity check</p>
+              <h3>Verify your NIN</h3>
             </div>
-            <button
-              className="dashboard-inline-button"
-              onClick={() => setRefreshKey((currentValue) => currentValue + 1)}
-              type="button"
-            >
-              Refresh
-            </button>
+            <span className="dashboard-status-pill dashboard-status-pill--maintenance">
+              {getNinStatusLabel(selectedMerchant.nin_status)}
+            </span>
           </div>
-          <dl className="dashboard-stat-list">
-            <div>
-              <dt>Net revenue</dt>
-              <dd>
-                {formatCurrency(
-                  dashboard.summary?.revenue_metrics.net_revenue ?? 0,
-                  dashboard.summary?.top_currency?.currency ?? "NGN",
-                )}
-              </dd>
+          <p className="dashboard-panel__note">
+            Optional for test mode. It helps you preview the live verification flow before launch.
+          </p>
+          <div className="dashboard-card__meta dashboard-card__meta--stack">
+            <span>
+              Status: {getNinStatusLabel(selectedMerchant.nin_status)}
+            </span>
+            <span>
+              {selectedMerchant.nin_verified_name
+                ? `Name: ${selectedMerchant.nin_verified_name}`
+                : "No verified name yet"}
+            </span>
+            <span>
+              {selectedMerchant.nin_last4
+                ? `NIN ending ${selectedMerchant.nin_last4}`
+                : "NIN not submitted yet"}
+            </span>
+          </div>
+          <form
+            className="dashboard-control-form dashboard-control-card dashboard-nin-form"
+            onSubmit={(event) => void handleVerifyNin(event)}
+          >
+            <label className="auth-field">
+              <span className="dashboard-control-label">NIN</span>
+              <input
+                className="dashboard-control-input"
+                inputMode="numeric"
+                maxLength={11}
+                name="nin"
+                placeholder="12345678901"
+                required
+                type="text"
+              />
+            </label>
+            <label className="auth-field">
+              <span className="dashboard-control-label">First name</span>
+              <input
+                className="dashboard-control-input"
+                defaultValue={dashboard.user.name.split(" ")[0] ?? ""}
+                name="first_name"
+                placeholder="Ada"
+                required
+                type="text"
+              />
+            </label>
+            <label className="auth-field">
+              <span className="dashboard-control-label">Last name</span>
+              <input
+                className="dashboard-control-input"
+                defaultValue={dashboard.user.name.split(" ").slice(1).join(" ")}
+                name="last_name"
+                placeholder="Obi"
+                required
+                type="text"
+              />
+            </label>
+            <label className="auth-field">
+              <span className="dashboard-control-label">Middle name</span>
+              <input
+                className="dashboard-control-input"
+                name="middle_name"
+                placeholder="Optional"
+                type="text"
+              />
+            </label>
+            <label className="auth-field">
+              <span className="dashboard-control-label">Phone</span>
+              <input
+                className="dashboard-control-input"
+                defaultValue="+234"
+                name="phone"
+                placeholder="+2348012345678"
+                required
+                type="tel"
+              />
+            </label>
+            <label className="auth-field">
+              <span className="dashboard-control-label">Date of birth</span>
+              <input
+                className="dashboard-control-input"
+                name="birth_date"
+                required
+                type="date"
+              />
+            </label>
+            <div className="dashboard-control-actions">
+              <PushButton disabled={ninVerificationState.submitting} type="submit">
+                {ninVerificationState.submitting ? "Saving..." : "Submit NIN"}
+              </PushButton>
             </div>
-            <div>
-              <dt>Average ticket</dt>
-              <dd>
-                {formatCurrency(
-                  dashboard.summary?.revenue_metrics.average_transaction_value ?? 0,
-                  dashboard.summary?.top_currency?.currency ?? "NGN",
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt>Pending payouts</dt>
-              <dd>{dashboard.summary?.pending_payouts ?? 0}</dd>
-            </div>
-            <div>
-              <dt>Top currency</dt>
-              <dd>{dashboard.summary?.top_currency?.currency ?? "NGN"}</dd>
-            </div>
-          </dl>
+            {ninVerificationState.error ? (
+              <p className="dashboard-control-feedback">{ninVerificationState.error}</p>
+            ) : null}
+            {ninVerificationState.message ? (
+              <p className="dashboard-control-feedback">{ninVerificationState.message}</p>
+            ) : null}
+          </form>
         </article>
       </section>
     </OpsShell>

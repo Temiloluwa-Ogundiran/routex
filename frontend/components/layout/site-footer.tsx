@@ -12,7 +12,7 @@ export function SiteFooter() {
               <span>RouteX</span>
             </div>
             <p className="site-footer__copy">
-              One place to accept payments, track results, and run payouts.
+              One place to accept payments, follow results, and manage payouts.
             </p>
           </div>
 
@@ -36,7 +36,7 @@ export function SiteFooter() {
         <form action="/signup" className="site-footer__newsletter" method="get">
           <p className="site-footer__eyebrow">Next move</p>
           <p className="site-footer__copy">
-            Enter your email and open your RouteX workspace.
+            Add your email and open your RouteX workspace.
           </p>
           <div className="site-footer__newsletter-field">
             <label className="site-footer__newsletter-label" htmlFor="footer-email">
@@ -50,7 +50,7 @@ export function SiteFooter() {
               />
             </label>
             <button className="push-button push-button--primary" type="submit">
-              Submit
+              Start
             </button>
             <a
               className="site-footer__text-link"
