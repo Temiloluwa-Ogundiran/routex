@@ -1322,7 +1322,7 @@ body[data-rx-surface="ops"] .ops-topbar__utilities {
 
 body[data-rx-surface="ops"] .ops-topbar__actions {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.75rem;
@@ -1630,6 +1630,7 @@ body[data-rx-surface="ops"] .dashboard-control-form {
 body[data-rx-surface="ops"] .dashboard-select-field--inline,
 body[data-rx-surface="ops"] .dashboard-mode-toggle--inline {
   min-width: 9rem;
+  align-self: flex-end;
 }
 
 body[data-rx-surface="ops"] .dashboard-mode-toggle--inline .dashboard-mode-toggle__buttons {
@@ -1638,11 +1639,12 @@ body[data-rx-surface="ops"] .dashboard-mode-toggle--inline .dashboard-mode-toggl
 
 body[data-rx-surface="ops"] .dashboard-mode-toggle__buttons {
   display: inline-flex;
+  align-items: center;
   gap: 0.45rem;
 }
 
 body[data-rx-surface="ops"] .dashboard-toggle-button {
-  min-height: 2.45rem;
+  min-height: 2.5rem;
   padding: 0 0.9rem;
   border-radius: 0.55rem;
   font-family: var(--font-ops-mono), monospace;
