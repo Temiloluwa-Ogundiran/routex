@@ -49,15 +49,6 @@ export function FeatureGrid() {
         </article>
 
         <div className="poster-panel__stack">
-          <article className="poster-panel">
-            <p className="poster-panel__eyebrow">Payment updates</p>
-            <h3 className="poster-panel__title">Know what happened.</h3>
-            <p className="poster-panel__copy">
-              RouteX checks the provider result, then sends your app one signed update.
-            </p>
-            <span className="poster-panel__meta">Header: X-AGGREGATOR-SIGNATURE</span>
-          </article>
-
           <article className="poster-panel poster-panel--acid">
             <p className="poster-panel__eyebrow">Payouts</p>
             <h3 className="poster-panel__title">Run payouts from one place.</h3>
