@@ -1,15 +1,26 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
-const mintlifyDocsOrigin =
-  process.env.DOCS_ORIGIN ??
-  process.env.MINTLIFY_DOCS_ORIGIN ??
-  process.env.NEXT_PUBLIC_DOCS_URL ??
-  "https://docs.routex.xoroai.cloud";
-const publicDocsUrl =
-  process.env.NEXT_PUBLIC_DOCS_URL ??
-  process.env.DOCS_ORIGIN ??
-  mintlifyDocsOrigin;
+const {
+  DEFAULT_DOCS_URL,
+  buildDocsUrl,
+  normalizeDocsBaseUrl,
+  pickFirstNonEmptyString,
+} = require("./lib/docs-origin.cjs");
+
+const mintlifyDocsOrigin = normalizeDocsBaseUrl(
+  pickFirstNonEmptyString(
+    process.env.DOCS_ORIGIN,
+    process.env.MINTLIFY_DOCS_ORIGIN,
+    process.env.NEXT_PUBLIC_DOCS_URL,
+    DEFAULT_DOCS_URL,
+  ),
+);
+const publicDocsUrl = normalizeDocsBaseUrl({
+  NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
+  DOCS_ORIGIN: process.env.DOCS_ORIGIN,
+  MINTLIFY_DOCS_ORIGIN: process.env.MINTLIFY_DOCS_ORIGIN,
+});
 const isLocalDocsOrigin = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(
   mintlifyDocsOrigin,
 );
@@ -25,7 +36,7 @@ const nextConfig: NextConfig = {
     const redirects = [
       {
         source: "/sandbox",
-        destination: `${publicDocsUrl}/collections`,
+        destination: buildDocsUrl(publicDocsUrl, "/collections"),
         permanent: false,
       },
     ];
@@ -39,7 +50,7 @@ const nextConfig: NextConfig = {
         },
         {
           source: "/docs/:path*",
-          destination: `${publicDocsUrl}/:path*`,
+          destination: buildDocsUrl(publicDocsUrl, "/:path*"),
           permanent: false,
         },
       );
@@ -62,19 +73,25 @@ const nextConfig: NextConfig = {
         },
         {
           source: "/docs/:path*",
-          destination: `${mintlifyDocsOrigin}/:path*`,
+          destination: buildDocsUrl(mintlifyDocsOrigin, "/:path*"),
         },
         {
           source: "/.well-known/vercel/:path*",
-          destination: `${mintlifyDocsOrigin}/.well-known/vercel/:path*`,
+          destination: buildDocsUrl(
+            mintlifyDocsOrigin,
+            "/.well-known/vercel/:path*",
+          ),
         },
         {
           source: "/.well-known/skills/:path*",
-          destination: `${mintlifyDocsOrigin}/.well-known/skills/:path*`,
+          destination: buildDocsUrl(
+            mintlifyDocsOrigin,
+            "/.well-known/skills/:path*",
+          ),
         },
         {
           source: "/skill.md",
-          destination: `${mintlifyDocsOrigin}/skill.md`,
+          destination: buildDocsUrl(mintlifyDocsOrigin, "/skill.md"),
         },
       ],
     };
