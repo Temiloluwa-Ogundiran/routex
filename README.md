@@ -1,188 +1,242 @@
 # RouteX
 
-**RouteX is a payment orchestration platform for businesses that want one simple way to accept payments, track results, and stay online when a gateway has issues.**
+RouteX is a payment orchestration platform that gives merchants a single integration layer for collecting payments, verifying transactions, and receiving normalized webhook updates while multiple payment gateways run underneath.
 
-Instead of building a separate flow for every provider, a merchant connects to RouteX once. RouteX then helps choose the best gateway, sends the customer to checkout, verifies the result, and sends one clear update back to the merchant.
+Instead of wiring a product directly to one provider, RouteX sits in front of supported gateways, applies routing logic, returns the selected checkout experience, tracks the transaction lifecycle, and exposes a unified merchant-facing API and dashboard.
 
-## Live links
+## What the project does
 
-- Product: [routex.xoroai.cloud](https://routex.xoroai.cloud)
-- Docs: [docs.routex.xoroai.cloud](https://docs.routex.xoroai.cloud)
-- API: [routexapi.xoroai.cloud](https://routexapi.xoroai.cloud)
+RouteX is designed to reduce the operational pain of depending on a single gateway.
 
-## What problem RouteX solves
+With RouteX, a merchant can:
 
-Many online businesses depend on one payment gateway.
+- initialize payments through one API
+- route payments across supported gateways
+- override gateway selection when needed
+- verify transactions through one normalized flow
+- receive signed webhook notifications in a consistent format
+- monitor transactions, wallet activity, and routing behavior from a central dashboard
 
-When that gateway slows down or fails, the business immediately feels it:
+For platform operators, RouteX also includes admin tooling for visibility into gateway health, analytics, and routing controls.
 
-- lost checkouts
-- poor customer experience
-- manual switching between providers
-- extra engineering work
-- limited visibility into what actually happened
+## Core capabilities
 
-RouteX fixes that by giving the merchant one payment layer instead of one gateway.
+### Unified payment initialization
 
-## What RouteX does
+The backend exposes a single API surface for starting collections. RouteX chooses the gateway based on routing logic and returns the provider checkout link or checkout flow needed to complete the payment.
 
-- Accepts payments through one API
-- Routes payments through supported gateways
-- Lets merchants choose a gateway manually when needed
-- Returns the direct provider checkout link to the customer
-- Verifies the final transaction result
-- Sends one signed webhook update to the merchant
-- Gives merchants one dashboard for balances, transactions, keys, and operations
-- Gives admins one control room for gateway health and routing visibility
+### Gateway-aware routing
 
-## Why this matters
+The platform includes routing and health services that support gateway selection using operational signals such as availability and latency.
 
-RouteX makes payments easier to understand and easier to trust.
+### Transaction verification
 
-For a business owner, that means:
+Merchants verify transactions through RouteX instead of handling provider-specific verification logic themselves.
 
-- fewer moving parts
-- one dashboard instead of many
-- clearer payment updates
-- easier testing
-- a better fallback story when one provider is having a bad day
+### Webhook normalization
 
-## Core product features
+Providers send events into RouteX first. RouteX standardizes those events, updates internal transaction state, and forwards a signed webhook to the merchant's configured notification endpoint.
 
-### 1. Unified collections
+### Merchant and admin surfaces
 
-The merchant sends one request to RouteX to start a payment.
+The repository includes:
 
-RouteX can:
+- a public-facing frontend
+- merchant authentication and workspace flows
+- admin controls for routing and monitoring
+- separate hosted documentation content under `mintlify-docs`
 
-- route automatically based on gateway health and latency
-- respect a merchant gateway override
-- return a direct checkout link from the selected provider
+### Background processing
 
-### 2. Unified verification
-
-The merchant checks one verification endpoint and gets a normalized answer, no matter which provider handled the payment.
-
-### 3. Signed merchant webhooks
-
-Providers notify RouteX first.
-
-RouteX then:
-
-- normalizes the event
-- updates the transaction
-- sends one signed merchant webhook to the merchant `notification_url`
-
-### 4. Merchant dashboard
-
-The merchant workspace shows:
-
-- balances
-- API keys
-- recent transactions
-- payment links
-
-### 5. Admin control room
-
-The admin area shows:
-
-- gateway health
-- latency
-- routing decisions
-- platform visibility for operations
-
-## notes
-
-- RouteX is live, not just mock screens
-- The public docs are live and hosted separately
-- Merchant auth and admin auth are both implemented
-- Multiple payment gateways are integrated
-- Webhook normalization is implemented
-- Routing decisions are based on live health and latency
-- Payouts are currently **simulated from merchant balance** for demo reliability
-
-That payout choice is intentional for the MVP:
-
-- it removes bank-transfer instability during demos
-- it keeps the merchant experience consistent
-- it still shows how payout deductions and reporting work
+Celery workers and scheduled jobs support asynchronous tasks such as lifecycle updates, operational jobs, and balance-related flows.
 
 ## Supported gateways
 
-RouteX currently works with:
+Current integrations in the codebase include:
 
-- Flutterwave
 - Paystack
+- Flutterwave
 - Korapay
 - Interswitch
 
-## Quick walkthrough
+## Product scope and MVP constraints
 
-If you want to evaluate RouteX quickly:
+This project is currently shaped as a Nigeria-first MVP with these constraints:
 
-1. Open the landing page and docs
-2. Create a merchant account
-3. Open the dashboard
-4. Review balances, transactions, and API keys
-5. Start a collection through the docs or API
-6. Confirm the routed transaction and webhook behavior
+- NGN-focused flows
+- test-mode oriented integrations
+- payout behavior that is partially simulated for demo reliability
 
-## How the system works
+The payout simulation is intentional in the current version: it allows the system to demonstrate payout deductions, balance movement, and reporting without depending on unstable bank-transfer behavior during demos and testing.
 
-1. A merchant starts a payment with one RouteX request
-2. RouteX selects a gateway or respects the merchant override
-3. RouteX returns the provider checkout link
-4. The customer pays on the provider page
-5. RouteX verifies the outcome
-6. RouteX updates the transaction record
-7. RouteX sends one signed webhook back to the merchant
-
-## Technical highlights
+## Repository architecture
 
 ### Backend
 
-- FastAPI API layer
-- PostgreSQL for transactional storage
-- Redis for async orchestration support
-- Celery workers for background processing
-- Gateway adapter pattern for provider integrations
-- Routing engine driven by gateway health and latency
-- Webhook normalization layer for provider-specific events
+The backend is a FastAPI application with supporting services for routing, transactions, wallets, analytics, webhooks, and admin operations.
 
-### Frontend
+Main pieces:
 
-- Next.js App Router
-- Public product site
-- Merchant dashboard
-- Admin control room
-- Hosted Mintlify docs
+- `main.py`: FastAPI entrypoint
+- `api/`: route registration and HTTP views
+- `services/`: business logic and gateway/routing services
+- `schemas/`: request and response models
+- `database/`: database setup and persistence helpers
+- `alembic/`: database migrations
+- `crons/`: scheduled jobs
+- `websocket/`: websocket support
 
-## Team COntribution
-Temiloluwa Ogundiran
-- Backend Developer
-
-Kwaghuter Raphael
--Frontend Developer
-
-
-
-
-
-### Product architecture
-
-- Single merchant-facing API surface
-- Single merchant webhook contract
-- Direct provider checkout handoff
-- Operational visibility for admins
-
-## Built with
+Key backend technologies:
 
 - FastAPI
 - PostgreSQL
 - Redis
 - Celery
+- SQLAlchemy and Tortoise ORM components
+- Alembic
+
+### Frontend
+
+The `frontend/` app is a Next.js application that powers the web interface for the product experience and dashboard flows.
+
+Key frontend technologies:
+
 - Next.js
-- Mintlify
-- Resend
-- PostHog
-- Docker Compose
+- React
+- TypeScript
+- Playwright for frontend tests
+- PostHog for analytics instrumentation
+
+### Documentation
+
+The repository also contains a Mintlify documentation site in `mintlify-docs/`.
+
+## High-level request flow
+
+1. A merchant calls RouteX to initialize a payment.
+2. RouteX selects a gateway or honors an explicit gateway override.
+3. RouteX returns the provider checkout destination.
+4. The customer completes payment on the provider side.
+5. RouteX verifies and records the transaction outcome.
+6. RouteX emits a normalized signed webhook back to the merchant.
+7. Merchant and admin users can review activity in the dashboard.
+
+## Local development
+
+### Prerequisites
+
+- Python 3.11+ recommended
+- Node.js 20+ recommended
+- PostgreSQL
+- Redis
+- Docker and Docker Compose for containerized setup
+
+### Backend setup
+
+1. Create and activate a Python virtual environment.
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Copy `.env.example` to `.env` and fill in the required secrets and service URLs.
+4. Run database migrations.
+5. Start the API server:
+
+```bash
+python main.py
+```
+
+You can also run the app with Uvicorn directly if preferred.
+
+### Frontend setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Docker setup
+
+The repository includes a `docker-compose.yml` that starts:
+
+- PostgreSQL
+- Redis
+- FastAPI API service
+- Celery worker
+- Celery beat scheduler
+- Next.js frontend
+
+Start everything with:
+
+```bash
+docker compose up --build
+```
+
+## Environment and configuration
+
+Important environment variables referenced by the project include:
+
+- `DB_URL`
+- `REDIS_URL`
+- `SERVER_URL`
+- `FRONTEND_BASE_URL`
+- `CHECKOUT_URL`
+- `AUTH_SECRET`
+- `AGG_SECRET`
+- gateway credentials such as Paystack, Flutterwave, Korapay, and Interswitch secrets
+- email and notification credentials such as Resend configuration
+
+Use `.env.example` as the starting point for local configuration.
+
+## API and operational areas in the codebase
+
+The registered backend routes cover areas such as:
+
+- authentication
+- merchants and users
+- wallets
+- analytics
+- router controls
+- payment links
+- categories and beneficiaries
+- transactions
+- v1 initialize and verification flows
+- payouts
+- checkout flows
+- provider webhooks
+- websocket updates
+
+## Project structure
+
+```text
+routex/
+|-- api/
+|-- alembic/
+|-- crons/
+|-- database/
+|-- frontend/
+|-- mintlify-docs/
+|-- schemas/
+|-- services/
+|-- tests/
+|-- websocket/
+|-- docker-compose.yml
+|-- main.py
+|-- requirements.txt
+|-- settings.py
+```
+
+## Tests
+
+Backend test configuration is present through `pytest`.
+
+Typical backend test run:
+
+```bash
+pytest
+```
+
+Frontend test assets and Playwright configuration are present in `frontend/tests` and `frontend/playwright.config.ts`.
